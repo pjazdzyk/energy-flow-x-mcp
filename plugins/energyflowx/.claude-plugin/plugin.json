@@ -1,0 +1,43 @@
+{
+  "name": "energyflowx",
+  "displayName": "EnergyFlowX",
+  "version": "1.1.0",
+  "description": "Engineering calculations for fluids, air and pipework: validated thermophysical properties for 29 fluids from reference equations of state, HVAC process chains, pipe and duct sizing against real product catalogues, and full hydraulic network solving. Connects the EnergyFlowX MCP servers and adds the method for using them well.",
+  "author": {
+    "name": "Piotr Jazdzyk",
+    "email": "info@synerset.com",
+    "url": "https://energyflowx.com"
+  },
+  "homepage": "https://energyflowx.com/mcp-server",
+  "repository": "https://github.com/pjazdzyk/energy-flow-x-mcp",
+  "license": "Proprietary - free to install and use, redistribution not permitted. See LICENSE.",
+  "keywords": [
+    "hvac",
+    "engineering",
+    "thermodynamics",
+    "fluid-properties",
+    "psychrometrics",
+    "hydraulics",
+    "pipe-sizing",
+    "duct-sizing",
+    "heating",
+    "cooling",
+    "steam",
+    "refrigerants",
+    "glycol",
+    "mep",
+    "building-services"
+  ],
+  "metadata": {
+    "vendor": "SYNERSET - Piotr Jazdzyk",
+    "website": "https://energyflowx.com",
+    "documentation": "https://energyflowx.com/mcp-server",
+    "knowledgeBase": "https://energyflowx.com/knowledge",
+    "support": "https://energyflowx.com/misc/social",
+    "servers": {
+      "free": "https://energyflowx.com/energy-flow-x/mcp",
+      "apiKey": "https://energyflowx.com/energy-flow-x/mcp/hydronic"
+    },
+    "apiKeyEnvVar": "EFX_API_KEY"
+  }
+}

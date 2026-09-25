@@ -1,0 +1,83 @@
+EnergyFlowX plugin and skills for Claude
+Copyright (c) 2024-2026 SYNERSET - Piotr Jazdzyk. All rights reserved.
+
+THIS SOFTWARE IS PROPRIETARY. IT IS NOT OPEN SOURCE.
+
+This repository is the official client for the EnergyFlowX MCP service. It is
+published so that users of that service have a plugin that is correct and
+maintained by its authors, rather than an unofficial one that goes stale. Being
+public is not a grant of rights beyond the permission stated below, and is not an
+invitation to copy.
+
+The contents of this repository remain the exclusive property of SYNERSET -
+Piotr Jazdzyk and are protected by copyright, including the economic and moral
+rights of the author, under the Polish Act of 4 February 1994 on Copyright and
+Related Rights and under international copyright treaties.
+
+
+PERMISSION GRANTED
+
+You may, free of charge:
+
+  1. Download, install and run this plugin and its skills, including through a
+     Claude Code plugin marketplace, the Claude Skills API, or by copying a skill
+     folder into your own Claude configuration.
+
+  2. Use them to access the EnergyFlowX service, whether personally, internally
+     within your organisation, or in the course of professional work you perform
+     for clients.
+
+  3. Modify a local copy for your own use, where that is necessary to fit your
+     environment.
+
+No registration, attribution or payment is required for the above.
+
+
+PERMISSION NOT GRANTED
+
+You may not, without prior written permission from the copyright holder:
+
+  1. Redistribute this repository or any part of it, in original or modified
+     form, including publishing it to any plugin marketplace, skills directory,
+     package registry or similar catalogue.
+
+  2. Present a modified version as the EnergyFlowX plugin, or use the EnergyFlowX
+     name, marks or branding in a way that suggests a version is official when it
+     is not.
+
+  3. Adapt this work to act as a client for any service other than EnergyFlowX.
+
+  4. Sell, sublicense or rent this software, or include it in a product offered
+     for a fee where this software is a material part of what is being sold.
+
+
+THE SERVICE IS SEPARATE
+
+This repository contains client-side instructions only. It performs no
+calculations. The EnergyFlowX engines, their web client and the service this
+plugin connects to are separate proprietary software, governed by their own terms
+at https://energyflowx.com.
+
+Access to the service is a separate matter from this licence. Much of it is free
+of charge within published limits, and some of it requires an API key. Free access
+is granted at the discretion of the operator and its terms may change. Nothing in
+this licence grants any right of access to the service, any service level, or any
+guarantee that a feature which is free today remains free.
+
+
+NO WARRANTY
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM, OUT OF OR IN
+CONNECTION WITH THIS SOFTWARE OR ITS USE.
+
+ENGINEERING RESULTS OBTAINED THROUGH THIS PLUGIN ARE NOT A SUBSTITUTE FOR THE
+JUDGEMENT OF A QUALIFIED ENGINEER. THE USER IS RESPONSIBLE FOR VERIFYING EVERY
+RESULT BEFORE RELYING ON IT.
+
+
+CONTACT
+
+For permissions beyond this licence: https://energyflowx.com
