@@ -43,9 +43,33 @@ this" but has already fixed the pipe sizes wants a check, and telling them their
 is not an answer.
 
 **Selection is not sizing.** A pump is chosen against the *system* curve, which only exists once the
-network is solved. This release has no pumps, so the answer is the plant pressure the design needs, and
-the pump is chosen from that. If someone asks for a pump before the pipework is settled, say so: the duty moves
+network is solved. Give a candidate pump its datasheet curve as a device and the solve returns its duty
+point; with no pump yet, a `FIXED_PRESSURE` plant gives the pressure the design needs, and the pump is
+chosen from that. If someone asks for a pump before the pipework is settled, say so: the duty moves
 when the sizes do.
+
+## Equipment and runs over time: what each needs
+
+Each of these is on a datasheet or a drawing. None of them is a typical value to fill in.
+
+- **A pump**: at least three points of its curve, flow against the pressure it develops. A curve in
+  metres of head becomes a pressure through the liquid's density (`ρ·g·H`), so get the density from
+  `get_fluid_properties` at the loop temperature. A pump belongs on a liquid only.
+- **A compressor**: free air delivery at ISO 1217, its discharge pressure (absolute), its full-load
+  electrical input or its isentropic efficiency, the share of that input its oil cooler can give to
+  water (the heat-recovery figure), and the air temperature leaving its aftercooler.
+- **A receiver**: its volume and the pressure it starts at, absolute. A user's "7 bar" is almost always
+  gauge, so add an atmosphere and say so.
+- **A pressure switch**: its cut-in and cut-out pressures, absolute, and which device it drives.
+- **A storage tank**: its volume and starting temperature, and for a run of hours its standby loss (a
+  conductance in W/K) with the room temperature it loses to.
+- **A heat exchanger**: its UA or its effectiveness at the design flows, from the selection.
+
+**The run itself.** The duration covers the question: a trip until the far tool falls below what it
+needs, a tank until it reaches its setpoint. The step is short enough to see what matters: for a
+pressure switch, a tenth of the shortest time spent loaded or unloaded. An unload lasts about
+`V·(p_off − p_on) / (p_atm·Q)`, with the receiver volume, the band in absolute pressure, and the free-air
+draw: a 2 m³ receiver with a 1.5 bar band drawn at 5.6 m³/min unloads in about 32 s, so a 3 s step.
 
 ## The minimum data, per job
 
@@ -55,8 +79,8 @@ Every network solve needs all of this, whatever the job:
    brine, a humidity for humid air, a preset or composition for natural gas. A plant with several
    fluids is several systems in one design, each with its own.
 2. **Something holding the pressure**: a boundary node, or a fill pressure for a sealed loop.
-3. **Something making the fluid move**: fixed demands, or two pressure boundaries at different
-   pressures. This release has no pumps.
+3. **Something making the fluid move**: fixed demands, two pressure boundaries at different
+   pressures, a pump on a liquid, or a compressor on air.
 4. **Topology**: what connects to what.
 5. **Lengths**, and **sizes** unless the job is to find them.
 6. **Elevations.**
@@ -137,8 +161,8 @@ it.** An assumption that is both consequential and invisible is the one to refus
 - *Fluid temperature*, when the user did not say. State it: it moves the friction noticeably.
 - *A fittings allowance*, if you must, expressed as a percentage of straight-run loss and labelled as
   an allowance. Counting the fittings is better and the vocabulary supports it.
-- *Ambient temperature*, where it only affects a thermal term nobody is asking about. The network
-  server has no heat exchange with the surroundings, so it takes none.
+- *Ambient temperature*, where it only affects a thermal term nobody is asking about. A pipe exchanges
+  no heat with its surroundings here, so it takes none; a storage tank states its own standby loss.
 
 **Never assume. Ask, or refuse to answer:**
 

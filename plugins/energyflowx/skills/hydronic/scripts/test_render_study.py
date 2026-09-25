@@ -149,6 +149,32 @@ def test_user_text_cannot_break_the_page() -> None:
     check("ampersands are escaped", "a &amp; b &lt; c" in page)
 
 
+def test_equipment_and_a_run_over_time_render_as_the_solve_returns_them() -> None:
+    print("equipment and a run over time")
+    study = base(
+        devices=[{"id": "comp", "type": "COMPRESSOR", "electricalPower_kW": 34.3, "recoveredEnergy_kWh": 8.137,
+                  "starts": 7}],
+        transient={
+            "simulated_s": 1200, "timeStep_s": 10, "stopReason": "Reached time horizon (1200.0 s).",
+            "vessels": [{"id": "receiver", "start_kPa": 800, "end_kPa": 910.4, "min_kPa": 719.4, "min_at_s": 120,
+                         "max_kPa": 910.4, "max_at_s": 1200}],
+            "events": [{"t_s": 10, "device": "comp", "command": 1.0}, {"t_s": 120, "device": "comp", "command": 0.0}],
+            "series": [{"t_s": 0, "receiver_kPa": 800, "tank_C": 10.0, "comp_cmd": 1.0},
+                       {"t_s": 600, "receiver_kPa": 850, "tank_C": 13.5, "comp_cmd": 0.0},
+                       {"t_s": 1200, "receiver_kPa": 910.4, "tank_C": 16.96, "comp_cmd": 1.0}],
+        },
+    )
+    page = render(study)
+    check("the equipment table labels each figure with the unit its field name carries",
+          "Electrical power <strong>34.30</strong> kW" in page and "Recovered energy" in page and "kWh" in page)
+    check("a vessel's lowest pressure comes with when", "719.4 at 120 s" in page)
+    check("every command change is listed", page.count("<td>comp</td>") >= 2)
+    check("a chart per unit, pressure and temperature apart", page.count("class='chart'") == 3)
+    check("and the page says what a run over time is not", "water hammer are not part of it" in page)
+    steady = render(base())
+    check("a steady study shows neither section", "Over time" not in steady and "Equipment" not in steady)
+
+
 def main() -> int:
     for test in [
         test_qualifications_are_always_present,
@@ -159,6 +185,7 @@ def main() -> int:
         test_flow_direction_survives,
         test_a_broken_input_does_not_crash,
         test_user_text_cannot_break_the_page,
+        test_equipment_and_a_run_over_time_render_as_the_solve_returns_them,
     ]:
         test()
     print()

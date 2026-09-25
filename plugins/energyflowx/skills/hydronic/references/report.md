@@ -67,6 +67,29 @@ produces an em dash or an omitted section, never a guess.
 }
 ```
 
+### Equipment and a run over time
+
+Copy the solve's `devices` rows in as they are, and for a run over time a `transient` object carrying
+its `simulated_s`, `timeStep_s`, `stopReason`, `vessels`, `events` and `series`:
+
+```json
+{
+  "devices": [
+    {"id": "comp", "type": "COMPRESSOR", "electricalPower_kW": 34.3, "recoveredEnergy_kWh": 8.14, "starts": 7}
+  ],
+  "transient": {
+    "simulated_s": 1200, "timeStep_s": 10, "stopReason": "Reached time horizon (1200.0 s).",
+    "vessels": [{"id": "receiver", "start_kPa": 800, "min_kPa": 719.4, "min_at_s": 120,
+                 "max_kPa": 910.4, "max_at_s": 1200, "end_kPa": 910.4}],
+    "events": [{"t_s": 120, "device": "comp", "command": 1.0}],
+    "series": [{"t_s": 0, "receiver_kPa": 800, "tank_C": 10.0, "comp_cmd": 1.0}]
+  }
+}
+```
+
+The page labels each device figure from the unit in its field name, charts the series one unit at a
+time, and says that a run over time is steady solves in steps, so pressure waves are not in it.
+
 ### Units are in the field names
 
 `pressure_kPa`, `flow_kg_s`, `velocity_m_s`, `elevation_m`, `length_m`, `dp_kPa`, `totalDrop_kPa`.

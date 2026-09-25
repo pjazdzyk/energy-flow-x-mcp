@@ -11,7 +11,7 @@
       "name": "energyflowx",
       "source": "./plugins/energyflowx",
       "description": "Validated thermophysical properties, HVAC process calculations, conduit sizing and hydraulic network design, from the EnergyFlowX engines over MCP.",
-      "version": "1.1.0"
+      "version": "1.2.0"
     }
   ]
 }

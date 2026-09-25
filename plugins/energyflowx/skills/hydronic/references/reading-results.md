@@ -51,7 +51,6 @@ is where the head was exhausted, and that is a real piece of information about t
 
 ### `PUMP_OUTSIDE_RATED_RANGE`: qualify
 
-This release authors no pumps, so this notice cannot appear yet. It is here for when they arrive.
 The duty point settled past the flow range the pump curve describes. The off-design policy keeps the
 solve well-posed out there, so the answer is the best the model can give, but the head and the power are
 an **extrapolation past the datasheet** rather than a reading off it.
@@ -151,5 +150,13 @@ flows and pressure differences, and arbitrary absolute readings, because the fie
 constant. This server refuses to solve it until something anchors the pressure, so set `fillPressure`
 and say that the absolute readings rest on it.
 
-**Anything about transients.** This release solves steady state. A surge, a pump trip, a valve slam and
-a filling sequence are all different questions.
+**A run over time, read for its questions.** A vessel's lowest pressure and when it happened is the
+worst the far end saw. A machine's starts over a short run is its cycling rate: scale it to an hour
+before judging it against the maker's limit. The energy a compressor or a heater put in should reappear
+in the store it charged, within a few per cent, and when it does not, say why before quoting either
+figure. A switch acts at step boundaries, so a dip below cut-in of about one step's draw is the step.
+
+**Anything about pressure waves.** A transient run here is quasi-steady: each step is a steady network
+solve, so it answers how a receiver swings, how long the air lasts after a compressor trip, how often a
+machine cycles and how far a store charges. A surge or water hammer after a valve slam or a pump trip
+travels at the speed of sound in the pipe and is not in it.

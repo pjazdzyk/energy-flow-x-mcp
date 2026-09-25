@@ -20,7 +20,7 @@ this file would drift the first time the server gained an op.
 
 ## Step 0: read the vocabulary
 
-Six resources, read once per session, then never again:
+Nine resources, read once per session, then never again:
 
 | uri | what it holds |
 | --- | --- |
@@ -31,6 +31,8 @@ Six resources, read once per session, then never again:
 | `hydronic://recipes/riser` | a complete, solvable plant riser |
 | `hydronic://recipes/ring-main` | a campus ring main, and what a ring teaches you |
 | `hydronic://recipes/compressed-air-ring` | a compressed-air ring in free air delivery, with a filter as a Kv |
+| `hydronic://vocabulary/devices` | each device's ports and settings, schedules, controllers, and what a run returns |
+| `hydronic://recipes/compressor-heat-recovery` | a compressor on a pressure switch charging a receiver, its heat into a store, run for twenty minutes |
 
 They are **resources, not tools**, which is why they cost nothing on a turn where you do not need them.
 Most MCP clients do not fetch resources unless asked, so ask.
@@ -109,6 +111,11 @@ Two things that are easy to get wrong and expensive to miss:
   the density you expected.
 - **An edge in another system says so.** `add_pipe` and `add_resistance` take `system`, and a system
   must exist before an edge names it, so put the `set_fluid` ops first.
+- **Devices first, then their pipes.** `add_device` before any pipe that names `"device.port"`, and every
+  port piped. A compressor's air side and water side are two systems, so its water pipes carry the water
+  system's name.
+- **Schedules and controllers last.** Each names a device or node that must already exist, and a device
+  takes its command from one source, a schedule or a controller. `set_transient` can go anywhere.
 
 ## Step 3: solve
 
@@ -116,7 +123,11 @@ Two things that are easy to get wrong and expensive to miss:
 hydronic_solve(handle="...", detail=<n>)
 ```
 
-`mode` is `steady`, which is the only mode in this release, and any other mode is refused.
+`mode` is `steady` (the default) or `transient`, which runs the duration `set_transient` states and
+applies the design's schedules and controllers. A transient returns each receiver's swing with when, the
+lowest pressures and when, each machine's starts, power, energy and recovered heat, how far each store
+charged, every command change, and a sampled table. A run predicted to take longer than a minute is
+refused with the step that would fit.
 `detail` is the number of rows in each ranking: the worst edges by the head they consume, the fastest
 pipes, and the lowest and highest pressure nodes. The default is 5 and the maximum is 50, so a network
 of up to 50 elements can be read in full. The solve returns no critical path. A design with several
@@ -182,6 +193,12 @@ second.
 **A fluid-property complaint mentioning saturation or steam**: this is almost never about steam. It
 means the pressure was driven to or below zero somewhere, which means the network cannot deliver the
 demand being asked of it. The server now explains this and keeps the original message underneath.
+
+**"This run was NOT started"**: the transient was predicted to take over a minute. The message gives
+the step that fits.
+
+**"has ports with no pipe"**: pipe every port of the device named, or for a compressor leave both water
+ports open.
 
 **A batch rejected by field name**: read the name. The op vocabulary is the authority and it is one
 resource read away.

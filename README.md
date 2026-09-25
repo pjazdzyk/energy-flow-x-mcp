@@ -99,8 +99,10 @@ fittings and resistances, branched or looped. Water and glycol circuits, compres
 ventilation ducts, steam mains and refrigerant lines, and several fluids in one design, each solved at
 its own temperature. The solver finds every flow and pressure at once, reports velocities (with the
 Mach number for a gas) and any node where the fluid condenses, flashes or boils, then says what to
-check before trusting the numbers. This release solves steady state and has no pumps or control
-valves yet. The skill turns the result into
+check before trusting the numbers. Pumps, compressors with heat recovery, heaters, heat exchangers,
+storage tanks and receivers are devices (a pump on a liquid only), and a design runs over time too, with
+schedules, pressure or flow switches and PI loops: receiver swings, compressor starts, how long the air lasts after a trip, how far a store
+charges. There are no control valves, balancing, fans or water hammer yet. The skill turns the result into
 a **self-contained HTML study** with a network diagram, flow and pressure schedules and the checks,
 ready to hand to a colleague.
 
@@ -121,8 +123,8 @@ ready to hand to a colleague.
 **It is not:**
 
 - A replacement for a qualified engineer. It computes, you decide.
-- A building energy simulation, a CFD tool or a load calculation. It answers steady-state questions
-  about fluids, conduits, air processes and pipe networks.
+- A building energy simulation, a CFD tool or a load calculation. It answers questions about fluids,
+  conduits, air processes and pipe networks, steady or over time, but not pressure waves.
 - A guess. When an input is out of range or a target cannot be met, it says so instead of returning
   a plausible number.
 
@@ -202,7 +204,7 @@ Paste any of these into Claude Code after installing:
 | [`fluid-properties`](plugins/energyflowx/skills/fluid-properties/SKILL.md) | 29 fluids and solids: water and steam, humid air, glycols, brines, refrigerants, industrial gases, natural gas (GERG-2008, ISO 6976), ice, unit conversion | 6 | free, key for refrigerants and brines |
 | [`conduit-sizing`](plugins/energyflowx/skills/conduit-sizing/SKILL.md) | one pipe or duct against real catalogues: velocity, pressure drop, regime, the size below and above | 4 | free |
 | [`hvac-processes`](plugins/energyflowx/skills/hvac-processes/SKILL.md) | coils with condensate, mixing, heat recovery (EN 16798-3, EN 308), fans, humidification, dehumidification, desiccant wheels | 1 | free |
-| [`hydronic`](plugins/energyflowx/skills/hydronic/SKILL.md) | whole pipe and duct networks of liquids, gases and steam, several fluids in one design: build, solve, check, and render an HTML study with a network diagram and tables | 4 + 7 resources | API key |
+| [`hydronic`](plugins/energyflowx/skills/hydronic/SKILL.md) | whole pipe and duct networks of liquids, gases and steam, several fluids in one design, with pumps, compressors, heat exchangers, stores and receivers, steady or over time: build, solve, check, and render an HTML study with a network diagram and tables | 4 + 9 resources | API key |
 
 Every tool on the main server is read-only and idempotent, so Claude does not stop to ask
 permission for a lookup. Two network tools change a session you own, and say so.

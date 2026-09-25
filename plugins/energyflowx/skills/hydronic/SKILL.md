@@ -2,15 +2,15 @@
 name: hydronic-network-design
 description: >-
   Design and solve piped and ducted networks with the EnergyFlowX Hydronic MCP server, then present the
-  result as an engineering study with a network diagram and schedules. Use this whenever the work
-  involves a network rather than a single run: heating, chilled-water and glycol circuits, ring mains,
-  risers, district distribution, compressed-air rings, natural-gas distribution, ventilation duct
-  trees, steam mains, refrigerant lines, several fluids in one plant, or "is there enough pressure at
-  the far end". Use it for the questions that sound simpler but are not: sizing a branch that sits in a
-  loop, how much pressure the far end needs, or which way the flow goes around a ring. Use it at the
-  START of such a job too, while the request is still vague: it covers working out which question is
-  being asked, turning a duty into a flow, and deciding what may be assumed and what has to be asked
-  for. Reach for it even when the user never says "hydraulic" or "MCP".
+  result as an engineering study with a diagram and schedules. Use it whenever the work is a network
+  rather than a single run: heating, chilled-water and glycol circuits, ring mains, risers, compressed-air
+  rings and compressor rooms, gas distribution, ducts, steam mains, refrigerant lines, several fluids in
+  one plant. Use it for plant with equipment: a pump's duty point, a compressor with heat recovery into a
+  hot-water tank, a receiver, a heat exchanger between circuits. Use it for questions over time: how often
+  a compressor cycles, how long the air lasts after a trip, how fast a tank heats. Use it for questions
+  that sound simpler but are not: sizing a branch in a loop, whether the far end has enough pressure.
+  Use it at the START of such a job, while the request is still vague: it covers what is being asked and
+  what may be assumed. Reach for it even when the user never says "hydraulic" or "MCP".
 ---
 
 # Hydronic network design
@@ -36,8 +36,9 @@ Most hydraulic jobs arrive underspecified, and the work starts well before the f
 `references/gathering-inputs.md` is the long version. Two things from it apply almost every time:
 
 **Work out what the unknown is.** "Size my system" is five different jobs. Are the diameters unknown
-(sizing), the pressure at some point (checking), the head the plant must supply (selection), the location of a problem
-(diagnosis), or which of two options (comparison)? They need different data and different answers, and
+(sizing), the pressure at some point (checking), the head the plant must supply or a pump's duty point
+(selection), the location of a problem (diagnosis), which of two options (comparison), or how the plant
+behaves over time (a transient run: a trip, a cycling compressor, a tank charging)? They need different data and different answers, and
 getting this wrong costs more than any arithmetic error, because you will produce a confident, correct answer
 to a question nobody asked.
 
@@ -63,7 +64,7 @@ gas's calorific value, which `get_natural_gas_properties` gives for the same pre
 
 ## Which networks it solves
 
-Hydronic MCP solves networks of **liquids, gases and steam** in steady state: water and glycol
+Hydronic MCP solves networks of **liquids, gases and steam**, in steady state or over time: water and glycol
 circuits, water mains, compressed air, natural gas and other fuel and industrial gases, ventilation
 ducts of dry or humid air, steam mains, and refrigerant liquid or vapour lines. Pipes and ducts may be
 round, rectangular or elliptic. `hydronic://vocabulary/fluids` lists the fluids and what each needs;
@@ -73,8 +74,20 @@ round, rectangular or elliptic. `hydronic://vocabulary/fluids` lists the fluids 
 heating circuit it fires are two systems in one session: `set_fluid` with `system: "gas"` creates the
 second, and its pipes carry `system: "gas"`. Each system is solved on its own, at its own temperature
 and fill pressure, which is exact because two fluids never share a pipe. A node joining two systems is
-refused, since fluids meet only inside a device (a heat exchanger, a boiler), and this vocabulary has
-no devices.
+refused, since fluids meet only inside a device. A compressor's air and its heat-recovery water, or the
+two sides of a heat exchanger, are the systems a device joins, and those are solved together.
+
+**Equipment.** `add_device` adds a pump (liquids), an air compressor with heat recovery, a heater or
+boiler, a heat exchanger between two systems, or a storage tank, and pipes reach its ports as
+`"device.port"`. A receiver or an expansion vessel is a `PRESSURE_TANK` node. Read
+`hydronic://vocabulary/devices` before adding one: it lists each type's ports and settings, and a
+setting the type does not take is refused by name.
+
+**Over time.** `add_schedule` drives a pump, a compressor, a demand or a boundary pressure through a
+profile, `add_controller` adds a pressure or flow switch or a PI loop, and `set_transient` states the
+run's duration and step. `hydronic_solve(mode="transient")` then answers what a plant does over time:
+how far a receiver swings, how often a compressor starts, how long the air lasts after a trip, how far
+a store charges. Water hammer and surge are not modelled: each step is a steady network solve.
 
 What changes for a gas:
 
@@ -109,7 +122,8 @@ network solving is free while it is being tested, that is temporary, and it can 
 Read `references/workflow.md` for the call-by-call detail. In outline:
 
 1. **Read the vocabulary once.** `hydronic://vocabulary/ops`, `/fittings`, `/materials`, `/fluids`,
-   and a recipe from `hydronic://recipes/riser`, `/ring-main` or `/compressed-air-ring`. These are MCP *resources*, not tools,
+   `/devices` when there is equipment, and a recipe from `hydronic://recipes/riser`, `/ring-main`,
+   `/compressed-air-ring` or `/compressor-heat-recovery` (equipment and a run over time). These are MCP *resources*, not tools,
    so they cost nothing per turn and most clients will not fetch them unless you ask. Pace them about a
    second apart: a burst trips the rate limiter, and although a throttled call comes back as a
    JSON-RPC error carrying `retryAfterSeconds`, waiting is cheaper than retrying.
@@ -118,7 +132,10 @@ Read `references/workflow.md` for the call-by-call detail. In outline:
    a tool call, and an incremental edit is how you keep the design and the conversation in step.
 3. **Edit in batches.** One `hydronic_edit` call carries many ops and is all-or-nothing. Build the
    whole topology in one or two calls rather than one node at a time.
-4. **Solve.** `hydronic_solve(handle)`.
+4. **Solve.** `hydronic_solve(handle)` for one operating state. For behaviour over time, add the
+   schedules and controllers, state the run with `set_transient`, and solve with `mode="transient"`.
+   Solve steady first even then: it is a quick check that the plant works at all before you spend a run
+   on it.
 5. **Read the rest of the result.** `hydronic_solve(handle, detail=50)` returns up to 50 rows of the
    worst edges, the fastest pipes and the pressure extremes, which is every element of a network that
    size.
@@ -153,6 +170,25 @@ solve for someone. The short version is five things, in this order:
    designed for 6 to 10 m/s, and saturated steam mains for 25 to 40 m/s. An order of magnitude out
    usually means a unit went in wrong or a demand is on the wrong node.
 
+### A run over time
+
+A transient comes back as answers, not a time series. Read it in this order:
+
+1. **`completed` and `stopReason`**, then `converged`. A run that stopped early or an instant that did
+   not converge qualifies everything after it.
+2. **`vessels`**: each receiver's or expansion vessel's lowest and highest pressure, with when. The
+   lowest is what the far end saw at its worst, so compare it with what the tools need there. A vessel
+   "held at the floor" ran empty: after that the demand shown is a promise, not delivery.
+3. **`events` and each machine's `starts`**: the pressure switch cutting in and out, a trip. Many starts
+   in a short run is short-cycling, which a larger receiver or a wider band cures.
+4. **`devices`**: average power, energy, recovered heat, how far each store charged. Check the energy:
+   the heat a compressor or heater put in should reappear in the store, within a few per cent. If it
+   does not, something is leaking heat you did not intend, or the run is too short to say.
+5. **`lowestPressureNodes`** with `at_s`, and the sampled **`series`** for the shape of the curve.
+
+A switch acts at step boundaries, so a vessel dips below its cut-in by up to one step's worth of draw.
+That is the step, not the plant: a shorter step tightens it.
+
 ## What goes wrong, and what it means
 
 These are the failures that actually happen, and each one looks like something else at first glance.
@@ -171,11 +207,10 @@ rest on it.
 demand is delivered whatever it costs, so the solver drives the pressure through zero to keep the
 promise. Reduce the demand, open up the run, or raise the supply pressure. Do not report the numbers.
 
-**A request for a pump, a control valve or balancing.** This release has none of them, and a solve
-mode other than `steady` is refused. Model the plant as a `FIXED_PRESSURE` node at the pressure it
-supplies. The head a pump must deliver is then the plant pressure the design needs, which is an
-answer. A pump selection is not, so say so rather than presenting a boundary pressure as a duty
-point.
+**A request for a control valve, balancing or regulation.** This release has none of them. A pump is
+available as a device with its datasheet curve, and its duty point is the solve's answer. A pump on a
+gas is refused, because a fixed curve does not follow a gas's density: a gas network is driven by a
+compressor or by its boundary pressures.
 
 **A glycol or brine with no concentration.** Refused, and rightly. A 30% ethylene glycol is about 6%
 denser and roughly twice as viscous as water at 20 °C, so a defaulted concentration is a wrong
@@ -191,6 +226,21 @@ pressure or lower the demand.
 refused until you say what it is. Ask the user if you do not know: a compressor or tool rating is free
 air delivery, a gas-meter or boiler figure is normally in normal or standard cubic metres, a
 ventilation airflow is the volume at the duct.
+
+**"This run was NOT started".** A transient predicted to take over a minute is refused, with the step
+that would fit. Use it, or shorten the duration. For a pressure switch the step should stay at or below
+a tenth of the shortest time the compressor spends loaded or unloaded, or the switching instants blur.
+
+**"device ... has ports with no pipe".** Every port of a device needs a pipe, or the network has an
+unknown with no equation. A compressor is the one exception: leave both of its water ports open and its
+heat is rejected rather than recovered, and the solve says so.
+
+**A compressor refused for missing settings.** Its free air delivery, discharge pressure, power (or
+isentropic efficiency), recoverable heat and aftercooler outlet temperature are all on its datasheet,
+and each changes the answer. Ask for them. Never fill them in from a typical value.
+
+**"schedules and controllers were not applied".** A steady solve holds every machine at its stated
+command. The run over time is `mode="transient"`.
 
 **A `PHASE` warning.** The fluid left its phase somewhere: steam condensing, a liquid line flashing,
 water boiling at a high point, humid air reaching its dew point. The warning names the nodes and the
@@ -212,7 +262,8 @@ python3 scripts/render_study.py study.json -o study.html
 
 It takes one plain JSON file and emits a single self-contained page: the verdict, the qualifications,
 a schematic of the network laid out with **elevation up the page and distance from the supply across
-it**, and the node and edge schedules. `references/report.md` has the input schema and an example.
+it**, what each device did, a run over time with its vessels, command changes and charts, and the node
+and edge schedules. The `devices` rows and the transient blocks go in exactly as the solve returns them. `references/report.md` has the input schema and an example.
 
 Three things about that page are not stylistic preferences:
 

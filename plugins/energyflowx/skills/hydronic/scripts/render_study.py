@@ -428,6 +428,119 @@ def _edge_table(study: dict) -> str:
     )
 
 
+_UNITS = {"kW": "kW", "kWh": "kWh", "kPa": "kPa", "C": "°C", "kgps": "kg/s", "W": "W", "s": "s",
+          "m": "m", "mps": "m/s"}
+
+
+def _label(key: str) -> tuple[str, str]:
+    """A figure's field name as a label and its unit: "electricalPower_kW" -> ("Electrical power", "kW")."""
+    name, _, unit = key.partition("_")
+    words = "".join(" " + c.lower() if c.isupper() else c for c in name).strip()
+    return words[:1].upper() + words[1:], _UNITS.get(unit, unit)
+
+
+def _devices(study: dict) -> str:
+    """Equipment, one row per device, its figures read straight off the solve's `devices` rows."""
+    devices = study.get("devices") or []
+    if not devices:
+        return ""
+    rows = []
+    for device in devices:
+        figures = []
+        for key, value in device.items():
+            if key in ("id", "type") or _num(value) is None:
+                continue
+            label, unit = _label(key)
+            figures.append(f"{_esc(label)} <strong>{_fmt(value, 2)}</strong> {_esc(unit)}".rstrip())
+        shown = "; ".join(figures) if figures else "&mdash;"
+        rows.append(f"<tr><td>{_esc(device.get('id'))}</td><td>{_esc(device.get('type'))}</td><td>{shown}</td></tr>")
+    return ("<section><h2>Equipment</h2><table><thead><tr><th>Id</th><th>Type</th><th>What it did</th>"
+            f"</tr></thead><tbody>{''.join(rows)}</tbody></table>"
+            "<p class='caption'>After a run over time, a machine's power and recovered heat are averages over "
+            "the run, and a store's temperature is the one it ended at.</p></section>")
+
+
+def _chart(rows: list[dict], columns: list[str], unit: str) -> str:
+    """A small line chart of some series columns against time, its range printed on it."""
+    points = []
+    for row in rows:
+        time = _num(row.get("t_s"))
+        if time is not None:
+            points.append((time, {c: _num(row.get(c)) for c in columns}))
+    values = [x for _, v in points for x in v.values() if x is not None]
+    if len(points) < 2 or not values:
+        return ""
+    w, h, pad = 640, 170, 34
+    t0, t1 = points[0][0], points[-1][0]
+    lo, hi = min(values), max(values)
+    if hi == lo:
+        hi, lo = hi + 1.0, lo - 1.0
+
+    def sx(time: float) -> float:
+        return pad + (w - 2 * pad) * (time - t0) / ((t1 - t0) or 1.0)
+
+    def sy(value: float) -> float:
+        return h - pad + (2 * pad - h) * (value - lo) / (hi - lo)
+
+    lines = []
+    for index, column in enumerate(columns):
+        pts = " ".join(f"{sx(tm):.1f},{sy(v[column]):.1f}" for tm, v in points if v[column] is not None)
+        lines.append(f"<polyline class='series s{index % 4}' points='{pts}' fill='none'/>")
+    legend = ", ".join(_esc(c.rsplit("_", 1)[0]) for c in columns)
+    return (f"<figure><svg class='chart' viewBox='0 0 {w} {h}' role='img' aria-label='{legend} over time'>"
+            f"<line class='axis' x1='{pad}' y1='{h - pad}' x2='{w - pad}' y2='{h - pad}'/>"
+            f"{''.join(lines)}"
+            f"<text class='tick' x='{pad}' y='{pad - 10}'>{_fmt(hi, 1)} {_esc(unit)}</text>"
+            f"<text class='tick' x='{pad}' y='{h - pad + 16}'>{_fmt(lo, 1)} {_esc(unit)}</text>"
+            f"<text class='tick' x='{w - pad}' y='{h - pad + 16}' text-anchor='end'>{_fmt(t1, 0)} s</text>"
+            f"</svg><figcaption class='caption'>{legend}, sampled over the run.</figcaption></figure>")
+
+
+def _run(study: dict) -> str:
+    """A run over time: how long, each vessel's swing, every command change, and the sampled curve."""
+    run = study.get("transient")
+    if not isinstance(run, dict):
+        return ""
+    facts = []
+    if _num(run.get("simulated_s")) is not None:
+        facts.append(("Simulated", f"{_fmt(run.get('simulated_s'), 0)} s"))
+    if _num(run.get("timeStep_s")) is not None:
+        facts.append(("Step", f"{_fmt(run.get('timeStep_s'), 1)} s"))
+    if _text(run.get("stopReason")):
+        facts.append(("Stopped because", _esc(run.get("stopReason"))))
+    parts = ["<section><h2>Over time</h2>"]
+    if facts:
+        parts.append("<dl class='facts'>" + "".join(f"<div><dt>{k}</dt><dd>{v}</dd></div>" for k, v in facts)
+                     + "</dl>")
+    vessels = run.get("vessels") or []
+    if vessels:
+        body = "".join(
+            f"<tr><td>{_esc(v.get('id'))}</td><td class='n'>{_fmt(v.get('start_kPa'), 1)}</td>"
+            f"<td class='n'>{_fmt(v.get('min_kPa'), 1)} at {_fmt(v.get('min_at_s'), 0)} s</td>"
+            f"<td class='n'>{_fmt(v.get('max_kPa'), 1)} at {_fmt(v.get('max_at_s'), 0)} s</td>"
+            f"<td class='n'>{_fmt(v.get('end_kPa'), 1)}</td></tr>" for v in vessels)
+        parts.append("<h3>Vessels</h3><table><thead><tr><th>Id</th><th class='n'>Start [kPa]</th>"
+                     "<th class='n'>Lowest [kPa]</th><th class='n'>Highest [kPa]</th><th class='n'>End [kPa]</th>"
+                     f"</tr></thead><tbody>{body}</tbody></table>")
+    series = run.get("series") or []
+    if series:
+        columns = [c for c in series[0].keys() if c != "t_s"]
+        for suffix, unit in (("_kPa", "kPa"), ("_C", "°C"), ("_cmd", "command")):
+            group = [c for c in columns if c.endswith(suffix)]
+            if group:
+                parts.append(_chart(series, group, unit))
+    events = run.get("events") or []
+    if events:
+        body = "".join(f"<tr><td class='n'>{_fmt(e.get('t_s'), 0)}</td><td>{_esc(e.get('device'))}</td>"
+                       f"<td class='n'>{_fmt(e.get('command'), 2)}</td></tr>" for e in events)
+        parts.append("<h3>Command changes</h3><table><thead><tr><th class='n'>Time [s]</th><th>Device</th>"
+                     f"<th class='n'>Command</th></tr></thead><tbody>{body}</tbody></table>"
+                     "<p class='caption'>1 is loaded or full speed, 0 unloaded or stopped.</p>")
+    parts.append("<p class='caption'>Each step of the run is a steady network solve, so pressure waves and "
+                 "water hammer are not part of it.</p></section>")
+    return "".join(parts)
+
+
 def _assumptions(study: dict) -> str:
     items: list[str] = []
     if _text(study.get("fluid")):
@@ -503,6 +616,14 @@ ul { margin: 0; padding-left: 20px; }
 .schematic .node.demand { fill: var(--warn); stroke: var(--warn); }
 .schematic .node-label { fill: var(--fg); font-size: 12px; font-weight: 600; }
 .schematic .node-readout, .schematic .edge-label { fill: var(--muted); font-size: 10.5px; font-variant-numeric: tabular-nums; }
+h3 { font-size: 14px; margin: 18px 0 8px; }
+figure { margin: 14px 0; }
+.chart { width: 100%; height: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.chart .axis { stroke: var(--line); }
+.chart .tick { fill: var(--muted); font-size: 11px; }
+.chart .series { stroke-width: 2; }
+.chart .s0 { stroke: var(--accent); } .chart .s1 { stroke: var(--warn); }
+.chart .s2 { stroke: var(--good); } .chart .s3 { stroke: var(--bad); }
 footer { margin-top: 44px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
 @media print { body { background: #fff; } .schematic { break-inside: avoid; } section { break-inside: avoid; } }
 @media (max-width: 640px) {
@@ -530,6 +651,8 @@ def render(study: dict) -> str:
             _qualifications(study),
             f"<section><h2>The network</h2>{_diagram(study.get('nodes') or [], study.get('edges') or [])}</section>",
             _critical_path(study),
+            _devices(study),
+            _run(study),
             _edge_table(study),
             _node_table(study),
             _assumptions(study),

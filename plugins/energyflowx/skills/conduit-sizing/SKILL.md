@@ -74,6 +74,9 @@ Beyond 20 segments, or as soon as the path is not a simple series, it is a netwo
 which solves the whole network for liquids, gases and steam alike, rings and meshes included. A branched
 system can still be sized run by run here, each branch carrying the flow of what it feeds, but the
 moment a flow depends on how two routes share it, stop guessing the split and solve the network.
+The same goes for a pump's duty point, which is where its curve meets the whole system, and for
+anything over time, such as how long a receiver holds the far tool after a compressor trips: both are
+`hydronic` questions.
 
 ## Report it so someone can check it
 

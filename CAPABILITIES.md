@@ -347,19 +347,31 @@ Server: `/mcp/hydronic`. Tools: `hydronic_session`, `hydronic_edit`, `hydronic_s
 
 ### What this release solves
 
-- Steady-state networks of liquids, gases and steam: water and glycol circuits, water mains,
+- Networks of liquids, gases and steam, in steady state or over time: water and glycol circuits, water mains,
   compressed-air rings, natural-gas distribution, ventilation duct trees, steam mains, industrial-gas
   lines and refrigerant liquid or vapour lines.
 - Branched networks, rings and meshes of any topology, with elevations, fittings and lumped
   resistances.
 - Several fluid systems in one design, such as the gas supply and the heating circuit of one plant
   room, each solved on its own at its own temperature and fill pressure.
-- Flow is driven by fixed demands, or by two pressure boundaries at different pressures.
-- **Not yet**: pumps, fans, compressors, control valves, balancing, regulation, schedules and
-  transient runs. A solve mode other than `steady` is refused by name. Model a plant as a
-  `FIXED_PRESSURE` node at the pressure it supplies. Also not modelled: two-phase flow (wet steam,
-  condensate with flash steam), heat exchange between systems or with the surroundings, and devices
-  that change the fluid, such as dryers and coils.
+- Flow is driven by fixed demands, two pressure boundaries at different pressures, a pump on a
+  liquid, or a compressor on air.
+- **Equipment** (`add_device`): a pump with its datasheet curve (liquids only), an air compressor
+  rated in free air delivery with its oil-cooler heat recovered into a water circuit, a heater or
+  boiler (a power, or an outlet temperature it holds), a heat exchanger between two systems (UA or
+  effectiveness), and a storage tank, well mixed or stratified in layers. A `PRESSURE_TANK` node is a
+  receiver on a gas, storing its real-gas mass, or an expansion vessel on a liquid. Each device's ports
+  and settings are in `hydronic://vocabulary/devices`.
+- **Transient runs** (`mode="transient"`): schedules on a pump, a compressor, a demand or a boundary
+  pressure, ON_OFF pressure or flow switches and PI loops, over the duration `set_transient` states.
+  Returned: each vessel's swing with when, the lowest pressures and when, each machine's starts,
+  average power, energy and recovered heat, how far each store charged, every command change and a
+  sampled table of 24 rows. At most 2,000 steps, and a run predicted to take over 60 s is refused with
+  the step that would fit.
+- **Not yet**: fans (a pump curve is a liquid's), control valves, balancing and regulation. Also not
+  modelled: two-phase flow (wet steam, condensate with flash steam), heat exchange between a pipe and
+  its surroundings, water hammer and surge, and devices that change the fluid, such as dryers and
+  coils.
 
 ### Sessions
 
@@ -492,17 +504,21 @@ real one, so none is assumed.
 
 ### Resources
 
-Seven MCP resources carry the vocabulary, so it costs nothing on a turn that does not need it:
+Nine MCP resources carry the vocabulary, so it costs nothing on a turn that does not need it:
 
 - `hydronic://vocabulary/ops`: every op with its required and optional fields.
 - `hydronic://vocabulary/fittings`: every fitting type.
 - `hydronic://vocabulary/materials`: every wall material.
 - `hydronic://vocabulary/fluids`: the fluid codes, what each needs, how a gas is solved and the phase
   checks.
+- `hydronic://vocabulary/devices`: each device type's ports and settings, schedules, controllers, and
+  what a transient run returns.
 - `hydronic://recipes/riser`: a complete, solvable plant riser.
 - `hydronic://recipes/ring-main`: a complete campus ring main, and how to read its result.
 - `hydronic://recipes/compressed-air-ring`: a workshop compressed-air ring in free air delivery, with a
   filter as a Kv component.
+- `hydronic://recipes/compressor-heat-recovery`: a compressor on a pressure switch charging a receiver,
+  its heat pumped into a hot-water store, run for twenty minutes.
 
 ### What the plugin adds
 
