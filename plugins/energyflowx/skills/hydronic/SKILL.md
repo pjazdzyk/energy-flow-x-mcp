@@ -261,8 +261,8 @@ python3 scripts/render_study.py study.json -o study.html
 ```
 
 It takes one plain JSON file and emits a single self-contained page: the verdict, the qualifications,
-a schematic of the network laid out with **elevation up the page and distance from the supply across
-it**, what each device did, a run over time with its vessels, command changes and charts, and the node
+a riser diagram of the network (**every branch in a lane of its own, elevation in bands up the page,
+distance from the supply across it**), what each device did, a run over time with its vessels, command changes and charts, and the node
 and edge schedules. The `devices` rows and the transient blocks go in exactly as the solve returns them. `references/report.md` has the input schema and an example.
 
 Three things about that page are not stylistic preferences:
@@ -271,8 +271,12 @@ Three things about that page are not stylistic preferences:
   loses, and losing it is how a bounded number gets handed over as a computed one. The renderer emits
   it whenever there is anything to say and the page states plainly when there is not.
 - **The diagram is schematic and says so.** There are no coordinates in a solve result, so the layout
-  is derived from physics, elevation and graph distance, rather than invented. It is not a P&ID and
-  it is not to scale. The renderer labels it accordingly, so leave that label alone.
+  is derived from the graph and from elevation rather than invented: a spanning tree grown by flow
+  from the supply, one lane per branch, elevation bands, and a ring or grid opened where the flow
+  divides. It is not a P&ID and it is not to scale. The renderer labels it accordingly, so leave that
+  label alone. Only ids and pipe sizes are printed on it; the figures are on hover, in a few
+  call-outs (supply, devices, the far end of the critical path, the lowest pressure) and in the
+  schedules, which is what keeps it readable at any size.
 - **Units are in the field names** (`pressure_kPa`, `flow_kg_s`). Getting a unit wrong is the easiest
   and most expensive mistake in this whole domain, so the schema makes it impossible to write a number
   without saying what it is.
@@ -299,3 +303,4 @@ network.
 - `references/reading-results.md`: how to interpret a solve, and the traps in detail.
 - `references/report.md`: the study JSON schema, with a worked example.
 - `scripts/render_study.py`: the HTML study renderer. No dependencies beyond Python 3.9.
+- `scripts/study_layout.py`: the riser-diagram layout the renderer draws from, pure and tested on its own.

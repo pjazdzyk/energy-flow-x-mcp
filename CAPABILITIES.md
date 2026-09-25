@@ -524,9 +524,10 @@ Nine MCP resources carry the vocabulary, so it costs nothing on a turn that does
 
 - The `hydronic` skill carries the method: working out which question is being asked, what may be
   assumed and what must be asked for, the order to read a solve in, and what each failure means.
-- A bundled renderer turns a solve into a self-contained HTML study with a schematic diagram laid out
-  by elevation and distance from the supply, node and edge schedules, and a qualifications section
-  that is never dropped.
+- A bundled renderer turns a solve into a self-contained HTML study with a riser diagram (an
+  orthogonal schematic: every branch in a lane of its own, elevation in bands up the page, a ring or a
+  grid opened where its flow divides, pressure as node fill), node and edge schedules, and a
+  qualifications section that is never dropped.
 
 ## Limits and access
 

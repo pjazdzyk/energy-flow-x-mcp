@@ -150,18 +150,35 @@ useful thing on the page, and invisible if you pass magnitudes.
 
 ## The diagram
 
-Laid out from the model rather than invented:
+A riser diagram: the orthogonal schematic engineers sketch by hand, laid out from the model rather
+than invented (`scripts/study_layout.py`, which has no idea what SVG is and is tested on its own):
 
-- **y = elevation.** The one spatial fact a hydraulic model carries, and the one that explains most of
-  the pressure field in a building.
-- **x = graph distance from the supply**, in hops. The far end of the network lands at the far end of
-  the page, and a ring closes back on itself.
-- **Line weight = flow magnitude**, relative to the largest in the network.
-- **Arrow = direction**, from the sign.
+- **A spanning tree grown by flow** from the supply. On a ring or a grid the edges left out are the
+  ones carrying the least, which is where the flow divides, so each loop is opened at the one place a
+  ring is meant to be read open. The left-out edges are drawn dashed, routed around the tree.
+- **One lane per branch.** The child with the largest subtree continues straight in its parent's
+  lane, the others branch off into lanes of their own, and every leaf gets one to itself. Two branch
+  lines can therefore never share a row.
+- **x = one step per node** along the tree, so a run reads left to right and the far end of the
+  network lands at the far end of the page.
+- **Elevation in bands.** Everything at a higher elevation is drawn above everything at a lower one,
+  with a datum line and its level on the left, so elevation is still up the page without a whole
+  floor collapsing onto one row. With no elevations anywhere it is a topology sketch and the caption
+  says so.
+- **Line weight = flow magnitude**, relative to the largest in the network. **Arrow = direction**,
+  from the sign. **Node fill = pressure**, deep where it is plentiful and pale where it runs out, so
+  the weak end is visible without reading a figure. The critical path, when the study names one, is
+  drawn lighter.
+- **Labels are rationed.** An id beside each node and a size along each run, nothing else. Every
+  figure is on hover (the `<title>` of each node and run), in the schedules, and in at most six
+  call-outs: the supply, each device's outlet, the far end of the critical path and the lowest
+  pressure. A run label with no clear spot is left off rather than printed on top of something.
+- **The canvas grows with the network** and scrolls when wider than the page. It never shrinks the
+  drawing below three quarters of its natural size, so the text stays legible.
 
-With no elevations anywhere, it falls back to a topology sketch and the caption says so. That is
-deliberate: a picture whose vertical axis means nothing is worse than one that admits it, because a
-reader will read meaning into it either way.
+`scripts/test_study_layout.py` parses the SVG the renderer emits and fails on any two labels that
+touch, any run that crosses a label or a call-out, and anything outside the canvas, on a sprinkler
+tree, the same tree closed into a grid, a ring main with long names, a wide tree and a flat one.
 
 The caption calls it a schematic, not a P&ID, and not to scale. Leave that in.
 
@@ -169,6 +186,7 @@ The caption calls it a schematic, not a P&ID, and not to scale. Leave that in.
 
 ```bash
 python3 scripts/test_render_study.py
+python3 scripts/test_study_layout.py
 ```
 
 Covers the invariants that matter: the qualifications section is always emitted, a non-physical

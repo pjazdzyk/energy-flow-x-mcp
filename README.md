@@ -361,6 +361,7 @@ plan around it staying free.
 ```bash
 python tests/check_skills.py                                             # the skills against the server's own docs
 python plugins/energyflowx/skills/hydronic/scripts/test_render_study.py  # the study renderer
+python plugins/energyflowx/skills/hydronic/scripts/test_study_layout.py  # the diagram: layout and a no-overlap guard
 claude plugin validate . --strict                                        # the marketplace manifest
 claude plugin validate ./plugins/energyflowx --strict                    # the plugin manifest
 ```

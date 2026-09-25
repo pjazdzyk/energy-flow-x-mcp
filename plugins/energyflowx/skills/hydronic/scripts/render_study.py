@@ -24,9 +24,11 @@ import html
 import json
 import math
 import sys
-from collections import deque
 from pathlib import Path
 from typing import Any, Iterable
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from study_layout import layout, longest_segment, supply_id  # noqa: E402
 
 # ---------------------------------------------------------------------------------------------
 # Reading the input
@@ -67,121 +69,63 @@ def _esc(value: Any) -> str:
 
 
 # ---------------------------------------------------------------------------------------------
-# Laying out the diagram
+# The diagram
 # ---------------------------------------------------------------------------------------------
 #
 # There are no coordinates in a solve result, so a layout has to come from somewhere. Inventing one
 # (a force-directed blob, a circle) would put the reader in front of a picture whose shape means
 # nothing, which is worse than no picture: they will read meaning into it anyway.
 #
-# So the layout is derived from physics and from the graph:
-#
-#   y = elevation          the one spatial fact a hydraulic model actually carries, and the one that
-#                          explains most of the pressure field in any building
-#   x = graph distance     hops from the supply, so the far end of the network is at the far end of
-#                          the page and a ring closes back on itself
-#
-# When no elevations are given, y falls back to a spread within each depth column so nodes do not
-# overlap. That is honest — it is a topology sketch and the page says so — and it is still the right
-# shape for reading a branch structure.
+# So it is drawn as a riser diagram, the schematic engineers sketch by hand: study_layout.py grows a
+# spanning tree from the supply by flow, gives every branch its own lane, lifts each elevation above
+# the ones below it and routes what is left of a ring or a grid as dashed closers. This file only
+# turns that grid into SVG. The canvas grows with the network, labels are rationed (an id beside each
+# node, a size along each run, every number on hover and in the schedules), and pressure is the fill
+# of each node so the eye finds where it runs out without reading a figure.
+
+_STEP_Y = 80.0          # one lane: a label above the node, a call-out below it, a closer channel between
+_CHAR = 6.6             # px per character of a 12 px label, for spacing ranks by the longest id
+_MAX_CALLOUTS = 6
 
 
-def _supply_id(nodes: list[dict], edges: list[dict]) -> str | None:
-    """The node the network is fed from: an explicit flag, then a pressure boundary, then any node."""
-    for node in nodes:
-        if node.get("isSupply"):
-            return _text(node.get("id"))
-    for node in nodes:
-        if "PRESSURE" in _text(node.get("kind")).upper():
-            return _text(node.get("id"))
-    if nodes:
-        return _text(nodes[0].get("id"))
-    if edges:
-        return _text(edges[0].get("from"))
-    return None
+def _label_width(text: str, size: float = 12.0) -> float:
+    return len(text) * _CHAR * size / 12.0
 
 
-def _depths(nodes: list[dict], edges: list[dict], supply: str | None) -> dict[str, int]:
-    """Hops from the supply, breadth first. Anything unreachable is parked past the deepest column."""
-    adjacency: dict[str, set[str]] = {_text(n.get("id")): set() for n in nodes}
-    for edge in edges:
-        a, b = _text(edge.get("from")), _text(edge.get("to"))
-        if a in adjacency and b in adjacency:
-            adjacency[a].add(b)
-            adjacency[b].add(a)
-
-    depths: dict[str, int] = {}
-    if supply and supply in adjacency:
-        depths[supply] = 0
-        queue = deque([supply])
-        while queue:
-            current = queue.popleft()
-            for neighbour in sorted(adjacency[current]):
-                if neighbour not in depths:
-                    depths[neighbour] = depths[current] + 1
-                    queue.append(neighbour)
-
-    orphan_depth = (max(depths.values()) + 1) if depths else 0
-    for node_id in adjacency:
-        depths.setdefault(node_id, orphan_depth)
-    return depths
+Box = tuple[float, float, float, float]
 
 
-def _layout(nodes: list[dict], edges: list[dict], width: int, height: int) -> dict[str, tuple[float, float]]:
-    if not nodes:
-        return {}
-
-    supply = _supply_id(nodes, edges)
-    depths = _depths(nodes, edges, supply)
-    max_depth = max(depths.values()) if depths else 0
-
-    elevations = {_text(n.get("id")): _num(n.get("elevation_m")) for n in nodes}
-    known = [e for e in elevations.values() if e is not None]
-    use_elevation = len(known) > 1 and (max(known) - min(known)) > 1e-9
-
-    pad_x, pad_y = 90.0, 58.0
-    span_x = max(width - 2 * pad_x, 1.0)
-    span_y = max(height - 2 * pad_y, 1.0)
-
-    positions: dict[str, tuple[float, float]] = {}
-
-    if use_elevation:
-        low, high = min(known), max(known)
-        # Nodes with no stated elevation sit at the datum, which is what the model means by omitting it.
-        for node in nodes:
-            node_id = _text(node.get("id"))
-            elevation = elevations.get(node_id)
-            elevation = low if elevation is None else elevation
-            x = pad_x + (span_x * (depths[node_id] / max_depth) if max_depth else span_x / 2.0)
-            y = height - pad_y - span_y * ((elevation - low) / (high - low))
-            positions[node_id] = (x, y)
-    else:
-        # Topology only: spread each depth column vertically so nothing overlaps.
-        columns: dict[int, list[str]] = {}
-        for node in nodes:
-            columns.setdefault(depths[_text(node.get("id"))], []).append(_text(node.get("id")))
-        for depth, column in columns.items():
-            x = pad_x + (span_x * (depth / max_depth) if max_depth else span_x / 2.0)
-            for index, node_id in enumerate(sorted(column)):
-                offset = (index + 1) / (len(column) + 1)
-                positions[node_id] = (x, pad_y + span_y * offset)
-
-    # Nudge apart any pair that landed on the same point: two nodes at one elevation and one depth is
-    # ordinary (a symmetrical branch), and overlapping labels make the picture useless.
-    seen: dict[tuple[int, int], int] = {}
-    for node_id, (x, y) in list(positions.items()):
-        key = (round(x / 18), round(y / 18))
-        count = seen.get(key, 0)
-        seen[key] = count + 1
-        if count:
-            positions[node_id] = (x, y + count * 26.0)
-
-    return positions, use_elevation
+def _touches(a: Box, b: Box, gap: float = 2.0) -> bool:
+    return not (a[2] < b[0] - gap or b[2] < a[0] - gap or a[3] < b[1] - gap or b[3] < a[1] - gap)
 
 
-# ---------------------------------------------------------------------------------------------
-# The diagram
-# ---------------------------------------------------------------------------------------------
+class _Placer:
+    """Label placement. Node ids and call-outs go down first as fixed obstacles, every run is an
+    obstacle, and each run label then takes the first of its candidate spots that touches nothing.
+    A label with no free spot is left off: its figure is on hover and in the schedule, and a label
+    on top of another is worse than none."""
+
+    def __init__(self) -> None:
+        self.boxes: list[Box] = []
+        self.runs: list[Box] = []
+
+    def reserve(self, box: Box) -> None:
+        self.boxes.append(box)
+
+    def run(self, points: list[tuple[float, float]]) -> None:
+        for (x0, y0), (x1, y1) in zip(points, points[1:]):
+            self.runs.append((min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)))
+
+    def place(self, candidates: list[tuple[float, float, str]], width: float, size: float) -> tuple[float, float, str] | None:
+        """candidates are (x, baseline y, anchor). Returns the first that is clear, or None."""
+        for x, y, anchor in candidates:
+            x0 = x - width / 2.0 if anchor == "middle" else (x - width if anchor == "end" else x)
+            box = (x0, y - size * 0.8, x0 + width, y + size * 0.25)
+            if any(_touches(box, other) for other in self.boxes) or any(_touches(box, r, 1.0) for r in self.runs):
+                continue
+            self.boxes.append(box)
+            return x, y, anchor
+        return None
 
 
 def _arrow(x1: float, y1: float, x2: float, y2: float, reverse: bool) -> str:
@@ -192,97 +136,236 @@ def _arrow(x1: float, y1: float, x2: float, y2: float, reverse: bool) -> str:
     dx, dy = x2 - x1, y2 - y1
     length = math.hypot(dx, dy) or 1.0
     ux, uy = dx / length, dy / length
-    size = 7.0
+    size = 6.5
     px, py = -uy, ux
     points = [
         (mx + ux * size, my + uy * size),
-        (mx - ux * size * 0.6 + px * size * 0.55, my - uy * size * 0.6 + py * size * 0.55),
-        (mx - ux * size * 0.6 - px * size * 0.55, my - uy * size * 0.6 - py * size * 0.55),
+        (mx - ux * size * 0.7 + px * size * 0.6, my - uy * size * 0.7 + py * size * 0.6),
+        (mx - ux * size * 0.7 - px * size * 0.6, my - uy * size * 0.7 - py * size * 0.6),
     ]
     path = " ".join(f"{x:.1f},{y:.1f}" for x, y in points)
     return f'<polygon class="arrow" points="{path}" />'
 
 
-def _diagram(nodes: list[dict], edges: list[dict]) -> str:
+def _pressure_fill(share: float | None) -> str:
+    """Deep blue where pressure is plentiful, pale where it runs out. Inline, so it holds in print."""
+    if share is None:
+        return "var(--bg)"
+    return f"hsl(208 62% {78 - 48 * share:.0f}%)"
+
+
+def _node_shape(kind: str, x: float, y: float, fill: str, title: str) -> str:
+    k = kind.upper()
+    t = f"<title>{_esc(title)}</title>"
+    if "PRESSURE" in k:
+        return f'<rect class="node boundary" x="{x - 7:.1f}" y="{y - 7:.1f}" width="14" height="14" rx="2" fill="{fill}">{t}</rect>'
+    if "OUTLET" in k or "HEAD" in k or "SPRINKLER" in k:
+        return f'<polygon class="node outlet" points="{x - 7:.1f},{y - 6:.1f} {x + 7:.1f},{y - 6:.1f} {x:.1f},{y + 7:.1f}" fill="{fill}">{t}</polygon>'
+    if "DEMAND" in k:
+        return f'<polygon class="node demand" points="{x:.1f},{y - 8:.1f} {x + 8:.1f},{y:.1f} {x:.1f},{y + 8:.1f} {x - 8:.1f},{y:.1f}" fill="{fill}">{t}</polygon>'
+    if "PUMP" in k or "COMPRESSOR" in k or "DEVICE" in k:
+        return f'<circle class="node device" cx="{x:.1f}" cy="{y:.1f}" r="7" fill="var(--warn)">{t}</circle>'
+    return f'<circle class="node junction" cx="{x:.1f}" cy="{y:.1f}" r="6.5" fill="{fill}">{t}</circle>'
+
+
+def _callouts(study: dict, nodes: list[dict], edges: list[dict]) -> dict[str, list[str]]:
+    """The few elements whose numbers belong on the drawing: the supply, the devices, the far end of the
+    critical path and the lowest-pressure node. Everything else is on hover and in the schedules."""
+    by_node: dict[str, list[str]] = {}
+    supply = _text(study.get("_supply"))
+    critical = study.get("criticalPath") or {}
+    wanted: list[str] = []
+    if supply:
+        wanted.append(supply)
+    if _text(critical.get("to")):
+        wanted.append(_text(critical.get("to")))
+    pressured = [n for n in nodes if _num(n.get("pressure_kPa")) is not None]
+    if pressured:
+        wanted.append(_text(min(pressured, key=lambda n: _num(n.get("pressure_kPa")))["id"]))
+    for edge in edges:
+        if any(word in _text(edge.get("size")).upper() for word in ("PUMP", "COMPRESSOR", "FAN")):
+            wanted.append(_text(edge.get("to")))
+    for node in nodes:
+        node_id = _text(node.get("id"))
+        if node_id not in wanted or node_id in by_node or len(by_node) >= _MAX_CALLOUTS:
+            continue
+        bits = []
+        if _num(node.get("pressure_kPa")) is not None:
+            bits.append(f"{_num(node['pressure_kPa']):.1f} kPa")
+        if _num(node.get("flow_kg_s")) is not None:
+            bits.append(f"{abs(_num(node['flow_kg_s'])):.3g} kg/s")
+        if bits:
+            by_node[node_id] = bits
+    return by_node
+
+
+def _diagram(nodes: list[dict], edges: list[dict], study: dict | None = None) -> str:
     if not nodes:
         return '<p class="empty">No nodes to draw.</p>'
+    study = study or {}
+    supply = supply_id(nodes, edges)
+    grid = layout(nodes, edges, supply)
+    if not grid.positions:
+        return '<p class="empty">No nodes to draw.</p>'
 
-    width, height = 960, 520
-    positions, used_elevation = _layout(nodes, edges, width, height)
+    ids = [_text(n.get("id")) for n in nodes]
+    critical = set(_text(e) for e in ((study.get("criticalPath") or {}).get("elements") or []))
+    callouts = _callouts({**study, "_supply": supply}, nodes, edges)
+    callout_widths = [_label_width("  ".join(c), 11.0) + 14.0 for c in callouts.values()]
+    # A label is centred on its node and must stay clear of the tracks half a rank away on either side.
+    step_x = max(110.0, max(_label_width(i) for i in ids) + 40.0, max(callout_widths + [0.0]) + 36.0)
+    widest = max([_label_width(i) for i in ids] + callout_widths)
+    # The datum labels sit at the left edge, so with elevations the first rank keeps clear of them.
+    pad_left = max(78.0, widest / 2.0 + 60.0) if grid.use_elevation else max(40.0, widest / 2.0 + 16.0)
+    pad_right = max(40.0, widest / 2.0 + 16.0)
+    if len(grid.tree_edges) < len(grid.routes):
+        # A closer leaves a node on a track up to 0.62 of a rank out, past the first or last rank too.
+        pad_left, pad_right = max(pad_left, 0.75 * step_x), max(pad_right, 0.75 * step_x)
+    width = pad_left + (grid.ranks - 1) * step_x + pad_right
+    pad_top, pad_bottom = 34.0, 60.0
+    height = pad_top + (grid.lanes - 1) * _STEP_Y + pad_bottom
 
-    parts: list[str] = [
-        f'<svg viewBox="0 0 {width} {height}" role="img" '
-        f'aria-label="Schematic of the solved network" class="schematic">'
-    ]
+    def sx(x: float) -> float:
+        return pad_left + x * step_x
+
+    def sy(y: float) -> float:
+        return height - pad_bottom - y * _STEP_Y
 
     flows = [abs(_num(e.get("flow_kg_s")) or 0.0) for e in edges]
     peak = max(flows) if flows else 0.0
+    pressures = [_num(n.get("pressure_kPa")) for n in nodes if _num(n.get("pressure_kPa")) is not None]
+    p_low, p_high = (min(pressures), max(pressures)) if pressures else (None, None)
 
-    for edge in edges:
-        a, b = _text(edge.get("from")), _text(edge.get("to"))
-        if a not in positions or b not in positions:
-            continue
-        (x1, y1), (x2, y2) = positions[a], positions[b]
-        flow = _num(edge.get("flow_kg_s"))
-        # Line weight carries magnitude, the arrow carries direction. A negative flow means the fluid
-        # runs against the declared from/to, which around a ring is where the flow divide shows up.
-        share = (abs(flow) / peak) if (flow is not None and peak > 0) else 0.0
-        stroke = 1.6 + 4.6 * share
-        parts.append(
-            f'<line class="run" x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
-            f'stroke-width="{stroke:.2f}" />'
-        )
-        if flow is not None and abs(flow) > 1e-12:
-            parts.append(_arrow(x1, y1, x2, y2, reverse=flow < 0))
+    parts: list[str] = [
+        f'<svg viewBox="0 0 {width:.0f} {height:.0f}" role="img" aria-label="Schematic of the solved network" '
+        f'class="schematic" style="min-width:{0.75 * width:.0f}px">'
+    ]
 
-        label_bits = [_text(edge.get("id"))]
-        if _num(edge.get("flow_kg_s")) is not None:
-            label_bits.append(f"{abs(_num(edge['flow_kg_s'])):.3g} kg/s")
-        if _num(edge.get("velocity_m_s")) is not None:
-            label_bits.append(f"{_num(edge['velocity_m_s']):.2f} m/s")
-        mx, my = (x1 + x2) / 2.0, (y1 + y2) / 2.0
-        parts.append(
-            f'<text class="edge-label" x="{mx:.1f}" y="{my - 11:.1f}" text-anchor="middle">'
-            f"{_esc('  '.join(label_bits))}</text>"
-        )
+    # Elevation datums: a dashed line under each band with its level on the left.
+    for z, lane_low, _ in grid.bands:
+        yy = sy(lane_low) + _STEP_Y * 0.5
+        parts.append(f'<line class="datum" x1="8" y1="{yy:.1f}" x2="{width - 12:.1f}" y2="{yy:.1f}" />')
+        parts.append(f'<text class="datum-label" x="8" y="{yy - 5:.1f}">{z:+.1f} m</text>')
 
+    placer = _Placer()
+    node_parts: list[str] = []
     for node in nodes:
         node_id = _text(node.get("id"))
-        if node_id not in positions:
+        if node_id not in grid.positions:
             continue
-        x, y = positions[node_id]
-        kind = _text(node.get("kind")).upper()
-        shape_class = "boundary" if ("PRESSURE" in kind or "OUTLET" in kind) else (
-            "demand" if "DEMAND" in kind else "junction"
-        )
-        parts.append(f'<circle class="node {shape_class}" cx="{x:.1f}" cy="{y:.1f}" r="8" />')
-        parts.append(
-            f'<text class="node-label" x="{x:.1f}" y="{y - 15:.1f}" text-anchor="middle">'
-            f"{_esc(node_id)}</text>"
-        )
-        readout = []
-        if _num(node.get("pressure_kPa")) is not None:
-            readout.append(f"{_num(node['pressure_kPa']):.1f} kPa")
+        gx, gy = grid.positions[node_id]
+        x, y = sx(gx), sy(gy)
+        pressure = _num(node.get("pressure_kPa"))
+        share = None
+        if pressure is not None and p_low is not None:
+            share = (pressure - p_low) / (p_high - p_low) if p_high > p_low else 1.0
+        hover = [node_id, _text(node.get("kind"))]
         if _num(node.get("elevation_m")) is not None:
-            readout.append(f"z {_num(node['elevation_m']):.1f} m")
-        if readout:
-            parts.append(
-                f'<text class="node-readout" x="{x:.1f}" y="{y + 24:.1f}" text-anchor="middle">'
-                f"{_esc('  ')}{_esc('  '.join(readout))}</text>"
+            hover.append(f"z {_num(node['elevation_m']):.2f} m")
+        if pressure is not None:
+            hover.append(f"{pressure:.1f} kPa")
+        if _num(node.get("flow_kg_s")) is not None:
+            hover.append(f"{_num(node['flow_kg_s']):.3f} kg/s net")
+        node_parts.append(_node_shape(_text(node.get("kind")), x, y, _pressure_fill(share), ", ".join(b for b in hover if b)))
+        node_parts.append(f'<text class="node-label" x="{x:.1f}" y="{y - 12:.1f}" text-anchor="middle">{_esc(node_id)}</text>')
+        half_w = _label_width(node_id) / 2.0
+        placer.reserve((x - half_w, y - 12 - 9.6, x + half_w, y - 12 + 3))
+        placer.reserve((x - 8, y - 8, x + 8, y + 8))
+        if node_id in callouts:
+            text = "  ".join(callouts[node_id])
+            box_w = _label_width(text, 11.0) + 14.0
+            node_parts.append(
+                f'<rect class="callout" x="{x - box_w / 2:.1f}" y="{y + 20:.1f}" width="{box_w:.1f}" height="18" rx="4" />'
+                f'<text class="callout-label" x="{x:.1f}" y="{y + 33:.1f}" text-anchor="middle">{_esc(text)}</text>'
             )
+            placer.reserve((x - box_w / 2, y + 20, x + box_w / 2, y + 38))
+
+    labelled: list[tuple[str, list[tuple[float, float]], float | None, bool]] = []
+    for edge in edges:
+        eid = _text(edge.get("id"))
+        route = grid.routes.get(eid)
+        if not route:
+            continue
+        points = [(sx(x), sy(y)) for x, y in route]
+        placer.run(points)
+        flow = _num(edge.get("flow_kg_s"))
+        share = (abs(flow) / peak) if (flow is not None and peak > 0) else 0.0
+        stroke = 1.6 + 4.6 * share
+        classes = ["run"]
+        if eid not in grid.tree_edges:
+            classes.append("closer")
+        if eid in critical:
+            classes.append("critical")
+        hover = [eid]
+        for key, unit, places in (("size", "", None), ("length_m", "m", 1), ("flow_kg_s", "kg/s", 3),
+                                  ("velocity_m_s", "m/s", 2), ("dp_kPa", "kPa drop", 2)):
+            value = edge.get(key)
+            if places is None and _text(value):
+                hover.append(_text(value))
+            elif places is not None and _num(value) is not None:
+                hover.append(f"{_num(value):.{places}f} {unit}")
+        path = " ".join(f"{x:.1f},{y:.1f}" for x, y in points)
+        parts.append(
+            f'<polyline class="{" ".join(classes)}" points="{path}" stroke-width="{stroke:.2f}">'
+            f"<title>{_esc(', '.join(hover))}</title></polyline>"
+        )
+        (x1, y1), (x2, y2) = longest_segment(points)
+        if flow is not None and abs(flow) > 1e-12:
+            parts.append(_arrow(x1, y1, x2, y2, reverse=flow < 0))
+        labelled.append((_text(edge.get("size")) or eid, points, eid in grid.tree_edges))
+
+    # Run labels last, so every run and every fixed label is already an obstacle. Candidates, in
+    # order: along the longest segment, under it a fifth of the way in (clear of the mid-rank tracks)
+    # or beside it just under the half-lane nearest its middle; then the other spots on that segment;
+    # then the same on the next longest.
+    for size, points, is_tree in labelled:
+        candidates: list[tuple[float, float, str]] = []
+        segments = sorted(zip(points, points[1:]), key=lambda s: -(abs(s[1][0] - s[0][0]) + abs(s[1][1] - s[0][1])))
+        for (x1, y1), (x2, y2) in segments[:3]:
+            if y1 == y2:
+                fractions = (0.2, 0.8, 0.35, 0.65, 0.5) if is_tree else (0.5, 0.3, 0.7)
+                for f in fractions:
+                    candidates.append((x1 + f * (x2 - x1), y1 + 14.0, "middle"))
+                for f in fractions:
+                    candidates.append((x1 + f * (x2 - x1), y1 - 6.0, "middle"))
+            else:
+                low, high = min(y1, y2), max(y1, y2)
+                halves = sorted(
+                    (y for y in (sy(k + 0.5) for k in range(int(grid.lanes) + 1)) if low + 1 < y < high - 1),
+                    key=lambda y: abs(y - (low + high) / 2.0))
+                for hy in halves:
+                    candidates.append((x1 + 8.0, hy + 14.0, "start"))
+                    candidates.append((x1 - 8.0, hy + 14.0, "end"))
+                    candidates.append((x1 + 8.0, hy - 4.0, "start"))
+                    candidates.append((x1 - 8.0, hy - 4.0, "end"))
+        spot = placer.place(candidates, _label_width(size, 10.5), 10.5)
+        if spot:
+            x, y, anchor = spot
+            parts.append(f'<text class="edge-label" x="{x:.1f}" y="{y:.1f}" text-anchor="{anchor}">{_esc(size)}</text>')
+
+    parts.extend(node_parts)
 
     parts.append("</svg>")
+    parts.insert(0, '<div class="figure">')
+    parts.append("</div>")
 
     axis = (
-        "Elevation up the page, distance from the supply across it."
-        if used_elevation
-        else "No elevations were given, so this is a topology sketch: distance from the supply across "
-        "the page, nodes spread to keep them apart."
+        "Elevation up the page in bands, each drawn above the levels below it; distance from the supply "
+        "across it, one step per node."
+        if grid.use_elevation
+        else "No elevations were given, so this is a topology sketch: distance from the supply across the "
+        "page, one step per node, each branch in a lane of its own."
+    )
+    legend = (
+        "Line weight is flow magnitude and the arrow is the direction the fluid actually runs. Node fill "
+        "is pressure, deep where it is plentiful and pale where it runs out"
+        + (f" ({p_high:.0f} down to {p_low:.0f} kPa)" if pressures else "")
+        + ". A dashed run closes a ring or a grid outside the spanning tree, opened where the flow divides."
+        + (" The lighter runs are the critical path." if critical else "")
+        + " Hover a node or a run for its figures; the schedules below have them all."
     )
     parts.append(
-        '<p class="caption">Schematic, not a P&amp;ID, and not to scale. '
-        f"{html.escape(axis)} Line weight is flow magnitude; the arrow is the direction the fluid "
-        "actually runs, which around a ring is where the flow divide shows.</p>"
+        f'<p class="caption">Schematic, not a P&amp;ID, and not to scale. {html.escape(axis)} {html.escape(legend)}</p>'
     )
     return "".join(parts)
 
@@ -608,14 +691,19 @@ dl.facts { display: flex; flex-wrap: wrap; gap: 10px 28px; margin: 0; }
 dl.facts dt { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
 dl.facts dd { margin: 2px 0 0; font-size: 16px; font-variant-numeric: tabular-nums; }
 ul { margin: 0; padding-left: 20px; }
-.schematic { width: 100%; height: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
-.schematic .run { stroke: var(--accent); stroke-linecap: round; opacity: 0.85; }
-.schematic .arrow { fill: var(--accent); }
-.schematic .node { fill: var(--bg); stroke: var(--fg); stroke-width: 2; }
-.schematic .node.boundary { fill: var(--accent); stroke: var(--accent); }
-.schematic .node.demand { fill: var(--warn); stroke: var(--warn); }
+.figure { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+.schematic { display: block; width: 100%; height: auto; }
+.schematic .run { fill: none; stroke: var(--accent); stroke-linecap: round; stroke-linejoin: round; opacity: 0.85; }
+.schematic .run.closer { stroke: var(--warn); stroke-dasharray: 6 4; }
+.schematic .run.critical { opacity: 1; filter: brightness(1.25); }
+.schematic .arrow { fill: var(--fg); }
+.schematic .node { stroke: var(--fg); stroke-width: 1.6; }
+.schematic .datum { stroke: var(--line); stroke-dasharray: 2 6; }
+.schematic .datum-label { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 .schematic .node-label { fill: var(--fg); font-size: 12px; font-weight: 600; }
-.schematic .node-readout, .schematic .edge-label { fill: var(--muted); font-size: 10.5px; font-variant-numeric: tabular-nums; }
+.schematic .edge-label { fill: var(--muted); font-size: 10.5px; }
+.schematic .callout { fill: var(--bg); stroke: var(--line); }
+.schematic .callout-label { fill: var(--fg); font-size: 11px; font-variant-numeric: tabular-nums; }
 h3 { font-size: 14px; margin: 18px 0 8px; }
 figure { margin: 14px 0; }
 .chart { width: 100%; height: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
@@ -625,7 +713,7 @@ figure { margin: 14px 0; }
 .chart .s0 { stroke: var(--accent); } .chart .s1 { stroke: var(--warn); }
 .chart .s2 { stroke: var(--good); } .chart .s3 { stroke: var(--bad); }
 footer { margin-top: 44px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
-@media print { body { background: #fff; } .schematic { break-inside: avoid; } section { break-inside: avoid; } }
+@media print { body { background: #fff; } .figure { overflow: visible; } .schematic { width: 100%; height: auto; break-inside: avoid; } section { break-inside: avoid; } }
 @media (max-width: 640px) {
   main { padding: 20px 16px 48px; }
   table { font-size: 13px; }
@@ -649,7 +737,7 @@ def render(study: dict) -> str:
         [
             _verdict(study),
             _qualifications(study),
-            f"<section><h2>The network</h2>{_diagram(study.get('nodes') or [], study.get('edges') or [])}</section>",
+            f"<section><h2>The network</h2>{_diagram(study.get('nodes') or [], study.get('edges') or [], study)}</section>",
             _critical_path(study),
             _devices(study),
             _run(study),
