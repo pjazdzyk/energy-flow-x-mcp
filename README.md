@@ -355,7 +355,6 @@ plan around it staying free.
 | Knowledge base, the physics behind every tool | [energyflowx.com/knowledge](https://energyflowx.com/knowledge) |
 | Everything about EnergyFlowX: features, physics, validation evidence, references | [github.com/pjazdzyk/energy-flow-x-docu](https://github.com/pjazdzyk/energy-flow-x-docu) |
 | Contact and community | [energyflowx.com/misc/social](https://energyflowx.com/misc/social) |
-| Email | [info@synerset.com](mailto:info@synerset.com) |
 
 ## For maintainers
 
