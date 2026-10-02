@@ -6,10 +6,7 @@
     },
     "energy-flow-x-hydronic": {
       "type": "http",
-      "url": "https://energyflowx.com/energy-flow-x/mcp/hydronic",
-      "headers": {
-        "Authorization": "Bearer ${EFX_API_KEY}"
-      }
+      "url": "https://energyflowx.com/energy-flow-x/mcp/hydronic"
     }
   }
 }

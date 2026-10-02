@@ -1,5 +1,5 @@
 ---
-name: hydronic-network-design
+name: hydronic
 description: >-
   Design and solve piped and ducted networks with the EnergyFlowX Hydronic MCP server, then present the
   result as an engineering study with a diagram and schedules. Use it whenever the work is a network
@@ -113,9 +113,13 @@ For a single run or a straight series path with known flows, the free `size_cond
 | Fluids and single conduits | `/mcp` | `energy-flow-x` | property, saturation, unit-conversion and conduit-sizing tools | none |
 
 They are separate MCP servers, and the plugin connects both under the names above. A client that
-needs both connects to both. If a hydronic call comes
-back saying it needs an API key, relay that to the user along with the access terms it states:
-network solving is free while it is being tested, that is temporary, and it can change at any time.
+needs both connects to both. The hydronic server needs the user's free EnergyFlowX account, and a
+client that supports MCP sign-in asks for it on its own: in Claude Code the server shows as needing
+authentication, and the user runs `/mcp`, picks `energy-flow-x-hydronic` and approves in the
+browser. A client that cannot sign in sends an API key instead. If a hydronic call comes back saying
+it needs an account, relay that to the user along with the access terms it states: network solving
+is free while it is being tested, that is temporary, and it can change at any time. Never ask the
+user to paste a token or a key into the chat.
 
 ## The loop
 

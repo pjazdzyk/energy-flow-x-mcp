@@ -1,6 +1,4 @@
-<p align="center">
-  <a href="https://energyflowx.com"><img src="assets/banner.png" alt="EnergyFlowX, professional engineering calculations" width="620"></a>
-</p>
+[![EnergyFlowX, professional engineering calculations](assets/banner.png)](https://energyflowx.com)
 
 <h1 align="center">EnergyFlowX for Claude</h1>
 
@@ -41,11 +39,12 @@ validation evidence and every reference behind it are documented in
 - [Quick start](#quick-start)
 - [Try it](#try-it)
 - [What is inside](#what-is-inside)
-- [The API key](#the-api-key)
+- [Your account: sign in, or an API key](#the-api-key)
 - [Other clients: Claude Desktop, Cursor, VS Code](#other-clients)
 - [Install a single skill](#install-a-single-skill)
 - [Update, disable, uninstall](#update-disable-uninstall)
 - [Troubleshooting](#troubleshooting)
+- [What the plugin sends, and where](#data-and-privacy)
 - [Access terms](#access-terms)
 - [Links](#links)
 - [Licence](#licence)
@@ -92,7 +91,7 @@ EN 16798-3 and EN 308 with frost protection, fans and the heat they add, steam h
 air-water contact, dehumidification and desiccant wheels. One block or a chain of up to eight. A
 target a step cannot reach is reported as not feasible, never as a clean answer.
 
-### Hydronic MCP: complex hydraulics (API key)
+### Hydronic MCP: complex hydraulics (free account)
 
 Whole pipe and duct networks built step by step on the server: pressure boundaries, demands, pipes,
 fittings and resistances, branched or looped. Water and glycol circuits, compressed air, natural gas,
@@ -144,16 +143,19 @@ claude plugin marketplace add pjazdzyk/energy-flow-x-mcp
 claude plugin install energyflowx@energyflowx
 ```
 
+Nothing to configure. Hydronic MCP needs your free EnergyFlowX account: Claude Code shows that server
+as needing authentication, and you sign in once from `/mcp` ([Your account](#the-api-key)).
+
 Restart Claude Code, then run `/mcp`. You should see two servers:
 
 | Server | Endpoint | Key |
 | --- | --- | --- |
 | `energy-flow-x` | `https://energyflowx.com/energy-flow-x/mcp` | not needed, except for refrigerants and brines |
-| `energy-flow-x-hydronic` | `https://energyflowx.com/energy-flow-x/mcp/hydronic` | always, `EFX_API_KEY` |
+| `energy-flow-x-hydronic` | `https://energyflowx.com/energy-flow-x/mcp/hydronic` | your account: sign in from `/mcp` |
 
 That is all. Water, steam, air, gases, natural gas, glycols, ice, saturation, unit conversion,
-conduit sizing and air processes work straight away, with no account. Refrigerants, brines and
-network solving need [an API key](#the-api-key).
+conduit sizing and air processes work straight away, with no account. Refrigerants and brines
+need [an API key](#the-api-key), and network solving needs [a free account](#the-api-key).
 
 ## Try it
 
@@ -186,7 +188,7 @@ Paste any of these into Claude Code after installing:
 > Cooling coil: 30 °C / 50 % RH in, 13 °C off-coil. Duty, condensate rate and chilled-water flow at
 > 7/12 °C.
 
-**Hydronic MCP** (API key)
+**Hydronic MCP** (free account)
 
 > A plant room at 3 bar feeds a heating riser in 35 mm copper at 70 °C, with three floors 3.5 m apart
 > each drawing 0.25 kg/s. Solve it: what pressure reaches the top floor, and which run costs the most?
@@ -201,19 +203,20 @@ Paste any of these into Claude Code after installing:
 
 | Skill | What it covers | Tools | Key |
 | --- | --- | --- | --- |
-| [`fluid-properties`](plugins/energyflowx/skills/fluid-properties/SKILL.md) | 29 fluids and solids: water and steam, humid air, glycols, brines, refrigerants, industrial gases, natural gas (GERG-2008, ISO 6976), ice, unit conversion | 6 | free, key for refrigerants and brines |
-| [`conduit-sizing`](plugins/energyflowx/skills/conduit-sizing/SKILL.md) | one pipe or duct against real catalogues: velocity, pressure drop, regime, the size below and above | 4 | free |
-| [`hvac-processes`](plugins/energyflowx/skills/hvac-processes/SKILL.md) | coils with condensate, mixing, heat recovery (EN 16798-3, EN 308), fans, humidification, dehumidification, desiccant wheels | 1 | free |
-| [`hydronic`](plugins/energyflowx/skills/hydronic/SKILL.md) | whole pipe and duct networks of liquids, gases and steam, several fluids in one design, with pumps, compressors, heat exchangers, stores and receivers, steady or over time: build, solve, check, and render an HTML study with a network diagram and tables | 4 + 9 resources | API key |
+| [`fluid-properties`](skills/fluid-properties/SKILL.md) | 29 fluids and solids: water and steam, humid air, glycols, brines, refrigerants, industrial gases, natural gas (GERG-2008, ISO 6976), ice, unit conversion | 6 | free, key for refrigerants and brines |
+| [`conduit-sizing`](skills/conduit-sizing/SKILL.md) | one pipe or duct against real catalogues: velocity, pressure drop, regime, the size below and above | 4 | free |
+| [`hvac-processes`](skills/hvac-processes/SKILL.md) | coils with condensate, mixing, heat recovery (EN 16798-3, EN 308), fans, humidification, dehumidification, desiccant wheels | 1 | free |
+| [`hydronic`](skills/hydronic/SKILL.md) | whole pipe and duct networks of liquids, gases and steam, several fluids in one design, with pumps, compressors, heat exchangers, stores and receivers, steady or over time: build, solve, check, and render an HTML study with a network diagram and tables | 4 + 9 resources | free account |
 
 Every tool on the main server is read-only and idempotent, so Claude does not stop to ask
 permission for a lookup. Two network tools change a session you own, and say so.
 Inputs carry their own units (`"20oC"`, `"1.5bar"`, `"70degF"`, `"8g/kg"`), and every response names
 the unit it produced.
 
-## The API key
+<a id="the-api-key"></a>
+## Your account: sign in, or an API key
 
-The account and the key are free. You need one for:
+The account is free. You need it for:
 
 | What | Why |
 | --- | --- |
@@ -224,26 +227,18 @@ The account and the key are free. You need one for:
 
 Everything else works without one.
 
-1. Create a free account at [energyflowx.com/registration](https://energyflowx.com/registration).
-2. Open [Settings](https://energyflowx.com/settings), go to **API keys** and create one. It starts
-   with `efxk_`.
-3. Put it in the `EFX_API_KEY` environment variable **before** starting Claude Code.
+**Hydronic: sign in.** Create a free account at
+[energyflowx.com/registration](https://energyflowx.com/registration). Then run `/mcp` in Claude Code,
+choose `energy-flow-x-hydronic` and **Authenticate**. Your browser opens energyflowx.com: sign in if
+asked, check that the page names Claude Code and your account, and approve. Claude Code keeps the
+connection and renews it on its own, so the plugin holds no credential and asks for none. On
+claude.ai and in Cowork the same server shows a **Connect** button that does the same. Every connected
+app is listed under [Settings](https://energyflowx.com/settings), **Connected apps**, where you can
+disconnect it; it then has to ask you again.
 
-macOS and Linux (add the line to `~/.zshrc` or `~/.bashrc` to keep it):
-
-```bash
-export EFX_API_KEY=efxk_your_key_here
-```
-
-Windows PowerShell (`setx` keeps it for new terminals, the second line covers the current one):
-
-```powershell
-setx EFX_API_KEY "efxk_your_key_here"
-$env:EFX_API_KEY = "efxk_your_key_here"
-```
-
-The plugin sends the key to the hydronic endpoint, over HTTPS. Without a key Hydronic MCP still
-connects and lists its tools, and the first call explains what is missing and where to get it.
+**API keys.** A key (create one under [Settings](https://energyflowx.com/settings), **API keys**; it
+starts with `efxk_`) unlocks the members-only fluids and larger sweeps on the free server, and works
+for Hydronic too in a client that cannot sign in, sent as an `Authorization: Bearer efxk_...` header.
 
 **For refrigerants and brines, one more step.** The plugin connects the free server anonymously, so
 it works for everyone out of the box. To unlock the members-only fluids, add a keyed connection to
@@ -265,12 +260,12 @@ version:
 
 ```shell
 claude mcp add --transport http energy-flow-x https://energyflowx.com/energy-flow-x/mcp
-claude mcp add --transport http energy-flow-x-hydronic https://energyflowx.com/energy-flow-x/mcp/hydronic \
-  --header "Authorization: Bearer efxk_your_key_here"
+claude mcp add --transport http energy-flow-x-hydronic https://energyflowx.com/energy-flow-x/mcp/hydronic
 ```
 
 **Claude Desktop**: Settings → Connectors → Add custom connector, and paste
-`https://energyflowx.com/energy-flow-x/mcp`.
+`https://energyflowx.com/energy-flow-x/mcp`. Add `https://energyflowx.com/energy-flow-x/mcp/hydronic`
+the same way and press **Connect** to sign in.
 
 **Cursor** (`.cursor/mcp.json`):
 
@@ -297,17 +292,19 @@ claude mcp add --transport http energy-flow-x-hydronic https://energyflowx.com/e
 }
 ```
 
-Add the hydronic endpoint the same way, with an `Authorization: Bearer efxk_...` header.
+Add the hydronic endpoint the same way. A client that supports MCP sign-in (OAuth) opens
+energyflowx.com to connect your account; for one that does not, send an API key as an
+`Authorization: Bearer efxk_...` header.
 
 ## Install a single skill
 
-Each folder under [`plugins/energyflowx/skills/`](plugins/energyflowx/skills/) is a self-contained
+Each folder under [`skills/`](skills/) is a self-contained
 [Agent Skill](https://agentskills.io), so you can take only the one you need.
 
 - **Claude Code**: copy the folder into your skills directory.
 
   ```bash
-  cp -r plugins/energyflowx/skills/hydronic ~/.claude/skills/
+  cp -r skills/hydronic ~/.claude/skills/
   ```
 
 - **claude.ai**: zip the folder and upload it in the Skills section of your settings.
@@ -330,14 +327,34 @@ claude plugin uninstall energyflowx@energyflowx # remove it
 [energyflowx.com](https://energyflowx.com) from that machine. Corporate proxies sometimes block
 streaming HTTP.
 
-**Hydronic tools answer that a key is missing.** `EFX_API_KEY` was not set in the shell that
-started Claude Code. Set it, then restart Claude Code from that shell.
+**`energy-flow-x-hydronic` shows as needing authentication.** That is expected until you sign in:
+run `/mcp`, choose it and **Authenticate**. If it stops working after you disconnected it under
+Settings, **Connected apps**, authenticate again the same way.
 
 **A refrigerant or brine is refused.** Those fluids need a key on the free server, which the plugin
 connects anonymously. Add the keyed connection described in [The API key](#the-api-key).
 
 **Something is wrong with a number.** Tell us: see [Links](#links). Include the prompt, the inputs
 and what you expected. Every result states its method, so quoting it helps.
+
+<a id="data-and-privacy"></a>
+## What the plugin sends, and where
+
+The plugin runs nothing on install. It has no hooks, no executables and no package installs. It
+connects two remote MCP servers, both on `energyflowx.com`, over HTTPS:
+
+- **`energy-flow-x`** receives the arguments of each tool call: fluid states, conduit and flow data,
+  air-process inputs. It returns the computed result. No key is sent to it.
+- **`energy-flow-x-hydronic`** receives the network design you build and the calls that edit, solve
+  and inspect it, plus the access token Claude Code received when you signed in, in the
+  `Authorization` header. The plugin itself holds no credential. A design lives in a server-side
+  session owned by your account and expires after 24 hours.
+
+The skills' Python scripts (`skills/hydronic/scripts/`) run locally only when Claude renders a study,
+use the Python standard library alone and make no network calls. The plugin sends nothing to any
+other destination. How the service treats this data is set out in the
+[privacy policy](https://energyflowx.com/legal/privacy-policy) and the
+[terms of use](https://energyflowx.com/legal/terms-of-use).
 
 ## Access terms
 
@@ -360,11 +377,14 @@ plan around it staying free.
 
 ```bash
 python tests/check_skills.py                                             # the skills against the server's own docs
-python plugins/energyflowx/skills/hydronic/scripts/test_render_study.py  # the study renderer
-python plugins/energyflowx/skills/hydronic/scripts/test_study_layout.py  # the diagram: layout and a no-overlap guard
+python skills/hydronic/scripts/test_render_study.py                      # the study renderer
+python skills/hydronic/scripts/test_study_layout.py                      # the diagram: layout and a no-overlap guard
 claude plugin validate . --strict                                        # the marketplace manifest
-claude plugin validate ./plugins/energyflowx --strict                    # the plugin manifest
+claude plugin validate .claude-plugin/plugin.json --strict               # the plugin manifest and its .mcp.json
 ```
+
+The repository root is both the plugin and its one-entry marketplace, so the root is also the folder
+submitted to Anthropic's plugin directory.
 
 ## Licence
 

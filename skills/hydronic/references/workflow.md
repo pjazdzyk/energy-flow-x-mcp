@@ -162,7 +162,7 @@ assumed.
 
 ## Step 5: keep or discard the session
 
-Sessions belong to the API key that made them. `export` before `close` if the design is worth keeping;
+Sessions belong to the account that made them, however it connected. `export` before `close` if the design is worth keeping;
 hand the exported document back to the user, because it is the only copy they control.
 
 ## The free endpoint
@@ -183,8 +183,8 @@ A client that needs both connects to both.
 budget. Batching edits and reading each vocabulary resource once are the two things that keep you
 under it.
 
-**"needs an API key"**: the hydronic tools are key-only. The message says where to get one. Relay the
-access terms with it.
+**"needs your EnergyFlowX account"**: the hydronic tools need a signed-in account (or an API key).
+The message says how to connect. Relay the access terms with it.
 
 **"nothing drives flow"** or **"nothing anchors the pressure"**: see SKILL.md. Add a demand or a
 second boundary at a different pressure for the first, and a boundary or a `fillPressure` for the

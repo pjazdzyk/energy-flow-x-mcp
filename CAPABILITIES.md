@@ -33,7 +33,7 @@ Everything on this page was checked against the live servers on 24 September 202
 | Address | `https://energyflowx.com/energy-flow-x/mcp` | `https://energyflowx.com/energy-flow-x/mcp/hydronic` |
 | Name in the plugin | `energy-flow-x` | `energy-flow-x-hydronic` |
 | Tools | 11 | 4, plus 6 resources |
-| API key | optional: refrigerants, brines, larger sweeps | required on every call |
+| Account | an API key is optional: refrigerants, brines, larger sweeps | required: sign in (OAuth), or an API key |
 | What it does | properties, sizing, air processes | builds and solves whole pipe networks |
 
 The network tools live on their own address because a client carries every tool's schema on every
@@ -343,7 +343,8 @@ Tool: `calculate_air_process`.
 ## Hydronic MCP (complex hydraulics)
 
 Server: `/mcp/hydronic`. Tools: `hydronic_session`, `hydronic_edit`, `hydronic_solve`,
-`hydronic_inspect`. An API key is required on every call.
+`hydronic_inspect`. Every call needs your free account: the client signs in (it opens energyflowx.com
+for you to approve), or sends an API key.
 
 ### What this release solves
 
@@ -537,7 +538,7 @@ Nine MCP resources carry the vocabulary, so it costs nothing on a turn that does
 | Refrigerants and brines | refused, with the reason | yes |
 | States per property call | 5 | 20 |
 | Pipe and duct sizing, size selection, air processes | yes | yes |
-| Hydronic MCP | refused, with the reason | yes |
+| Hydronic MCP | asked to sign in | yes, and so does signing in |
 
 - Rate limits apply per client IP address: currently 20 requests per second and 1,000 per hour. A
   throttled call comes back as a JSON-RPC error with a retry time, not as an empty result.

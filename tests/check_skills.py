@@ -23,7 +23,11 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-PLUGIN = REPO / "plugins" / "energyflowx"
+# The repository root IS the plugin, with a one-entry marketplace beside it. The directory submission
+# names a folder that must hold `.claude-plugin/plugin.json` and can never be changed afterwards, and
+# the first submission named the root while the plugin sat in `plugins/energyflowx`. Nothing was
+# scanned. Keep the plugin at the root.
+PLUGIN = REPO
 SKILLS = PLUGIN / "skills"
 
 # The sibling checkout that documents the server. Absent outside the development workspace, which is
@@ -79,6 +83,8 @@ def test_manifests_parse() -> None:
     plugin = json.loads((PLUGIN / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
     check("the marketplace points at a plugin that exists",
           (REPO / marketplace["plugins"][0]["source"]).resolve() == PLUGIN.resolve())
+    check("the plugin manifest sits at the repository root, the folder the directory scans",
+          (REPO / ".claude-plugin" / "plugin.json").is_file())
     check("the marketplace and the plugin agree on the version",
           marketplace["plugins"][0]["version"] == plugin["version"],
           "a user who installs by version gets one thing and sees another")
@@ -97,6 +103,10 @@ def test_frontmatter_is_portable() -> None:
     for skill in skill_dirs():
         fields = frontmatter(skill / "SKILL.md")
         extra = set(fields) - allowed
+        # The spec requires the name to match the folder. A mismatch is a frontmatter the directory
+        # scan may not read cleanly, and it was there for a release before anyone looked.
+        check(f"{skill.name}: name matches its folder", fields.get("name") == skill.name,
+              f"name: {fields.get('name')}")
         check(f"{skill.name}: only spec fields", not extra, f"unsupported: {sorted(extra)}")
         check(f"{skill.name}: has a name and a description",
               bool(fields.get("name")) and len(fields.get("description", "")) > 80,
@@ -136,7 +146,7 @@ def test_access_terms_are_stated() -> None:
     check("hydronic says the free period is temporary",
           "free while it is being tested" in hydronic and
           ("temporary" in hydronic or "change at any time" in hydronic))
-    check("hydronic says a key is required", "api key" in hydronic)
+    check("hydronic says an account is required, by sign-in", "account" in hydronic and "sign" in hydronic)
 
     readme = (REPO / "README.md").read_text(encoding="utf-8").lower()
     check("the README says it too, for anyone who reads no further",
@@ -156,10 +166,35 @@ def test_mcp_wiring_matches_the_published_endpoints() -> None:
           all(url.startswith("https://") for url in urls.values()),
           "an API key must never travel over http")
 
+    # Hydronic signs in with OAuth (plan mcp-oauth, design 02 §7): the client discovers the authorization
+    # server from the 401 and keeps the token. A static header would skip sign-in, and the directory requires
+    # OAuth for an authenticated remote server (Policy 5.D).
     keyed = [name for name, entry in servers.items() if "headers" in entry]
-    check("the key rides only on the endpoint that needs one",
-          len(keyed) == 1 and keyed[0].endswith("hydronic"),
-          "sending a credential to the anonymous endpoint leaks it for no reason")
+    check("no endpoint carries a header: the client signs in", not keyed, f"headers on: {keyed}")
+    raw = (PLUGIN / ".mcp.json").read_text(encoding="utf-8")
+    variables = set(re.findall(r"\$\{([^}]+)\}", raw))
+    check("the wiring reads no variable at all", not variables, f"references: {sorted(variables)}")
+    plugin = json.loads((PLUGIN / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    check("the plugin asks for no credential", "userConfig" not in plugin, sorted(plugin.get("userConfig", {})))
+
+
+def test_directory_listing_fields() -> None:
+    print("directory listing fields")
+    plugin = json.loads((PLUGIN / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    icon = plugin.get("icon", "")
+    check("icon points at a file in the plugin", bool(icon) and (PLUGIN / icon).is_file(), icon)
+    check("icon is an SVG or a PNG", icon.endswith((".svg", ".png")), icon)
+    for field in ["privacyPolicyUrl", "termsOfServiceUrl", "documentationUrl", "supportUrl"]:
+        check(f"{field} is an https URL", plugin.get(field, "").startswith("https://"),
+              plugin.get(field, "missing"))
+    # Anything that reads a credential from the user's machine is held by the directory, even a
+    # README example, so the docs must not teach it either.
+    readme = (REPO / "README.md").read_text(encoding="utf-8")
+    check("the README sets no API key environment variable",
+          not re.search(r"(export|setx|\$env:)\s+\w*API_KEY", readme))
+    # A bundled image shown any other way than Markdown image syntax is held for a reviewer.
+    check("the README shows bundled images with Markdown syntax only",
+          not re.search(r"<img[^>]+src=\"(?!https?://)", readme))
 
 
 
@@ -192,10 +227,8 @@ def test_the_readme_commands_actually_work() -> None:
     add_cmd = f"/plugin marketplace add {repo_path}"
     check("the marketplace command matches the repository field", add_cmd in readme, add_cmd)
 
-    env_var = plugin["metadata"]["apiKeyEnvVar"]
-    mcp_raw = (PLUGIN / ".mcp.json").read_text(encoding="utf-8")
-    check("the API key variable is named the same in the manifest, the wiring and the README",
-          env_var in mcp_raw and env_var in readme, env_var)
+    check("the README says how to sign in", "/mcp" in readme and "Authenticate" in readme)
+    check("the README teaches no plugin option", "/plugin configure" not in readme)
 
 
 def test_skill_references_resolve() -> None:
@@ -231,6 +264,7 @@ def main() -> int:
                  test_tool_names_match_the_server,
                  test_access_terms_are_stated,
                  test_mcp_wiring_matches_the_published_endpoints,
+                 test_directory_listing_fields,
                  test_every_documented_tool_is_covered,
                  test_the_readme_commands_actually_work,
                  test_skill_references_resolve,
