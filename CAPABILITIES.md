@@ -8,7 +8,8 @@ the live fluid catalogue with every validity range. Hydronic MCP publishes its f
 as MCP resources. If this page and a server ever disagree, the server is right, and we would like to
 hear about it.
 
-Everything on this page was checked against the live servers on 3 October 2026.
+Everything on this page was checked against the live servers on 3 October 2026, except `hydronic_report`,
+which is described as built and is checked live when it is released.
 
 ## Contents
 
@@ -32,7 +33,7 @@ Everything on this page was checked against the live servers on 3 October 2026.
 | --- | --- | --- |
 | Address | `https://energyflowx.com/energy-flow-x/mcp` | `https://energyflowx.com/energy-flow-x/mcp/hydronic` |
 | Name in the plugin | `energy-flow-x` | `energy-flow-x-hydronic` |
-| Tools | 11 | 4, plus 9 resources |
+| Tools | 11 | 5, plus 10 resources |
 | Account | an API key is optional: refrigerants, brines, the steam humidifier, larger sweeps | required: sign in (OAuth), or an API key |
 | What it does | properties, sizing, air processes | builds and solves whole pipe networks |
 
@@ -374,7 +375,7 @@ Tool: `calculate_air_process`.
 ## Hydronic MCP (complex hydraulics)
 
 Server: `/mcp/hydronic`. Tools: `hydronic_session`, `hydronic_edit`, `hydronic_solve`,
-`hydronic_inspect`. Every call needs your free account: the client signs in (it opens energyflowx.com
+`hydronic_inspect`, `hydronic_report`. Every call needs your free account: the client signs in (it opens energyflowx.com
 for you to approve), or sends an API key.
 
 ### What this release solves
@@ -399,8 +400,9 @@ for you to approve), or sends an API key.
   Returned: each vessel's swing with when, the lowest pressures and when, each machine's starts,
   average power, energy and recovered heat, how far each store charged, every command change and a
   sampled table of 24 rows. At most 2,000 steps (fewer on a large network) and 30 s of computing, and
-  the whole server runs one transient at a time, shared by all users. A run that meets a limit returns
-  the steps it computed, marked incomplete. For free use these limits may be lowered to match server
+  the whole server runs one transient at a time, shared by all users. More than 2,000 steps is refused
+  when the run is set, with the step that fits. A run that meets a limit while it solves returns the
+  steps it computed, marked incomplete. For free use these limits may be lowered to match server
   capacity, and longer runs are quoted individually.
 - **Not yet**: fans (a pump curve is a liquid's), control valves, balancing and regulation. Also not
   modelled: two-phase flow (wet steam, condensate with flash steam), heat exchange between a pipe and
@@ -524,7 +526,30 @@ real one, so none is assumed.
   - Every assumption, for example a volume-flow demand converted to mass flow with the density used.
 - **Refused as undeliverable**: a gas network whose demands would drive its pressure below what the
   fluid can be evaluated at, with what to change.
-- **Not returned**: a critical path.
+- **Not returned**: a critical path. `hydronic_report` derives and draws one.
+
+### Reporting
+
+- `hydronic_report` solves the design as `hydronic_solve` does, refuses an invalid one the same way, and
+  builds a report on the server from the engine's numbers for every node, run and device.
+- **The reply**: the verdict as JSON (the page's headline, the critical path per figure with what its
+  runs lose, each qualification, and every warning the solve said), an image of each figure (up to
+  three, at most 1,600 px on the long side), and a link to each file.
+- **The drawing**: a riser diagram in the EnergyFlowX Hydronic builder's P&ID symbols. A spanning tree grown
+  by flow opens each ring where the flow divides, elevation is up the page in bands, and every run is
+  labelled with its size, flow and pressure drop and every node with its pressure. Valves, strainers and
+  Kv elements are drawn in their runs, the critical path is highlighted, a plant of separate systems is
+  one figure per group, and every figure carries its own legend. `labels="minimal"` keeps ids and sizes.
+- **The study page**: one self-contained HTML file with the verdict, the qualifications (always present),
+  the drawing, the critical path, the equipment, a run over time with its charts, and every run and node.
+- **The DXF**: the same drawing as R12, in millimetres, every symbol a block and every kind of line on its
+  own layer.
+- **Links** are kept at most 24 hours, then deleted, and anyone holding one can open the report until then, with
+  no sign-in. A report holds the design's figures and the names its author gave, and nothing from the account. A
+  report is at most 4 MB before compression, and an account keeps
+  at most 10 at once. At that limit a report returns its verdict and images without links, and nothing
+  kept is removed.
+- `mode="transient"` reports a run over time, drawn at its last instant.
 
 ### Inspecting
 
@@ -539,7 +564,8 @@ real one, so none is assumed.
 
 ### Resources
 
-Nine MCP resources carry the vocabulary, so it costs nothing on a turn that does not need it:
+Ten MCP resources. Nine carry the vocabulary, so it costs nothing on a turn that does not need it, and
+the tenth is a report's files:
 
 - `hydronic://vocabulary/ops`: every op with its required and optional fields.
 - `hydronic://vocabulary/fittings`: every fitting type.
@@ -554,20 +580,16 @@ Nine MCP resources carry the vocabulary, so it costs nothing on a turn that does
   filter as a Kv component.
 - `hydronic://recipes/compressor-heat-recovery`: a compressor on a pressure switch charging a receiver,
   its heat pumped into a hot-water store, run for twenty minutes.
+- `hydronic://reports/{token}/{file}`: a template, read by URI once `hydronic_report` has made a report:
+  `study.html`, `network.dxf` and `figure-N.png`.
 
 ### What the plugin adds
 
 - The `hydronic` skill carries the method: working out which question is being asked, what may be
   assumed and what must be asked for, the order to read a solve in, and what each failure means.
-- A bundled renderer turns a solve into a self-contained HTML study with a riser diagram (an
-  orthogonal schematic: every branch in a lane of its own, elevation in bands up the page, a ring or a
-  grid opened where its flow divides, pressure as node fill), node and edge schedules, and a
-  qualifications section that is never dropped.
-- The diagram draws boundaries, demands, receivers and every piece of equipment in the P&ID symbols
-  of the EnergyFlowX Hydronic builder, with a key beneath it. Each device is one symbol however many
-  ports its pipes reach, carries its headline figures, and turns to face the way its fluid runs.
-- A run over time that stopped at its compute limit is headed as unfinished, never as solved, and a
-  node at an impossible pressure withdraws the whole page, whether or not the code was copied in.
+- The skill hands a finished design over with `hydronic_report`, and says what to relay first: a run over
+  time that stopped at its compute limit is headed as unfinished, never as solved, and a node at an
+  impossible pressure withdraws the whole report.
 
 ## Limits and access
 

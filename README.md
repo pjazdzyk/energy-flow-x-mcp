@@ -110,9 +110,10 @@ Mach number for a gas) and any node where the fluid condenses, flashes or boils,
 check before trusting the numbers. Pumps, compressors with heat recovery, heaters, heat exchangers,
 storage tanks and receivers are devices (a pump on a liquid only), and a design runs over time too, with
 schedules, pressure or flow switches and PI loops: receiver swings, compressor starts, how long the air lasts after a trip, how far a store
-charges. There are no control valves, balancing, fans or water hammer yet. The skill turns the result into
-a **self-contained HTML study** with a network diagram drawn in P&ID symbols, flow and pressure
-schedules and the checks, ready to hand to a colleague.
+charges. There are no control valves, balancing, fans or water hammer yet. `hydronic_report` turns the
+result into a **self-contained HTML study** with a network diagram drawn in P&ID symbols and labelled
+with flows and pressures, schedules and the checks, ready to hand to a colleague, and the same diagram as
+a **DXF** to open in CAD. The server makes it, and the chat shows the diagram as soon as it returns.
 
 **Size limit.** One design holds up to 2,000 nodes and pipes together, which covers a building, a plant
 room, a campus loop or a district branch. A whole city network does not fit in one design: it is split
@@ -222,10 +223,11 @@ Paste any of these into Claude Code after installing:
 | [`fluid-properties`](skills/fluid-properties/SKILL.md) | 29 fluids and solids: water and steam, humid air, glycols, brines, refrigerants, industrial gases, natural gas (GERG-2008, ISO 6976), ice, unit conversion | 6 | free, key for refrigerants and brines |
 | [`conduit-sizing`](skills/conduit-sizing/SKILL.md) | one pipe or duct against real catalogues: velocity, pressure drop, regime, the size below and above | 4 | free |
 | [`hvac-processes`](skills/hvac-processes/SKILL.md) | coils with condensate, mixing, heat recovery (EN 16798-3, EN 308), fans, humidification, dehumidification, desiccant wheels | 1 | free, key for the steam humidifier |
-| [`hydronic`](skills/hydronic/SKILL.md) | whole pipe and duct networks of liquids, gases and steam, several fluids in one design, with pumps, compressors, heat exchangers, stores and receivers, steady or over time: build, solve, check, and render an HTML study with a P&ID-symbol network diagram and tables | 4 + 9 resources | free account |
+| [`hydronic`](skills/hydronic/SKILL.md) | whole pipe and duct networks of liquids, gases and steam, several fluids in one design, with pumps, compressors, heat exchangers, stores and receivers, steady or over time: build, solve, check, and report it as an HTML study with a P&ID-symbol network diagram, tables and a DXF of the drawing | 5 + 10 resources | free account |
 
 Every tool on the main server is read-only and idempotent, so Claude does not stop to ask
-permission for a lookup. Two network tools change a session you own, and say so.
+permission for a lookup. Two network tools change a session you own, and say so, and `hydronic_report` keeps a
+new report on every call, so it is not read-only either.
 Inputs carry their own units (`"20oC"`, `"1.5bar"`, `"70degF"`, `"8g/kg"`), and every response names
 the unit it produced.
 
@@ -239,7 +241,7 @@ The account is free. You need it for:
 | **Refrigerants**: R134a, R1234ze, R1234yf, R32, R125, R454B, R410A, R407C | members-only fluids |
 | **Brines**: calcium chloride, ethanol, methanol, potassium formate solutions | members-only fluids |
 | **Steam humidifier**: the `STEAM_HUMIDIFIER` block of `calculate_air_process` | members-only process |
-| **Hydronic MCP**: all four hydronic tools | a network session needs an owner |
+| **Hydronic MCP**: all five hydronic tools | a network session needs an owner |
 | **Larger sweeps**: up to 20 states per call instead of 5 | anonymous calls are capped |
 
 Everything else works without one.
@@ -362,14 +364,15 @@ connects two remote MCP servers, both on `energyflowx.com`, over HTTPS:
 
 - **`energy-flow-x`** receives the arguments of each tool call: fluid states, conduit and flow data,
   air-process inputs. It returns the computed result. No key is sent to it.
-- **`energy-flow-x-hydronic`** receives the network design you build and the calls that edit, solve
-  and inspect it, plus the access token Claude Code received when you signed in, in the
+- **`energy-flow-x-hydronic`** receives the network design you build and the calls that edit, solve,
+  inspect and report it, plus the access token Claude Code received when you signed in, in the
   `Authorization` header. The plugin itself holds no credential. A design lives in a server-side
-  session owned by your account and expires after 24 hours.
+  session owned by your account and expires after 24 hours. A report of it is kept at most 24 hours
+  behind links that anyone holding them can open, and holds the design's figures and the names you gave it,
+  nothing from your account.
 
-The skills' Python scripts (`skills/hydronic/scripts/`) run locally only when Claude renders a study,
-use the Python standard library alone and make no network calls. The plugin sends nothing to any
-other destination. How the service treats this data is set out in the
+The plugin runs no code on your machine: every calculation, and every report, is made on the server.
+It sends nothing to any other destination. How the service treats this data is set out in the
 [privacy policy](https://energyflowx.com/legal/privacy-policy) and the
 [terms of use](https://energyflowx.com/legal/terms-of-use).
 
@@ -394,9 +397,6 @@ plan around it staying free.
 
 ```bash
 python tests/check_skills.py                                             # the skills against the server's own docs
-python skills/hydronic/scripts/test_render_study.py                      # the study renderer
-python skills/hydronic/scripts/test_study_layout.py                      # the diagram: layout and a no-overlap guard
-python tools/sync_symbols.py                                             # re-embed the builder's P&ID symbols after one changes
 claude plugin validate . --strict                                        # the marketplace manifest
 claude plugin validate .claude-plugin/plugin.json --strict               # the plugin manifest and its .mcp.json
 ```

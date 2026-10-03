@@ -282,6 +282,10 @@ RETIRED = {
     "This run was NOT started": "same: the predictive refusal is gone",
     "over a minute": "same: the 60 s refusal is gone",
     "Retry-After` and the code": "the throttled call carries retryAfterSeconds in its JSON-RPC error data",
+    "render_study": "the study is made on the server by hydronic_report, and the plugin ships no renderer",
+    "study JSON": "same: nothing is transcribed by hand any more",
+    "bundled renderer": "same: the plugin ships no renderer",
+    "all four hydronic tools": "there are five: hydronic_report joined them",
 }
 
 
@@ -297,33 +301,20 @@ def test_no_retired_claim_is_repeated() -> None:
           "completed: false" in skill and "INCOMPLETE" in skill and "not quote it as the outcome" in skill)
 
 
-def test_the_study_symbols_are_the_builders() -> None:
-    print("the study's P&ID symbols")
-    scripts = SKILLS / "hydronic" / "scripts"
-    sys.path.insert(0, str(scripts))
-    try:
-        from study_glyphs import symbol_names
-        from study_symbols import SYMBOLS
-    finally:
-        sys.path.remove(str(scripts))
-    missing = [name for name in symbol_names() if name not in SYMBOLS]
-    check("every symbol the glyph map names is embedded", not missing, f"missing: {missing}")
-    # The renderer must stay one script with no image files to find: the directory holds a plugin for a
-    # reviewer when a script refers to bundled images.
-    images = [p.name for p in scripts.rglob("*") if p.suffix.lower() in {".svg", ".png", ".jpg", ".gif", ".webp"}]
-    check("no image file is bundled beside the scripts", not images, f"{images}")
-    sync = REPO / "tools" / "sync_symbols.py"
-    ui = REPO.parent / "energy-flow-x-ui" / "src" / "assets" / "pid"
-    if not ui.is_dir():
-        print(f"  skip  no energy-flow-x-ui beside this repository ({ui})")
-        return
-    sys.path.insert(0, str(sync.parent))
-    try:
-        from sync_symbols import TARGET, build
-    finally:
-        sys.path.remove(str(sync.parent))
-    check("the embedded symbols match the builder's files", TARGET.read_text(encoding="utf-8") == build(),
-          "a symbol changed in the builder: run python tools/sync_symbols.py")
+def test_the_report_is_made_on_the_server() -> None:
+    print("the study is the server's, and the plugin runs no code")
+    # The study page, its diagram and its DXF were once rendered by Python scripts the assistant ran on the
+    # user's machine, from a study JSON it transcribed by hand. hydronic_report makes all of it on the server
+    # from the engine's own numbers, so a plugin that still shipped a renderer would offer the user a second,
+    # worse path and a Python installation to manage.
+    code = [str(path.relative_to(REPO)) for path in REPO.rglob("*.py")
+            if ".git" not in path.parts and path.parent.name != "tests"]
+    check("no script ships in the plugin", not code, f"{code}")
+    skill = (SKILLS / "hydronic" / "SKILL.md").read_text(encoding="utf-8")
+    check("the hydronic skill hands a study over with hydronic_report", "hydronic_report(" in skill)
+    report = " ".join((SKILLS / "hydronic" / "references" / "report.md").read_text(encoding="utf-8").split())
+    check("its report reference says what a link is and how long it lasts",
+          "anyone holding one can open the report" in report and "24 hours" in report)
 
 
 def test_the_license_is_named_the_way_the_directory_reads_it() -> None:
@@ -340,7 +331,7 @@ def test_the_license_is_named_the_way_the_directory_reads_it() -> None:
 def main() -> int:
     for test in [test_counts_agree_with_their_lists,
                  test_no_retired_claim_is_repeated,
-                 test_the_study_symbols_are_the_builders,
+                 test_the_report_is_made_on_the_server,
                  test_the_license_is_named_the_way_the_directory_reads_it,
                  test_manifests_parse,
                  test_frontmatter_is_portable,

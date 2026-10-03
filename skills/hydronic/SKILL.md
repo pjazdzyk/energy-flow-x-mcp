@@ -105,7 +105,7 @@ by a few kelvin at the highest pressure in the system, and condensate as `WATER`
 
 | | address | plugin server name | tools | key |
 | --- | --- | --- | --- | --- |
-| Networks | `/mcp/hydronic` | `energy-flow-x-hydronic` | `hydronic_session`, `hydronic_edit`, `hydronic_solve`, `hydronic_inspect` | **required** |
+| Networks | `/mcp/hydronic` | `energy-flow-x-hydronic` | `hydronic_session`, `hydronic_edit`, `hydronic_solve`, `hydronic_inspect`, `hydronic_report` | **required** |
 | Fluids and single conduits | `/mcp` | `energy-flow-x` | property, saturation, unit-conversion and conduit-sizing tools | none |
 
 They are separate MCP servers, and the plugin connects both. The hydronic server needs the user's free
@@ -158,7 +158,8 @@ because each can invalidate the ones after it:
 
 A transient comes back as answers, not a time series:
 
-1. **`completed` first.** A run that meets its compute limit is not refused. It returns the steps it
+1. **`completed` first.** More than 2,000 steps is refused when you set it, with the step that fits. A
+   run that meets its compute limit while it solves is not refused. It returns the steps it
    computed with `completed: false`, and its first warning says it is INCOMPLETE, how far it got, and
    why it stopped. Then tell the user three things, in this order. The run is unfinished, and stopped at
    the time it names. Its last state is where the run stopped, not how the plant ends up, so you do
@@ -221,35 +222,47 @@ water boiling at a high point, humid air at its dew point. Change the design, no
 
 ## Handing it over
 
-When the work is for someone else, produce an **HTML study**, not a wall of numbers in chat. A network
-result is spatial, and a table alone makes the reader rebuild the picture in their head, wrongly. Use
-the bundled renderer rather than writing HTML by hand:
+When the work is for someone else, call **`hydronic_report`**, not a wall of numbers in chat. A network
+result is spatial, and a table alone makes the reader rebuild the picture in their head, wrongly.
 
-```bash
-python3 scripts/render_study.py study.json -o study.html
+```
+hydronic_report(handle, mode?, labels?, title?)
 ```
 
-It takes one plain JSON file (`references/report.md` has the schema and an example) and emits one
-self-contained page: the verdict, the qualifications, a riser diagram of the network drawn in the same
-P&ID symbols as the EnergyFlowX Hydronic builder with a key beneath it, what each device did, a run over
-time with its vessels and charts, and the node and edge schedules.
+It solves the design the way `hydronic_solve` does, refusing an invalid one the same way, and builds the
+report on the server from the engine's own numbers, every node and every run. Nothing is transcribed and
+nothing runs on the user's machine. The reply carries:
 
-Four things about filling it in are not optional:
+- **The verdict** as JSON: the headline the page opens with, the critical path and what its runs lose,
+  each qualification, and every warning the solve said, in full. Read it before you show anything.
+- **An image of each figure**, up to three, the network drawn in the EnergyFlowX Hydronic builder's P&ID symbols, every
+  run labelled with its size, flow and pressure drop and every node with its pressure, valves and Kv
+  elements drawn in their runs, the critical path highlighted, and a legend. Show it: it is the first
+  look the user asked for.
+- **Links**: a self-contained study page (verdict, qualifications, the drawing, the critical path,
+  equipment, a run over time with its charts, every run and node) and the same drawing as an R12
+  **DXF** for CAD, every symbol a block and every kind of line on its own layer. Offer the DXF whenever the
+  study is for someone who draws.
 
-- **Copy every warning that is a run notice into `qualifications`**, the sentence verbatim, with the
-  code its wording names (the table in `references/report.md`). That section is never dropped, and an
-  impossible pressure or an incomplete run changes the whole page's verdict.
-- **Copy run endpoints as authored**, `"comp.airOut"` included, and the solve's `devices` rows as they
-  are. The renderer draws each device as its symbol, once, with every run to any of its ports.
-- **Keep `completed` and `steps`** in the `transient` block. An unfinished run is then headed as one
-  rather than as solved.
-- **Units are in the field names** (`pressure_kPa`, `flow_kg_s`). Convert once, on the way in.
+Three things about it are not optional:
 
-The diagram is a schematic and says so: it is laid out from the graph and the elevations, not from
-coordinates, and it is not a P&ID or to scale. Leave that label alone.
+- **Relay the verdict before the picture.** "These results are withdrawn" and "The run stopped early"
+  outrank everything on the page, and the image alone does not say them.
+- **Say what a link is.** Anyone holding it can open the report until it expires a day later, so it goes
+  only to whoever should see the design. A report holds the design's figures and the names given to it, and
+  nothing from the user's account.
+- **A report is a snapshot of one solve.** Change the design and report again. Iterate with `hydronic_solve`,
+  because each report takes one of the account's 10 places for up to a day, and at that limit the reply says so
+  and carries no links.
 
-If the user only wants a quick answer in chat, give them the answer and offer the study. If they are
-going to send it to anyone, build the study.
+`labels="minimal"` draws ids and sizes only, for a dense plant. `mode="transient"` reports a run over
+time, drawn at its last instant. `references/report.md` says what the page shows and how to read it.
+
+The drawing is a schematic and says so: it is laid out from the graph and the elevations, not from
+coordinates, and it is not a P&ID or to scale.
+
+If the user only wants a quick answer in chat, give them the answer and offer the report. If they are
+going to send it to anyone, make the report.
 
 ## When the network is one pipe
 
@@ -266,7 +279,5 @@ how a flow splits, stop and build the network.
 - `references/gathering-inputs.md`: deciding what to solve, and getting the data to solve it.
 - `references/workflow.md`: every call, its arguments, and the order to make them in.
 - `references/reading-results.md`: how to interpret a solve, the sanity ranges, and the traps in detail.
-- `references/report.md`: the study JSON schema, with a worked example.
-- `scripts/render_study.py`: the HTML study renderer. No dependencies beyond Python 3.9.
-- `scripts/study_layout.py`: the riser-diagram layout, pure and tested on its own.
-- `scripts/study_glyphs.py`: which P&ID symbol draws which node kind and device type.
+- `references/report.md`: what `hydronic_report` returns, what the study page and the DXF show, and how
+  to read the drawing.

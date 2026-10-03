@@ -129,8 +129,10 @@ lowest pressures and when, each machine's starts, power, energy and recovered he
 charged, every command change, and a sampled table. A run takes at most 2,000 steps, fewer on a large
 network, and 30 s of computing (free-use defaults, which may be lower), and the whole server runs one
 transient at a time, shared by all users.
-A run that meets a limit is not refused: it returns the steps it computed with `completed: false` and an
-INCOMPLETE warning first. Tell the user it is unfinished, never present its last state as the answer,
+`set_transient` refuses a run of more than 2,000 steps when you set it, and says the step that fits, so
+nothing is spent on it. A run that meets a limit while it solves (fewer steps on a large network, or the
+30 s) is not refused: it returns the steps it computed with `completed: false` and an INCOMPLETE warning
+first. Tell the user it is unfinished, never present its last state as the answer,
 and suggest a longer `timeStep` or a shorter duration. Longer runs are quoted individually at
 info@energyflowx.com. While another run is in progress the call is refused with when to retry.
 `detail` is the number of rows in each ranking: the worst edges by the head they consume, the fastest
