@@ -108,7 +108,8 @@ ready to hand to a colleague.
 **Size limit.** One design holds up to 2,000 nodes and pipes together, which covers a building, a plant
 room, a campus loop or a district branch. A whole city network does not fit in one design: it is split
 into parts joined at pressure boundaries, and each part is solved on its own. An exported design near
-the limit is about 250,000 characters, so keep it as a file.
+the limit is about 250,000 characters, so keep it as a file. These limits apply to free use and may be
+lowered at any time to match server capacity.
 
 ## Where it fits
 

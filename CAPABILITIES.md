@@ -385,7 +385,8 @@ for you to approve), or sends an API key.
 - A session belongs to the account whose key created it. Another account cannot read it, and any key
   of the same account can.
 - Sessions expire after 24 hours, so export is the save.
-- Up to 20 open sessions per account, and up to 2,000 nodes and edges per design.
+- Up to 20 open sessions per account, and up to 2,000 nodes and edges per design. For free use these
+  limits may be lowered at any time to match server capacity.
 
 ### Editing
 

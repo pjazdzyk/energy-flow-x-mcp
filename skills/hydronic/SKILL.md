@@ -54,7 +54,8 @@ building, a plant room, a campus loop or a district branch, not a whole city. Fo
 with the user where to split it, model each part as its own design with the connection to its neighbour
 as a fixed-pressure boundary at the pressure the other part delivers, and say in the study that it was
 split. An export near the limit is about 250,000 characters: hand it over as a file, never paste it back
-into the chat.
+into the chat. These limits apply to free use and may be lowered at any time to match server capacity,
+so trust the server's refusal over the number here, and tell the user when one comes.
 
 Some things are never yours to assume, because each produces a complete and fictional study: a
 **glycol or brine concentration**, **elevations** in anything with more than one floor, the **ΔT**
