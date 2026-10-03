@@ -126,8 +126,13 @@ hydronic_solve(handle="...", detail=<n>)
 `mode` is `steady` (the default) or `transient`, which runs the duration `set_transient` states and
 applies the design's schedules and controllers. A transient returns each receiver's swing with when, the
 lowest pressures and when, each machine's starts, power, energy and recovered heat, how far each store
-charged, every command change, and a sampled table. A run predicted to take longer than a minute is
-refused with the step that would fit.
+charged, every command change, and a sampled table. A run takes at most 2,000 steps, fewer on a large
+network, and 30 s of computing (free-use defaults, which may be lower), and the whole server runs one
+transient at a time, shared by all users.
+A run that meets a limit is not refused: it returns the steps it computed with `completed: false` and an
+INCOMPLETE warning first. Tell the user it is unfinished, never present its last state as the answer,
+and suggest a longer `timeStep` or a shorter duration; longer runs are quoted individually at
+info@energyflowx.com. While another run is in progress the call is refused with when to retry.
 `detail` is the number of rows in each ranking: the worst edges by the head they consume, the fastest
 pipes, and the lowest and highest pressure nodes. The default is 5 and the maximum is 50, so a network
 of up to 50 elements can be read in full. The solve returns no critical path. A design with several
