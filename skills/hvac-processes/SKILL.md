@@ -14,9 +14,10 @@ description: >-
 
 # Air handling and psychrometrics
 
-One free tool on the `/mcp` endpoint, `calculate_air_process`, no key, on the plugin's
-`energy-flow-x` server. It computes one block or a straight chain of up to eight, and every block is
-one the network engine carries as a real step rather than a simplified stand-in.
+One free tool on the `/mcp` endpoint, `calculate_air_process`, on the plugin's `energy-flow-x`
+server. It needs no key for any block but the steam humidifier (see Access below). It computes one
+block or a straight chain of up to eight, and every block is one the network engine carries as a real
+step rather than a simplified stand-in.
 
 ## The blocks
 
@@ -34,6 +35,15 @@ What each gives you beyond the outlet state:
 - **Dehumidification** splits its reheat into bought and recovered, which is the distinction that
   decides what the process actually costs to run.
 - **The desiccant wheel** gives its regeneration heater duty when a regeneration stream is named.
+- **The steam humidifier** gives the steam flow and the humidification duty. Describe the steam with
+  `steamPressure` (2 bar absolute if omitted, so state it when the plant gives one) and, when it is
+  not saturated, `steamState`: a temperature for superheated steam, a vapour quality such as `"0.95"`
+  for wet steam, or `ELECTRODE` for an electrode generator (no pressure then). Aim it at exactly one
+  of `targetRelativeHumidity`, `targetHumidityRatio`, `processDewPoint` (the outlet dew point) or a
+  given `steamFlow`. Absorption (`humidityEffectiveness`) and lance heat loss (`jacketLoss`) are
+  assumed full and zero when omitted, and the warnings say so.
+  The dry bulb rises slightly, often under 1 K, because the steam enters hotter than the air and gives
+  up that sensible heat as it mixes in. That rise is real, not an error.
 
 ## The one behaviour to rely on
 
@@ -44,6 +54,13 @@ field to read, before any temperature or duty.
 This matters most in a chain. A cooling coil asked for a supply condition it cannot reach does not
 silently return the closest it managed and let the next block carry on from a state that never
 existed. Check `feasible` on every step, not just the last one.
+
+## Access
+
+Every block is free and anonymous except `STEAM_HUMIDIFIER`, which is members-only. An anonymous
+call with a steam humidifier in it is refused with an explanation, even when the other steps are
+free, so relay what it says. If the client also has a keyed connection to the same `/mcp` address
+(the README suggests naming it `energy-flow-x-keyed`), run chains with a humidifier through that one.
 
 ## Chains are linear only
 
@@ -67,9 +84,8 @@ approximating it into a chain.
 
 ## Psychrometric state alone
 
-The same one-step trick answers "what is the dew point, wet bulb or humidity ratio of this air": a
-`HEATING` step targeting the inlet temperature changes nothing and reports the full state.
-`get_fluid_properties` does not return those quantities for humid air.
+For "what is the dew point, wet bulb or humidity ratio of this air", use `get_fluid_properties` with
+`HUMID_AIR`: it returns the whole psychrometric state directly, with no process involved.
 
 ## Reporting it
 

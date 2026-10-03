@@ -23,12 +23,15 @@ import argparse
 import html
 import json
 import math
+import re
 import sys
 from pathlib import Path
 from typing import Any, Iterable
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from study_glyphs import Glyph, glyph_for, mirrored  # noqa: E402
 from study_layout import layout, longest_segment, supply_id  # noqa: E402
+from study_symbols import SYMBOLS  # noqa: E402
 
 # ---------------------------------------------------------------------------------------------
 # Reading the input
@@ -147,30 +150,170 @@ def _arrow(x1: float, y1: float, x2: float, y2: float, reverse: bool) -> str:
     return f'<polygon class="arrow" points="{path}" />'
 
 
-def _pressure_fill(share: float | None) -> str:
-    """Deep blue where pressure is plentiful, pale where it runs out. Inline, so it holds in print."""
-    if share is None:
-        return "var(--bg)"
-    return f"hsl(208 62% {78 - 48 * share:.0f}%)"
+_PLATE = 32.0           # the tile a symbol sits on, in px: its height, and its width unless the symbol is wide
+_WIDE_PLATE = 46.0      # the width for a wide symbol, a receiver or a compressor, so it is not drawn at half size
+_WIDE = 1.4             # the aspect, width over height, from which a symbol counts as wide
+_INSET = 3.0            # the margin between a plate's edge and its symbol
+# The engine writes this pressure with %.4g, so a large one arrives in exponent form ("-1.234e+04").
+_IMPOSSIBLE = re.compile(r"settled at\s+(-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)\s*kPa absolute", re.IGNORECASE)
+_INCOMPLETE = "this transient run is incomplete"
 
 
-def _node_shape(kind: str, x: float, y: float, fill: str, title: str) -> str:
+def _symbol_id(name: str) -> str:
+    return f"efx-sym-{name}"
+
+
+def _pressure_style(share: float | None) -> str:
+    """The pressure tint: deep where pressure is plentiful, pale where it runs out, none when unknown.
+
+    A tint over an opaque plate rather than a colour of its own, so the symbol on top keeps its contrast in
+    light and dark alike, and the runs that end at the node's centre stay hidden under it."""
+    opacity = 0.0 if share is None else 0.14 + 0.62 * share
+    return f' style="fill:var(--pressure);fill-opacity:{opacity:.2f}"'
+
+
+def _plain_node(kind: str, x: float, y: float, share: float | None, title: str) -> tuple[str, float, str]:
+    """A node no symbol is mapped for: the plain shapes, on an opaque plate so runs end under them."""
     k = kind.upper()
     t = f"<title>{_esc(title)}</title>"
-    if "PRESSURE" in k:
-        return f'<rect class="node boundary" x="{x - 7:.1f}" y="{y - 7:.1f}" width="14" height="14" rx="2" fill="{fill}">{t}</rect>'
-    if "OUTLET" in k or "HEAD" in k or "SPRINKLER" in k:
-        return f'<polygon class="node outlet" points="{x - 7:.1f},{y - 6:.1f} {x + 7:.1f},{y - 6:.1f} {x:.1f},{y + 7:.1f}" fill="{fill}">{t}</polygon>'
-    if "DEMAND" in k:
-        return f'<polygon class="node demand" points="{x:.1f},{y - 8:.1f} {x + 8:.1f},{y:.1f} {x:.1f},{y + 8:.1f} {x - 8:.1f},{y:.1f}" fill="{fill}">{t}</polygon>'
     if "PUMP" in k or "COMPRESSOR" in k or "DEVICE" in k:
-        return f'<circle class="node device" cx="{x:.1f}" cy="{y:.1f}" r="7" fill="var(--warn)">{t}</circle>'
-    return f'<circle class="node junction" cx="{x:.1f}" cy="{y:.1f}" r="6.5" fill="{fill}">{t}</circle>'
+        return f'<circle class="node device-dot" cx="{x:.1f}" cy="{y:.1f}" r="7">{t}</circle>', 7.0, "device-dot"
+    if "PRESSURE" in k:
+        tag, sub, half = "rect", "boundary", 7.0
+        geometry = f'x="{x - 7:.1f}" y="{y - 7:.1f}" width="14" height="14" rx="2"'
+    elif "OUTLET" in k or "HEAD" in k or "SPRINKLER" in k:
+        tag, sub, half = "polygon", "outlet", 7.0
+        geometry = f'points="{x - 7:.1f},{y - 6:.1f} {x + 7:.1f},{y - 6:.1f} {x:.1f},{y + 7:.1f}"'
+    elif "DEMAND" in k:
+        tag, sub, half = "polygon", "demand", 8.0
+        geometry = f'points="{x:.1f},{y - 8:.1f} {x + 8:.1f},{y:.1f} {x:.1f},{y + 8:.1f} {x - 8:.1f},{y:.1f}"'
+    else:
+        tag, sub, half = "circle", "junction", 6.5
+        geometry = f'cx="{x:.1f}" cy="{y:.1f}" r="6.5"'
+    return (f'<{tag} class="plate" {geometry}/>'
+            f'<{tag} class="node {sub}" {geometry}{_pressure_style(share)}>{t}</{tag}>'), half, sub
 
 
-def _callouts(study: dict, nodes: list[dict], edges: list[dict]) -> dict[str, list[str]]:
-    """The few elements whose numbers belong on the drawing: the supply, the devices, the far end of the
-    critical path and the lowest-pressure node. Everything else is on hover and in the schedules."""
+def _plate_width(glyph: Glyph) -> float:
+    """A square plate shrinks a wide symbol to a sliver: a receiver is three times as wide as it is tall,
+    and in a square it came out twelve pixels high. A wide symbol gets a wider plate, never a taller one,
+    because the height is what the lanes are spaced for."""
+    _, _, w, h = SYMBOLS[glyph.symbol]["box"]
+    return _WIDE_PLATE if h > 0 and w / h >= _WIDE else _PLATE
+
+
+def _symbol_node(glyph: Glyph, device: bool, x: float, y: float, share: float | None, mirror: bool,
+                 title: str) -> str:
+    """A node or a device drawn as its P&ID symbol on a plate. Exactly one element carries the `node` class,
+    so one drawn thing is one node however many layers it takes."""
+    pw, ph = _plate_width(glyph), _PLATE
+    gw, gh = pw - 2 * _INSET, ph - 2 * _INSET
+    box = f'x="{x - pw / 2:.1f}" y="{y - ph / 2:.1f}" width="{pw:.0f}" height="{ph:.0f}" rx="7"'
+    face = (f'<rect class="node device" {box}>' if device
+            else f'<rect class="node symbol" {box}{_pressure_style(share)}>')
+    flip = f' transform="matrix(-1 0 0 1 {2 * x:.1f} 0)"' if mirror else ""
+    return (f'<rect class="plate" {box}/>{face}<title>{_esc(title)}</title></rect>'
+            f'<use class="glyph" href="#{_symbol_id(glyph.symbol)}" x="{x - gw / 2:.1f}" y="{y - gh / 2:.1f}" '
+            f'width="{gw:.0f}" height="{gh:.0f}"{flip}/>')
+
+
+def _drawable(kind: str) -> Glyph | None:
+    glyph = glyph_for(kind)
+    return glyph if glyph and glyph.symbol in SYMBOLS else None
+
+
+# ---------------------------------------------------------------------------------------------
+# The network as drawn: the study's nodes, plus each device a run is piped to
+# ---------------------------------------------------------------------------------------------
+
+
+def _diagram_graph(study: dict) -> tuple[list[dict], list[dict]]:
+    """The nodes and edges the diagram draws.
+
+    A run piped to a device names its end as `device.port`, exactly as it was authored. A device is not a
+    node of the network, but it is a thing on the drawing, so each device a run reaches becomes one node
+    here, of its device type, and every run to any of its ports ends on it. A node whose id merely contains
+    a dot stays the node it is: only a prefix that names a device in `devices` is read as one."""
+    nodes = [n for n in (study.get("nodes") or []) if isinstance(n, dict)]
+    edges = [e for e in (study.get("edges") or []) if isinstance(e, dict)]
+    node_ids = {_text(n.get("id")) for n in nodes}
+    devices: dict[str, dict] = {}
+    for device in study.get("devices") or []:
+        if isinstance(device, dict):
+            device_id = _text(device.get("id"))
+            if device_id and device_id not in node_ids:
+                devices[device_id] = device
+
+    def end(ref: Any) -> str:
+        ref = _text(ref)
+        if ref in node_ids:
+            return ref
+        head, dot, _ = ref.rpartition(".")
+        return head if dot and head in devices else ref
+
+    drawn: list[dict] = []
+    reached: list[str] = []
+    for edge in edges:
+        copy = dict(edge)
+        copy["from"], copy["to"] = end(edge.get("from")), end(edge.get("to"))
+        for side in ("from", "to"):
+            if copy[side] in devices and copy[side] not in reached:
+                reached.append(copy[side])
+        drawn.append(copy)
+    for device_id in reached:
+        device = devices[device_id]
+        nodes = nodes + [{"id": device_id, "kind": _text(device.get("type")).upper(), "_device": device}]
+    return nodes, drawn
+
+
+def _attachments(grid: Any, edges: list[dict]) -> tuple[dict[str, list[int]], dict[str, list[int]]]:
+    """For each node, the side every run touches it from (-1 left, +1 right, 0 vertical), and the same for
+    the runs whose fluid arrives there. Read off the routes, so it is the side as drawn."""
+    def sign(value: float) -> int:
+        return 0 if abs(value) < 1e-9 else (1 if value > 0 else -1)
+
+    sides: dict[str, list[int]] = {}
+    inflow: dict[str, list[int]] = {}
+    for edge in edges:
+        route = grid.routes.get(_text(edge.get("id")))
+        if not route or len(route) < 2:
+            continue
+        a, b = _text(edge.get("from")), _text(edge.get("to"))
+        side_a = sign(route[1][0] - route[0][0])
+        side_b = sign(route[-2][0] - route[-1][0])
+        sides.setdefault(a, []).append(side_a)
+        sides.setdefault(b, []).append(side_b)
+        flow = _num(edge.get("flow_kg_s"))
+        if flow is not None and flow < 0:
+            inflow.setdefault(a, []).append(side_a)
+        else:
+            inflow.setdefault(b, []).append(side_b)
+    return sides, inflow
+
+
+# A device's figures worth a call-out on the drawing, in order, with the words that say what each is.
+_HEADLINE = {
+    "PUMP": (("rise_kPa", "rise"), ("massFlow_kgps", "")),
+    "COMPRESSOR": (("electricalPower_kW", "electric"), ("recoveredHeat_kW", "recovered")),
+    "HEATER": (("duty_kW", ""), ("outlet_C", "out")),
+    "HEAT_EXCHANGER": (("duty_kW", ""),),
+    "STORAGE_TANK": (("stored_C", ""), ("top_C", "top")),
+}
+
+
+def _device_bits(device: dict) -> list[str]:
+    bits = []
+    for key, words in _HEADLINE.get(_text(device.get("type")).upper(), ()):
+        value = _num(device.get(key))
+        if value is not None:
+            _, unit = _label(key)
+            bits.append(" ".join(b for b in (f"{value:.1f}", unit, words) if b))
+    return bits
+
+
+def _callouts(study: dict, nodes: list[dict]) -> dict[str, list[str]]:
+    """The few elements whose numbers belong on the drawing: the supply, the far end of the critical path,
+    the lowest-pressure node and each device. Everything else is on hover and in the schedules."""
     by_node: dict[str, list[str]] = {}
     supply = _text(study.get("_supply"))
     critical = study.get("criticalPath") or {}
@@ -179,38 +322,98 @@ def _callouts(study: dict, nodes: list[dict], edges: list[dict]) -> dict[str, li
         wanted.append(supply)
     if _text(critical.get("to")):
         wanted.append(_text(critical.get("to")))
-    pressured = [n for n in nodes if _num(n.get("pressure_kPa")) is not None]
+    pressured = [n for n in nodes if not n.get("_device") and _num(n.get("pressure_kPa")) is not None]
     if pressured:
         wanted.append(_text(min(pressured, key=lambda n: _num(n.get("pressure_kPa")))["id"]))
-    for edge in edges:
-        if any(word in _text(edge.get("size")).upper() for word in ("PUMP", "COMPRESSOR", "FAN")):
-            wanted.append(_text(edge.get("to")))
-    for node in nodes:
-        node_id = _text(node.get("id"))
-        if node_id not in wanted or node_id in by_node or len(by_node) >= _MAX_CALLOUTS:
+    wanted.extend(_text(n.get("id")) for n in nodes if n.get("_device"))
+    by_id = {_text(n.get("id")): n for n in nodes}
+    for node_id in wanted:
+        node = by_id.get(node_id)
+        if node is None or node_id in by_node or len(by_node) >= _MAX_CALLOUTS:
             continue
-        bits = []
-        if _num(node.get("pressure_kPa")) is not None:
-            bits.append(f"{_num(node['pressure_kPa']):.1f} kPa")
-        if _num(node.get("flow_kg_s")) is not None:
-            bits.append(f"{abs(_num(node['flow_kg_s'])):.3g} kg/s")
+        if node.get("_device"):
+            bits = _device_bits(node["_device"])
+        else:
+            bits = []
+            if _num(node.get("pressure_kPa")) is not None:
+                bits.append(f"{_num(node['pressure_kPa']):.1f} kPa")
+            if _num(node.get("flow_kg_s")) is not None:
+                bits.append(f"{abs(_num(node['flow_kg_s'])):.3g} kg/s")
         if bits:
             by_node[node_id] = bits
     return by_node
 
 
-def _diagram(nodes: list[dict], edges: list[dict], study: dict | None = None) -> str:
+def _node_hover(node: dict, glyph: Glyph | None) -> str:
+    node_id = _text(node.get("id"))
+    device = node.get("_device")
+    if device:
+        bits = [node_id, glyph.label if glyph else _text(device.get("type"))]
+        for key, value in device.items():
+            if key not in ("id", "type") and _num(value) is not None:
+                label, unit = _label(key)
+                bits.append(f"{label} {_fmt(value, 2)} {unit}".strip())
+        return ", ".join(bits)
+    bits = [node_id, _text(node.get("kind"))]
+    if _num(node.get("elevation_m")) is not None:
+        bits.append(f"z {_num(node['elevation_m']):.2f} m")
+    if _num(node.get("pressure_kPa")) is not None:
+        bits.append(f"{_num(node['pressure_kPa']):.1f} kPa")
+    if _num(node.get("flow_kg_s")) is not None:
+        bits.append(f"{_num(node['flow_kg_s']):.3f} kg/s net")
+    return ", ".join(b for b in bits if b)
+
+
+# A plain shape on the key, drawn in a 32 x 32 box.
+_KEY_SHAPES = {
+    "junction": '<circle class="tile dot" cx="16" cy="16" r="6.5"/>',
+    "boundary": '<rect class="tile dot" x="9" y="9" width="14" height="14" rx="2"/>',
+    "outlet": '<polygon class="tile dot" points="9,10 23,10 16,23"/>',
+    "demand": '<polygon class="tile dot" points="16,8 24,16 16,24 8,16"/>',
+    "device-dot": '<circle class="tile equipment" cx="16" cy="16" r="7"/>',
+}
+
+
+def _key(used: list[Glyph], plain: dict[str, list[str]]) -> str:
+    """What each mark on the drawing is, for a reader who has not met these symbols before.
+
+    A symbol is named by what it is. A plain shape stands for kinds no symbol is mapped for, so it is named
+    by the kinds the study itself gave, rather than by a name this page would have to invent for them."""
+    items = []
+    for glyph in used:
+        tile = "tile device" if glyph.device else "tile"
+        pw = _plate_width(glyph)
+        items.append(
+            f'<li><svg class="key-glyph" viewBox="0 0 {pw:.0f} 32" style="width:{26 * pw / 32:.0f}px" '
+            f'aria-hidden="true" focusable="false">'
+            f'<rect class="{tile}" x="0.5" y="0.5" width="{pw - 1:.0f}" height="31" rx="7"/>'
+            f'<use href="#{_symbol_id(glyph.symbol)}" x="{_INSET:.0f}" y="{_INSET:.0f}" '
+            f'width="{pw - 2 * _INSET:.0f}" height="{32 - 2 * _INSET:.0f}"/></svg>'
+            f"<span>{html.escape(glyph.label)}</span></li>")
+    for sub, kinds in plain.items():
+        names = [k for k in kinds if k] or ["Junction"]
+        label = "Junction" if sub == "junction" and all(k.upper() == "JUNCTION" for k in names) else (
+            ", ".join(names[:3]) + (f" and {len(names) - 3} more" if len(names) > 3 else ""))
+        items.append(f'<li><svg class="key-glyph" viewBox="0 0 32 32" aria-hidden="true" focusable="false">'
+                     f'{_KEY_SHAPES[sub]}</svg><span>{html.escape(label)}</span></li>')
+    if not items:
+        return ""
+    return f'<ul class="key" aria-label="Symbols on the drawing">{"".join(items)}</ul>'
+
+
+def _diagram(study: dict) -> tuple[str, list[str]]:
+    """The schematic, and the symbols it uses (the page defines each once)."""
+    nodes, edges = _diagram_graph(study)
     if not nodes:
-        return '<p class="empty">No nodes to draw.</p>'
-    study = study or {}
+        return '<p class="empty">No nodes to draw.</p>', []
     supply = supply_id(nodes, edges)
     grid = layout(nodes, edges, supply)
     if not grid.positions:
-        return '<p class="empty">No nodes to draw.</p>'
+        return '<p class="empty">No nodes to draw.</p>', []
 
     ids = [_text(n.get("id")) for n in nodes]
     critical = set(_text(e) for e in ((study.get("criticalPath") or {}).get("elements") or []))
-    callouts = _callouts({**study, "_supply": supply}, nodes, edges)
+    callouts = _callouts({**study, "_supply": supply}, nodes)
     callout_widths = [_label_width("  ".join(c), 11.0) + 14.0 for c in callouts.values()]
     # A label is centred on its node and must stay clear of the tracks half a rank away on either side.
     step_x = max(110.0, max(_label_width(i) for i in ids) + 40.0, max(callout_widths + [0.0]) + 36.0)
@@ -233,8 +436,10 @@ def _diagram(nodes: list[dict], edges: list[dict], study: dict | None = None) ->
 
     flows = [abs(_num(e.get("flow_kg_s")) or 0.0) for e in edges]
     peak = max(flows) if flows else 0.0
-    pressures = [_num(n.get("pressure_kPa")) for n in nodes if _num(n.get("pressure_kPa")) is not None]
+    pressures = [_num(n.get("pressure_kPa")) for n in nodes
+                 if not n.get("_device") and _num(n.get("pressure_kPa")) is not None]
     p_low, p_high = (min(pressures), max(pressures)) if pressures else (None, None)
+    sides, inflow = _attachments(grid, edges)
 
     parts: list[str] = [
         f'<svg viewBox="0 0 {width:.0f} {height:.0f}" role="img" aria-label="Schematic of the solved network" '
@@ -249,38 +454,52 @@ def _diagram(nodes: list[dict], edges: list[dict], study: dict | None = None) ->
 
     placer = _Placer()
     node_parts: list[str] = []
+    used: list[Glyph] = []
+    plain: dict[str, list[str]] = {}
     for node in nodes:
         node_id = _text(node.get("id"))
         if node_id not in grid.positions:
             continue
         gx, gy = grid.positions[node_id]
         x, y = sx(gx), sy(gy)
-        pressure = _num(node.get("pressure_kPa"))
+        kind = _text(node.get("kind"))
+        device = bool(node.get("_device"))
+        pressure = None if device else _num(node.get("pressure_kPa"))
         share = None
         if pressure is not None and p_low is not None:
             share = (pressure - p_low) / (p_high - p_low) if p_high > p_low else 1.0
-        hover = [node_id, _text(node.get("kind"))]
-        if _num(node.get("elevation_m")) is not None:
-            hover.append(f"z {_num(node['elevation_m']):.2f} m")
-        if pressure is not None:
-            hover.append(f"{pressure:.1f} kPa")
-        if _num(node.get("flow_kg_s")) is not None:
-            hover.append(f"{_num(node['flow_kg_s']):.3f} kg/s net")
-        node_parts.append(_node_shape(_text(node.get("kind")), x, y, _pressure_fill(share), ", ".join(b for b in hover if b)))
-        node_parts.append(f'<text class="node-label" x="{x:.1f}" y="{y - 12:.1f}" text-anchor="middle">{_esc(node_id)}</text>')
+        glyph = _drawable(kind)
+        hover = _node_hover(node, glyph)
+        if glyph is not None:
+            mirror = mirrored(glyph.facing, sides.get(node_id, []), inflow.get(node_id, []))
+            node_parts.append(_symbol_node(glyph, device or glyph.device, x, y, share, mirror, hover))
+            half, half_x = _PLATE / 2.0, _plate_width(glyph) / 2.0
+            if glyph not in used:
+                used.append(glyph)
+        else:
+            markup, half, sub = _plain_node("DEVICE" if device else kind, x, y, share, hover)
+            half_x = half
+            node_parts.append(markup)
+            named = plain.setdefault(sub, [])
+            shown = kind or ("Junction" if sub == "junction" else "")
+            if shown not in named:
+                named.append(shown)
+        label_y = y - max(12.0, half + 4.0)
+        node_parts.append(f'<text class="node-label" x="{x:.1f}" y="{label_y:.1f}" text-anchor="middle">{_esc(node_id)}</text>')
         half_w = _label_width(node_id) / 2.0
-        placer.reserve((x - half_w, y - 12 - 9.6, x + half_w, y - 12 + 3))
-        placer.reserve((x - 8, y - 8, x + 8, y + 8))
+        placer.reserve((x - half_w, label_y - 9.6, x + half_w, label_y + 3))
+        placer.reserve((x - half_x, y - half, x + half_x, y + half))
         if node_id in callouts:
             text = "  ".join(callouts[node_id])
             box_w = _label_width(text, 11.0) + 14.0
+            top = y + max(20.0, half + 4.0)
             node_parts.append(
-                f'<rect class="callout" x="{x - box_w / 2:.1f}" y="{y + 20:.1f}" width="{box_w:.1f}" height="18" rx="4" />'
-                f'<text class="callout-label" x="{x:.1f}" y="{y + 33:.1f}" text-anchor="middle">{_esc(text)}</text>'
+                f'<rect class="callout" x="{x - box_w / 2:.1f}" y="{top:.1f}" width="{box_w:.1f}" height="18" rx="4" />'
+                f'<text class="callout-label" x="{x:.1f}" y="{top + 13:.1f}" text-anchor="middle">{_esc(text)}</text>'
             )
-            placer.reserve((x - box_w / 2, y + 20, x + box_w / 2, y + 38))
+            placer.reserve((x - box_w / 2, top, x + box_w / 2, top + 18))
 
-    labelled: list[tuple[str, list[tuple[float, float]], float | None, bool]] = []
+    labelled: list[tuple[str, list[tuple[float, float]], bool]] = []
     for edge in edges:
         eid = _text(edge.get("id"))
         route = grid.routes.get(eid)
@@ -348,6 +567,7 @@ def _diagram(nodes: list[dict], edges: list[dict], study: dict | None = None) ->
     parts.append("</svg>")
     parts.insert(0, '<div class="figure">')
     parts.append("</div>")
+    parts.append(_key(used, plain))
 
     axis = (
         "Elevation up the page in bands, each drawn above the levels below it; distance from the supply "
@@ -360,14 +580,36 @@ def _diagram(nodes: list[dict], edges: list[dict], study: dict | None = None) ->
         "Line weight is flow magnitude and the arrow is the direction the fluid actually runs. Node fill "
         "is pressure, deep where it is plentiful and pale where it runs out"
         + (f" ({p_high:.0f} down to {p_low:.0f} kPa)" if pressures else "")
-        + ". A dashed run closes a ring or a grid outside the spanning tree, opened where the flow divides."
+        + "."
+        + (" Equipment is drawn in an orange frame, each piece with every run to any of its ports."
+           if any(g.device for g in used) else "")
+        + " A dashed run closes a ring or a grid outside the spanning tree, opened where the flow divides."
         + (" The lighter runs are the critical path." if critical else "")
         + " Hover a node or a run for its figures; the schedules below have them all."
     )
     parts.append(
         f'<p class="caption">Schematic, not a P&amp;ID, and not to scale. {html.escape(axis)} {html.escape(legend)}</p>'
     )
-    return "".join(parts)
+    return "".join(parts), [g.symbol for g in used]
+
+
+def _sprite(names: list[str]) -> str:
+    """Each symbol the page uses, defined once and drawn wherever it appears by reference.
+
+    Emitted at the END of the page on purpose. A reference to a symbol defined later works in every
+    browser, and keeping it last means the first drawing on the page is the network itself."""
+    defs = []
+    for name in names:
+        symbol = SYMBOLS.get(name)
+        if not symbol:
+            continue
+        x, y, w, h = symbol["box"]
+        defs.append(f'<symbol id="{_symbol_id(name)}" viewBox="{x:g} {y:g} {w:g} {h:g}" overflow="visible">'
+                    f'<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">'
+                    f'{symbol["body"]}</g></symbol>')
+    if not defs:
+        return ""
+    return f'<svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">{"".join(defs)}</svg>'
 
 
 # ---------------------------------------------------------------------------------------------
@@ -375,13 +617,43 @@ def _diagram(nodes: list[dict], edges: list[dict], study: dict | None = None) ->
 # ---------------------------------------------------------------------------------------------
 
 
+def _notices(study: dict) -> list[dict]:
+    return [q for q in (study.get("qualifications") or []) if isinstance(q, dict)]
+
+
+def _withdrawn(notices: list[dict]) -> bool:
+    """A node at or below zero absolute, by its code or, as a backstop, by the engine's own sentence.
+
+    Over MCP a notice arrives as a sentence with no code, and the agent writing the study supplies the code.
+    The cost of a wrong code is a page that says "Solved" over an impossible pressure, so the sentence the
+    engine always writes for this notice ("Node 'x' settled at -28.80 kPa absolute") is read as well."""
+    for notice in notices:
+        if "NON_PHYSICAL" in _text(notice.get("code")).upper():
+            return True
+        match = _IMPOSSIBLE.search(_text(notice.get("what")))
+        if match and float(match.group(1)) <= 0.0:
+            return True
+    return False
+
+
+def _incomplete(study: dict, notices: list[dict]) -> bool:
+    """A run over time that stopped before its end: by its `completed` flag, its code, or its sentence."""
+    run = study.get("transient")
+    if isinstance(run, dict) and run.get("completed") is False:
+        return True
+    if study.get("completed") is False:
+        return True
+    return any("RUN_LIMIT" in _text(q.get("code")).upper() or _text(q.get("what")).lower().startswith(_INCOMPLETE)
+               for q in notices)
+
+
 def _verdict(study: dict) -> str:
     converged = study.get("converged")
     iterations = study.get("iterations")
-    notices = study.get("qualifications") or []
-    withdrawn = any("NON_PHYSICAL" in _text(q.get("code")).upper() for q in notices)
+    notices = _notices(study)
+    run = study.get("transient") if isinstance(study.get("transient"), dict) else {}
 
-    if withdrawn:
+    if _withdrawn(notices):
         tone, headline = "bad", "These results are withdrawn"
         detail = (
             "The solve reached a pressure no fluid can be at, which means the network cannot deliver "
@@ -393,6 +665,20 @@ def _verdict(study: dict) -> str:
             "The numbers below are the last iterate, not a solution. They are worth reading for where "
             "the solve got stuck, and worth nothing as an answer."
         )
+    elif _incomplete(study, notices):
+        tone, headline = "warn", "The run stopped early, before its end"
+        reached = []
+        if _num(run.get("steps")) is not None:
+            reached.append(f"{_fmt(run.get('steps'), 0)} steps")
+        if _num(run.get("simulated_s")) is not None:
+            reached.append(f"{_fmt(run.get('simulated_s'), 0)} s of the run")
+        detail = (
+            ("It computed " + " and ".join(reached) + ". " if reached else "")
+            + "Every step shown is a real solve, but the run did not reach the end it was asked for, so its "
+            "last state is not the answer and nothing here says what happens after it. The qualifications "
+            "say where it stopped and how to fit the run within the limit."
+        )
+        iterations = None
     elif notices:
         tone, headline = "warn", "Solved, with qualifications"
         detail = (
@@ -413,7 +699,7 @@ def _verdict(study: dict) -> str:
 
 def _qualifications(study: dict) -> str:
     """Never omitted. When there is nothing to say, the page says that rather than staying silent."""
-    rows = study.get("qualifications") or []
+    rows = _notices(study)
     if not rows:
         return (
             '<section id="qualifications"><h2>Qualifications</h2>'
@@ -585,8 +871,14 @@ def _run(study: dict) -> str:
     if not isinstance(run, dict):
         return ""
     facts = []
+    if run.get("completed") is True:
+        facts.append(("Completed", "yes"))
+    elif run.get("completed") is False:
+        facts.append(("Completed", "no, stopped early"))
     if _num(run.get("simulated_s")) is not None:
         facts.append(("Simulated", f"{_fmt(run.get('simulated_s'), 0)} s"))
+    if _num(run.get("steps")) is not None:
+        facts.append(("Steps", _fmt(run.get("steps"), 0)))
     if _num(run.get("timeStep_s")) is not None:
         facts.append(("Step", f"{_fmt(run.get('timeStep_s'), 1)} s"))
     if _text(run.get("stopReason")):
@@ -651,17 +943,17 @@ _CSS = """
 :root {
   color-scheme: light dark;
   --bg: #ffffff; --fg: #161a1d; --muted: #5a6470; --line: #d8dee6; --panel: #f6f8fa;
-  --good: #1a7f4b; --warn: #9a6400; --bad: #b3261e; --accent: #1f5c8b;
+  --good: #1a7f4b; --warn: #9a6400; --bad: #b3261e; --accent: #1f5c8b; --pressure: #1f6fb5;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #14171a; --fg: #e8ecef; --muted: #9aa5b1; --line: #2c3238; --panel: #1b1f24;
-    --good: #5ec98b; --warn: #e0a72a; --bad: #f0857c; --accent: #6db3e8;
+    --good: #5ec98b; --warn: #e0a72a; --bad: #f0857c; --accent: #6db3e8; --pressure: #5aa7e6;
   }
 }
 :root[data-theme="dark"] {
   --bg: #14171a; --fg: #e8ecef; --muted: #9aa5b1; --line: #2c3238; --panel: #1b1f24;
-  --good: #5ec98b; --warn: #e0a72a; --bad: #f0857c; --accent: #6db3e8;
+  --good: #5ec98b; --warn: #e0a72a; --bad: #f0857c; --accent: #6db3e8; --pressure: #5aa7e6;
 }
 * { box-sizing: border-box; }
 body {
@@ -698,6 +990,19 @@ ul { margin: 0; padding-left: 20px; }
 .schematic .run.critical { opacity: 1; filter: brightness(1.25); }
 .schematic .arrow { fill: var(--fg); }
 .schematic .node { stroke: var(--fg); stroke-width: 1.6; }
+.schematic .plate { fill: var(--panel); stroke: none; }
+.schematic .node.symbol { stroke: var(--muted); stroke-width: 1; }
+.schematic .node.device { fill: var(--bg); stroke: var(--warn); stroke-width: 1.6; }
+.schematic .node.device-dot { fill: var(--warn); }
+.schematic .glyph { color: var(--fg); pointer-events: none; }
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.key { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 10px 0 8px; padding: 0; color: var(--muted); font-size: 13px; }
+.key li { display: flex; align-items: center; gap: 7px; }
+.key-glyph { width: 26px; height: 26px; flex: none; color: var(--fg); }
+.key-glyph .tile { fill: var(--panel); stroke: var(--muted); stroke-width: 1; }
+.key-glyph .tile.device { fill: var(--bg); stroke: var(--warn); stroke-width: 1.6; }
+.key-glyph .tile.dot { fill: var(--pressure); fill-opacity: 0.45; stroke: var(--fg); stroke-width: 1.6; }
+.key-glyph .tile.equipment { fill: var(--warn); stroke: var(--fg); stroke-width: 1.6; }
 .schematic .datum { stroke: var(--line); stroke-dasharray: 2 6; }
 .schematic .datum-label { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 .schematic .node-label { fill: var(--fg); font-size: 12px; font-weight: 600; }
@@ -713,7 +1018,7 @@ figure { margin: 14px 0; }
 .chart .s0 { stroke: var(--accent); } .chart .s1 { stroke: var(--warn); }
 .chart .s2 { stroke: var(--good); } .chart .s3 { stroke: var(--bad); }
 footer { margin-top: 44px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
-@media print { body { background: #fff; } .figure { overflow: visible; } .schematic { width: 100%; height: auto; break-inside: avoid; } section { break-inside: avoid; } }
+@media print { body { background: #fff; } .figure { overflow: visible; } .key { break-inside: avoid; } .schematic { width: 100%; height: auto; break-inside: avoid; } section { break-inside: avoid; } }
 @media (max-width: 640px) {
   main { padding: 20px 16px 48px; }
   table { font-size: 13px; }
@@ -732,12 +1037,13 @@ def render(study: dict) -> str:
         _text(study.get("scenario")),
     ]
     meta = "".join(f"<span>{_esc(bit)}</span>" for bit in meta_bits if bit)
+    diagram, symbols = _diagram(study)
 
     body = "".join(
         [
             _verdict(study),
             _qualifications(study),
-            f"<section><h2>The network</h2>{_diagram(study.get('nodes') or [], study.get('edges') or [], study)}</section>",
+            f"<section><h2>The network</h2>{diagram}</section>",
             _critical_path(study),
             _devices(study),
             _run(study),
@@ -758,7 +1064,7 @@ def render(study: dict) -> str:
         "<footer>Computed with the EnergyFlowX hydraulic engine. Every figure here comes from the "
         "solve; nothing on this page was estimated by hand. Read the qualifications before quoting "
         "any number.</footer>"
-        "</main></body></html>\n"
+        f"</main>{_sprite(symbols)}</body></html>\n"
     )
 
 

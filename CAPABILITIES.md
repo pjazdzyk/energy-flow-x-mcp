@@ -8,7 +8,7 @@ the live fluid catalogue with every validity range. Hydronic MCP publishes its f
 as MCP resources. If this page and a server ever disagree, the server is right, and we would like to
 hear about it.
 
-Everything on this page was checked against the live servers on 24 September 2026.
+Everything on this page was checked against the live servers on 3 October 2026.
 
 ## Contents
 
@@ -32,8 +32,8 @@ Everything on this page was checked against the live servers on 24 September 202
 | --- | --- | --- |
 | Address | `https://energyflowx.com/energy-flow-x/mcp` | `https://energyflowx.com/energy-flow-x/mcp/hydronic` |
 | Name in the plugin | `energy-flow-x` | `energy-flow-x-hydronic` |
-| Tools | 11 | 4, plus 6 resources |
-| Account | an API key is optional: refrigerants, brines, larger sweeps | required: sign in (OAuth), or an API key |
+| Tools | 11 | 4, plus 9 resources |
+| Account | an API key is optional: refrigerants, brines, the steam humidifier, larger sweeps | required: sign in (OAuth), or an API key |
 | What it does | properties, sizing, air processes | builds and solves whole pipe networks |
 
 The network tools live on their own address because a client carries every tool's schema on every
@@ -75,16 +75,23 @@ Tools: `get_fluid_properties`, `list_fluids`.
   - Steam takes any two of pressure, temperature, specific enthalpy, specific entropy and vapour
     quality. On the saturation line, use vapour quality, because pressure and temperature are not
     independent there.
+  - Every steam state returns its phase, its IAPWS-IF97 region and, inside the dome, its vapour
+    quality. `metastable=true` with a pressure and a temperature gives supercooled (metastable)
+    vapour below the saturation temperature.
+- **Site elevation**: for air, steam and ice, `pressure` also takes an elevation (`"300m"`,
+  `"1000ft"`), converted to the standard-atmosphere pressure there and stated in the answer.
 - **Air**:
-  - Dry air, by the Lemmon reference equation of state, from 60 to 2000 K up to 70 MPa.
+  - Dry air, by the Lemmon reference equation of state, from 60 to 2000 K up to 70 MPa. It returns
+    the enthalpy on the HVAC datum (zero at 0 °C) beside the absolute one.
   - Humid air, as moist-air psychrometrics over the dry-air and water reference models, from about
     −80 to 200 °C, humidity ratio up to 3 kg/kg.
   - Humid air takes pressure plus one pair: temperature with relative humidity, temperature with
     humidity ratio, wet bulb with relative humidity, dew point with relative humidity, enthalpy with
     humidity ratio, or humidity ratio with relative humidity. Dry bulb with wet bulb and dry bulb with
     dew point are not accepted pairs.
-  - It returns humid air's thermophysical properties, the 20 below. It does not return humidity
-    ratio, dew point or wet bulb. Every air state from [`calculate_air_process`](#air-handling) does.
+  - It returns humid air's thermophysical properties, the 20 below, and by default its psychrometric
+    state too: relative humidity, humidity ratio, dew point, wet bulb, saturation pressure, water
+    vapour partial pressure and the maximum humidity ratio at that temperature.
 - **Industrial gases**: hydrogen, carbon dioxide, ammonia, propane, nitrogen, oxygen, argon, helium,
   methane and nitrous oxide. Each uses its multiparameter Helmholtz reference equation of state, valid
   from the triple point to the upper limit of that equation.
@@ -139,8 +146,10 @@ Tool: `get_saturation_properties`.
 
 Tool: `get_natural_gas_properties`.
 
-- **Method**: the GERG-2008 wide-range equation of state (ISO 20765-2), valid from 90 to 450 K up to
-  70 MPa, with calorific values and Wobbe index per ISO 6976.
+- **Method**: the GERG-2008 wide-range equation of state (ISO 20765-2), with calorific values and
+  Wobbe index per ISO 6976. Valid from the composition's own lower limit (about 90 K for a
+  methane-rich gas) to 700 K, up to 70 MPa, the extended range. It is most accurate, about 0.1 % in
+  density, from 90 to 450 K up to 35 MPa, and every answer states the range it used.
 - **Presets**: `PL_GZ50`, `PL_GZ415`, `PL_GZ35`, `US_PIPELINE`, `NG_H2_20` (20 % hydrogen),
   `RAW_BIOGAS`, `PURE_PROPANE`, `PURE_BUTANE` and `LPG_PROPANE_BUTANE`.
 - **Your own composition**: mole fractions over 21 components. They should sum to 1; a composition that
@@ -148,8 +157,13 @@ Tool: `get_natural_gas_properties`.
   methane, nitrogen, carbon dioxide, ethane, propane, isobutane, n-butane, isopentane, n-pentane,
   n-hexane, n-heptane, n-octane, n-nonane, n-decane, hydrogen, oxygen, carbon monoxide, water,
   hydrogen sulfide, helium and argon.
-- **Always returned**: gross and net calorific value per m³ and per kg, superior and inferior Wobbe
-  index, relative density and molar mass.
+- **Always returned**: gross and net calorific value per mole, per kg and per m³, superior and
+  inferior Wobbe index, relative density, molar mass, the calorific compressibility factor, and a
+  flammability block: lower and upper flammability limits, stoichiometric concentration and air-fuel
+  ratios, combustible and inert content, and indicative Wobbe interchangeability bands. The
+  flammability figures are informational estimates, not for safety design, and the answer says so.
+- **Reference conditions**: `referenceCondition` picks the combustion and metering pair, one of
+  `NORMAL_0C`, `STANDARD_15C`, `ISO_25C_0C`, `ISO_25C_15C` (default), `ISO_25C_20C` or `US_60F`.
 - **Thermodynamic properties** at the stated temperature and pressure: the same property names as
   `get_fluid_properties`.
 - The same presets and compositions are accepted by `size_conduit` and `select_conduit_size`, so a gas
@@ -159,8 +173,10 @@ Tool: `get_natural_gas_properties`.
 
 Tool: `get_solid_properties`.
 
-- Density, specific heat, specific enthalpy, specific volume and specific entropy of ice at or below
-  0 °C, at any stated pressure.
+- Density, specific heat, specific volume, specific entropy, internal, Gibbs and Helmholtz energy,
+  isothermal and isentropic compressibility, cubic expansion and pressure coefficient of ice at or
+  below 0 °C, at any stated pressure.
+- Enthalpy on both datums: the absolute IAPWS-06 value and the HVAC value, zero for ice at 0 °C.
 - Liquid water below 0 °C is outside the IAPWS liquid model, and the error points here.
 
 ## Unit conversion
@@ -177,7 +193,9 @@ Tool: `convert_units`.
 
 Tools: `search_conduit_catalog`, `get_conduit_dimensions`.
 
-- **Search** by catalogue code or manufacturer, for pipes or ducts. Each product returns its shape,
+- **Search** by catalogue code or manufacturer, for pipes or ducts, and narrow it with `filters`: an
+  application (`HEATING`, `CHILLED_WATER`, `NATURAL_GAS`, `COMPRESSED_AIR`, `STEAM`, ...) or, for
+  ducts, a shape (`RECTANGULAR`, `CIRCULAR`). Each product returns its shape,
   its wall roughness variants, its size classes (PN, SDR or schedule for pipe) and every size it comes
   in.
 - **17 pipe products**:
@@ -204,8 +222,9 @@ Tool: `size_conduit`.
   natural gas by preset or composition.
 - **Flow**: volumetric flow, mass flow, dry-air mass flow for humid air, or a heat load with supply and
   return temperatures for water, glycols, brines and air.
-- **Outputs**: velocity, pressure drop over the run (or per metre without a length), Reynolds number,
-  friction factor and flow regime.
+- **Outputs**: velocity, pressure drop over the run (or per metre without a length), the linear
+  resistance, Reynolds number, friction factor and flow regime, and the section itself: hydraulic
+  diameter, inner area and perimeter, the fluid volume in the run and the fluid mass per metre.
 - **Method**: Darcy-Weisbach, 64/Re in laminar flow, a linear bridge from Re 2300 to 4000, and
   Colebrook-White in turbulent flow. It is the same solver as the web sizing calculator.
 - **Gases and steam need a length**, because their density changes along the run. The friction then
@@ -288,7 +307,8 @@ Tool: `calculate_air_process`.
 
 - One block, or a straight chain of up to 8. Each step's outlet feeds the next.
 - The inlet air is given by temperature, humidity (relative humidity or humidity ratio), flow and
-  pressure. The pressure is shared by every stream, so a site away from sea level is one field.
+  pressure. Every extra stream takes the inlet's pressure unless it states its own, as the web mixing
+  and heat recovery pages allow.
 - Extra streams, such as return air for a mixing box or extract air for heat recovery, are listed once
   and named by the steps that use them.
 - The flow can be stated at the inlet or as the flow the chain delivers at its outlet.
@@ -315,10 +335,21 @@ Tool: `calculate_air_process`.
     temperature. It reports the coldest surface, whether frost protection engaged and any residual
     risk.
   - Returns EN 308 temperature and humidity effectiveness, recovered power, preheater power and
-    condensate on either side, and the achievable range when a target is out of reach.
+    condensate on either side, and, in a target mode, the achievable range (the supply temperature
+    and recovered power at 0 % and 100 % effectiveness), whether or not the target was reached.
 - **Fan**: a total pressure rise and a total efficiency. Returns air, shaft and electrical power, the
   specific fan power, and the heat the fan adds to the stream.
-- **Steam humidifier**: to a target relative humidity, from steam at a stated supply pressure.
+- **Steam humidifier** (API key): everything the web calculator does.
+  - The steam: saturated at a stated supply pressure (2 bar absolute if omitted), superheated
+    (`steamState` a temperature, e.g. `"180oC"`), wet (`steamState` a vapour quality, e.g. `"0.95"`)
+    or from an electrode or resistive generator (`steamState` `ELECTRODE`, which boils at one
+    standard atmosphere and takes no supply pressure).
+  - Aimed at exactly one of: an outlet relative humidity, an outlet humidity ratio
+    (`targetHumidityRatio`), an outlet dew point (`processDewPoint`), or a given `steamFlow`.
+  - Absorption (`humidityEffectiveness`), lance heat loss (`jacketLoss`) and the air-side
+    `pressureLoss`, each stated as an assumption when omitted.
+  - Returns the steam offered and absorbed, the humidification duty, the friction heat, the small
+    temperature rise and the steam supply enthalpy and temperature.
 - **Air-water contact**: a recirculating washer, wetted media, spray chamber, high-pressure atomiser,
   ultrasonic humidifier or compressed-air atomiser, adiabatic or with a stated spray water temperature.
 - **Dehumidification**: to a moisture target with the dry bulb put back. The reheat comes from nothing,
@@ -367,8 +398,10 @@ for you to approve), or sends an API key.
   pressure, ON_OFF pressure or flow switches and PI loops, over the duration `set_transient` states.
   Returned: each vessel's swing with when, the lowest pressures and when, each machine's starts,
   average power, energy and recovered heat, how far each store charged, every command change and a
-  sampled table of 24 rows. At most 2,000 steps, and a run predicted to take over 60 s is refused with
-  the step that would fit.
+  sampled table of 24 rows. At most 2,000 steps (fewer on a large network) and 30 s of computing, and
+  the whole server runs one transient at a time, shared by all users. A run that meets a limit returns
+  the steps it computed, marked incomplete. For free use these limits may be lowered to match server
+  capacity, and longer runs are quoted individually.
 - **Not yet**: fans (a pump curve is a liquid's), control valves, balancing and regulation. Also not
   modelled: two-phase flow (wet steam, condensate with flash steam), heat exchange between a pipe and
   its surroundings, water hammer and surge, and devices that change the fluid, such as dryers and
@@ -382,8 +415,8 @@ for you to approve), or sends an API key.
   sessions and `close` one.
 - Export in two formats: `session`, which opens again here, and `request`, the payload the EnergyFlowX
   REST API takes.
-- A session belongs to the account whose key created it. Another account cannot read it, and any key
-  of the same account can.
+- A session belongs to the account that created it, however that account connected: by signing in
+  or with an API key. Another account cannot read it, and the same account can, by either route.
 - Sessions expire after 24 hours, so export is the save.
 - Up to 20 open sessions per account, and up to 2,000 nodes and edges per design. For free use these
   limits may be lowered at any time to match server capacity.
@@ -530,6 +563,11 @@ Nine MCP resources carry the vocabulary, so it costs nothing on a turn that does
   orthogonal schematic: every branch in a lane of its own, elevation in bands up the page, a ring or a
   grid opened where its flow divides, pressure as node fill), node and edge schedules, and a
   qualifications section that is never dropped.
+- The diagram draws boundaries, demands, receivers and every piece of equipment in the P&ID symbols
+  of the EnergyFlowX Hydronic builder, with a key beneath it. Each device is one symbol however many
+  ports its pipes reach, carries its headline figures, and turns to face the way its fluid runs.
+- A run over time that stopped at its compute limit is headed as unfinished, never as solved, and a
+  node at an impossible pressure withdraws the whole page, whether or not the code was copied in.
 
 ## Limits and access
 

@@ -258,8 +258,91 @@ def test_capabilities_page_matches_the_server() -> None:
           f"unknown: {sorted(named - documented)}")
 
 
+def test_counts_agree_with_their_lists() -> None:
+    print("a number on the page agrees with the list it counts")
+    page = (REPO / "CAPABILITIES.md").read_text(encoding="utf-8")
+    listed = set(re.findall(r"hydronic://[a-z/-]+", page))
+    claimed = re.search(r"\| Tools \| \d+ \| \d+, plus (\d+) resources \|", page)
+    # The table said 6 while the list under it named 9, for three releases. A count typed by hand is the
+    # first thing to drift from the list it counts.
+    check("the server table's resource count matches the resources listed",
+          claimed is not None and int(claimed.group(1)) == len(listed),
+          f"table says {claimed.group(1) if claimed else '?'}, the page lists {len(listed)}")
+    if MCP_MD.is_file():
+        served = set(re.findall(r"hydronic://[a-z/-]+", MCP_MD.read_text(encoding="utf-8")))
+        check("and the page lists every resource the server documents", served <= listed,
+              f"missing: {sorted(served - listed)}")
+
+
+# Claims that were true once and are not now. Each entry says what replaced it, because a phrase on this
+# list is only ever reintroduced by someone copying an old paragraph.
+RETIRED = {
+    "predicted to take": "the server no longer predicts a run's length and refuses it; a run that meets "
+                         "its limit returns the steps it computed, marked INCOMPLETE",
+    "This run was NOT started": "same: the predictive refusal is gone",
+    "over a minute": "same: the 60 s refusal is gone",
+    "Retry-After` and the code": "the throttled call carries retryAfterSeconds in its JSON-RPC error data",
+}
+
+
+def test_no_retired_claim_is_repeated() -> None:
+    print("no claim the server has retired")
+    texts = {path.relative_to(REPO): path.read_text(encoding="utf-8")
+             for path in [REPO / "README.md", REPO / "CAPABILITIES.md", *SKILLS.rglob("*.md")]}
+    for phrase, why in RETIRED.items():
+        found = [str(name) for name, text in texts.items() if phrase in text]
+        check(f'nobody says "{phrase}"', not found, f"{found}: {why}")
+    skill = (SKILLS / "hydronic" / "SKILL.md").read_text(encoding="utf-8")
+    check("the hydronic skill says what to tell a user about an unfinished run",
+          "completed: false" in skill and "INCOMPLETE" in skill and "not quote it as the outcome" in skill)
+
+
+def test_the_study_symbols_are_the_builders() -> None:
+    print("the study's P&ID symbols")
+    scripts = SKILLS / "hydronic" / "scripts"
+    sys.path.insert(0, str(scripts))
+    try:
+        from study_glyphs import symbol_names
+        from study_symbols import SYMBOLS
+    finally:
+        sys.path.remove(str(scripts))
+    missing = [name for name in symbol_names() if name not in SYMBOLS]
+    check("every symbol the glyph map names is embedded", not missing, f"missing: {missing}")
+    # The renderer must stay one script with no image files to find: the directory holds a plugin for a
+    # reviewer when a script refers to bundled images.
+    images = [p.name for p in scripts.rglob("*") if p.suffix.lower() in {".svg", ".png", ".jpg", ".gif", ".webp"}]
+    check("no image file is bundled beside the scripts", not images, f"{images}")
+    sync = REPO / "tools" / "sync_symbols.py"
+    ui = REPO.parent / "energy-flow-x-ui" / "src" / "assets" / "pid"
+    if not ui.is_dir():
+        print(f"  skip  no energy-flow-x-ui beside this repository ({ui})")
+        return
+    sys.path.insert(0, str(sync.parent))
+    try:
+        from sync_symbols import TARGET, build
+    finally:
+        sys.path.remove(str(sync.parent))
+    check("the embedded symbols match the builder's files", TARGET.read_text(encoding="utf-8") == build(),
+          "a symbol changed in the builder: run python tools/sync_symbols.py")
+
+
+def test_the_license_is_named_the_way_the_directory_reads_it() -> None:
+    print("licence")
+    plugin = json.loads((PLUGIN / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    license_id = plugin.get("license", "")
+    # The manifest field is an SPDX identifier. A proprietary licence has none, and SPDX's form for that is a
+    # LicenseRef- name pointing at the LICENSE file the directory also requires.
+    check("license is an SPDX identifier or a LicenseRef", bool(re.fullmatch(r"LicenseRef-[A-Za-z0-9.-]+|[A-Za-z0-9.+-]+", license_id)),
+          license_id)
+    check("and the LICENSE file it refers to is in the plugin", (PLUGIN / "LICENSE").is_file())
+
+
 def main() -> int:
-    for test in [test_manifests_parse,
+    for test in [test_counts_agree_with_their_lists,
+                 test_no_retired_claim_is_repeated,
+                 test_the_study_symbols_are_the_builders,
+                 test_the_license_is_named_the_way_the_directory_reads_it,
+                 test_manifests_parse,
                  test_frontmatter_is_portable,
                  test_tool_names_match_the_server,
                  test_access_terms_are_stated,

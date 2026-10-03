@@ -69,15 +69,27 @@ produces an em dash or an omitted section, never a guess.
 
 ### Equipment and a run over time
 
-Copy the solve's `devices` rows in as they are, and for a run over time a `transient` object carrying
-its `simulated_s`, `timeStep_s`, `stopReason`, `vessels`, `events` and `series`:
+Copy the solve's `devices` rows in as they are, and give each run its endpoints **as authored**, port
+and all: a pipe from `"comp.airOut"` to `"receiver"` stays exactly that. The renderer draws each device
+that a run reaches as its P&ID symbol, once, with every run to any of its ports ending on it, and puts
+its headline figures beside it (a pump's rise and flow, a compressor's electrical input and recovered
+heat, a heater's or exchanger's duty, a store's temperature). Only an endpoint whose prefix is the id of
+a device in `devices` is read this way, so a node whose own id contains a dot stays a node.
+
+For a run over time add a `transient` object carrying its `completed`, `steps`, `simulated_s`,
+`timeStep_s`, `stopReason`, `vessels`, `events` and `series`. Never leave out `completed`: it is what
+heads an unfinished run as unfinished.
 
 ```json
 {
   "devices": [
     {"id": "comp", "type": "COMPRESSOR", "electricalPower_kW": 34.3, "recoveredEnergy_kWh": 8.14, "starts": 7}
   ],
+  "edges": [
+    {"id": "a2", "from": "comp.airOut", "to": "receiver", "size": "DN50", "flow_kg_s": 0.12}
+  ],
   "transient": {
+    "completed": true, "steps": 120,
     "simulated_s": 1200, "timeStep_s": 10, "stopReason": "Reached time horizon (1200.0 s).",
     "vessels": [{"id": "receiver", "start_kPa": 800, "min_kPa": 719.4, "min_at_s": 120,
                  "max_kPa": 910.4, "max_at_s": 1200, "end_kPa": 910.4}],
@@ -103,22 +115,30 @@ Convert once, on the way in, and never again.
 
 ### `qualifications`
 
-Map each entry from the engine's `runNotices`:
+Over MCP the engine's run notices arrive in the solve's `warnings` as sentences, with no code. Copy
+each one that is a run notice into `qualifications`, the sentence **verbatim** as `what`, and give it the
+code its wording names:
 
-| study field | from |
-| --- | --- |
-| `element` | `elementId` |
-| `code` | `code` |
-| `finding` | a short human phrase for the code, e.g. "Pump outside rated range" |
-| `what` | `message`, **verbatim** |
+| The sentence | `code` | `finding`, a short phrase |
+| --- | --- | --- |
+| "Node '…' settled at … kPa absolute" | `NON_PHYSICAL_PRESSURE` | Impossible pressure |
+| "This transient run is INCOMPLETE …" | `RUN_LIMIT_REACHED` | Stopped at its compute limit |
+| "Pump '…' settled at … kg/s, outside the … range its curve describes" | `PUMP_OUTSIDE_RATED_RANGE` | Pump outside rated range |
+| "… could not evaluate its fluid's …, so a … was used" | `FLUID_PROPERTY_SUBSTITUTED` | Fluid property substituted |
+| a quantity "held at" or "clamped at" a limit | `VALUE_CLAMPED` | Value held at a limit |
+| any other notice | `RUN_NOTICE` | the gist, in a few words |
+
+Set `element` to the id the sentence names. Over the REST API the notices come as `runNotices` records
+with `code`, `elementId` and `message`, so copy those across directly.
 
 Relay the engine's sentence unchanged. It carries the numbers that let a reviewer decide whether it
 matters, and rewriting "past the 3.50 kg/s runout" into "outside its range" deletes the only figure on
-the line.
+the line. Validation warnings and assumptions are not notices: assumptions go under `assumptions`.
 
-A `NON_PHYSICAL_PRESSURE` entry changes the whole page: the verdict becomes "These results are
-withdrawn" and the reader is told not to quote anything. The renderer does that on the code, so get the
-code right.
+Two codes change the whole page. `NON_PHYSICAL_PRESSURE` makes the verdict "These results are withdrawn"
+and tells the reader not to quote anything. `RUN_LIMIT_REACHED`, or a `transient` block with `completed:
+false`, makes it "The run stopped early, before its end". The renderer also reads the engine's own
+sentence for both, as a backstop, but get the code right: it is what the qualifications table shows.
 
 An empty list is fine and is not the same as omitting the field. Either way the section still appears,
 saying the solve raised nothing. A heading that only shows up when there is bad news teaches readers
@@ -165,20 +185,29 @@ than invented (`scripts/study_layout.py`, which has no idea what SVG is and is t
   with a datum line and its level on the left, so elevation is still up the page without a whole
   floor collapsing onto one row. With no elevations anywhere it is a topology sketch and the caption
   says so.
+- **P&ID symbols.** Pressure boundaries, demands, outlets, receivers and every device are drawn in the
+  symbols the EnergyFlowX Hydronic builder uses, each on a plate, with a key under the drawing that
+  names every symbol and shape on it. Equipment sits on a plate with an orange frame. A junction stays a
+  dot, because a connection is a dot. A kind no symbol is mapped for keeps a plain shape, and the key
+  names it by the kind the study gave it, rather than by a symbol that would be read as a statement about
+  the plant. A pump or a compressor turns to face the way its fluid actually runs, and a boundary or a
+  terminal turns to face its pipe. The symbols are embedded in the script, so the page needs nothing else.
 - **Line weight = flow magnitude**, relative to the largest in the network. **Arrow = direction**,
-  from the sign. **Node fill = pressure**, deep where it is plentiful and pale where it runs out, so
-  the weak end is visible without reading a figure. The critical path, when the study names one, is
+  from the sign. **Node fill = pressure**, a tint deep where it is plentiful and pale where it runs out,
+  so the weak end is visible without reading a figure. The critical path, when the study names one, is
   drawn lighter.
 - **Labels are rationed.** An id beside each node and a size along each run, nothing else. Every
   figure is on hover (the `<title>` of each node and run), in the schedules, and in at most six
-  call-outs: the supply, each device's outlet, the far end of the critical path and the lowest
-  pressure. A run label with no clear spot is left off rather than printed on top of something.
+  call-outs: the supply, the far end of the critical path, the lowest pressure and each device. A run
+  label with no clear spot is left off rather than printed on top of something.
 - **The canvas grows with the network** and scrolls when wider than the page. It never shrinks the
   drawing below three quarters of its natural size, so the text stays legible.
 
 `scripts/test_study_layout.py` parses the SVG the renderer emits and fails on any two labels that
-touch, any run that crosses a label or a call-out, and anything outside the canvas, on a sprinkler
-tree, the same tree closed into a grid, a ring main with long names, a wide tree and a flat one.
+touch, any run that crosses a label or a call-out, any label on a symbol, and anything outside the
+canvas, on a sprinkler tree, the same tree closed into a grid, a ring main with long names, a wide tree,
+a flat one and a compressor room drawn in symbols. It also checks that the key names every kind of mark
+on the drawing.
 
 The caption calls it a schematic, not a P&ID, and not to scale. Leave that in.
 
@@ -190,5 +219,7 @@ python3 scripts/test_study_layout.py
 ```
 
 Covers the invariants that matter: the qualifications section is always emitted, a non-physical
-pressure withdraws the results, a non-converged run says its numbers are a last iterate, missing values
-render as dashes rather than zeros, and a network with no elevations still draws.
+pressure withdraws the results (by its code or by the engine's sentence), a run that stopped at its
+limit is never headed as solved, a non-converged run says its numbers are a last iterate, missing values
+render as dashes rather than zeros, each device is one symbol however many ports it has, a pump's
+symbol turns with its flow, and a network with no elevations still draws.

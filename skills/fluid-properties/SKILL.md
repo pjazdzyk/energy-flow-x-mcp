@@ -77,12 +77,11 @@ Two common pairs are not on that list:
 
 ### Psychrometric quantities
 
-`get_fluid_properties` gives humid air's thermophysical properties (density, viscosity, cp,
-conductivity, enthalpy and the rest of the 20), **not** its psychrometric state: it does not return
-humidity ratio, dew point or wet bulb. For those, call `calculate_air_process` with one `HEATING`
-step whose `targetTemperature` is the inlet temperature. The step changes nothing, and every state
-it reports carries relative humidity, humidity ratio, enthalpy, dew point, wet bulb and density. Any
-`flow` will do for a state, so say that the flow is nominal if you show it.
+`get_fluid_properties` for `HUMID_AIR` returns the psychrometric state by default: relative humidity,
+humidity ratio, dew point, wet bulb, saturation pressure, water vapour partial pressure and the
+maximum humidity ratio, alongside density, cp, enthalpy and the rest. Ask for one of them by name in
+`properties` when you need only that. Quote the pressure used, because every psychrometric value
+moves with it.
 
 ## Units
 

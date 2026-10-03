@@ -54,12 +54,20 @@ def _text(value: Any) -> str:
 
 
 def supply_id(nodes: list[dict], edges: list[dict]) -> Optional[str]:
-    """The node the network is fed from: an explicit flag, then a pressure boundary, then any node."""
+    """The node the network is fed from: an explicit flag, then a pressure boundary, then any node.
+
+    A FIXED_PRESSURE boundary wins over anything else with "pressure" in its kind. A receiver is a
+    PRESSURE_TANK, and a compressed-air design listed with its receiver first would otherwise be drawn
+    from the receiver, with the compressor that charges it hanging off the side."""
     for node in nodes:
         if node.get("isSupply"):
             return _text(node.get("id"))
     for node in nodes:
-        if "PRESSURE" in _text(node.get("kind")).upper():
+        if _text(node.get("kind")).upper() == "FIXED_PRESSURE":
+            return _text(node.get("id"))
+    for node in nodes:
+        kind = _text(node.get("kind")).upper()
+        if "PRESSURE" in kind and "TANK" not in kind:
             return _text(node.get("id"))
     if nodes:
         return _text(nodes[0].get("id"))

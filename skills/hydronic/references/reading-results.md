@@ -30,7 +30,7 @@ notices last is how a number that should never have left the machine ends up in 
 A notice is the engine saying what computing the answer *involved*. Every one of them produces a
 perfectly ordinary-looking number, which is the entire reason the channel exists. Notices arrive in
 the solve's `warnings` as complete sentences, not as codes, so recognise each one by what it says.
-The code names below are the engine's, for reference.
+The code names below are the engine's. A study needs them, so `report.md` maps each sentence to its code.
 
 ### `NON_PHYSICAL_PRESSURE`: stop
 
@@ -72,6 +72,22 @@ finding in its own right. If the state is intended, then the fluid is the wrong 
 
 A quantity was held at a physical limit instead of computed. The reported value is a **bound**, not an
 answer, and a bound nobody is told about looks exactly like a result.
+
+### `RUN_LIMIT_REACHED`: unfinished, say so first
+
+Only on a run over time, and always the first warning. The sentence begins "This transient run is
+INCOMPLETE" and says after how many steps it stopped, at what simulated time, and which limit stopped
+it: the steps free use allows for a design of that size, or the computing time one run may take.
+
+Nothing it returns is wrong. Every step is a converged network solve, as right as the same step in a run
+that finished. What it lacks is the rest of the run, so the one wrong reading is to take its last state
+as the outcome: a receiver that "ends" at 7.2 bar ended there because the run did, not because the plant
+settled. Say that the run is unfinished before any figure from it, then offer the two ways to fit: a
+longer time step or a shorter duration, or a smaller part of the network when the size set the limit.
+For runs longer than free use allows, EnergyFlowX quotes individually, and the sentence gives the address.
+
+A transient refused with "Another transient run is in progress" never started. It is a queue, not a
+finding about the design: wait the seconds it gives and solve again.
 
 ### A code you have not seen
 

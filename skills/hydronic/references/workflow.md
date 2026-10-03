@@ -38,9 +38,9 @@ They are **resources, not tools**, which is why they cost nothing on a turn wher
 Most MCP clients do not fetch resources unless asked, so ask.
 
 **Pace them.** About a second between reads. The endpoint is rate limited, and reading six resources
-back to back is enough to trip it. A throttled call comes back as a JSON-RPC error carrying a
-`Retry-After` and the code `-32000`, so you will know what happened, but a second of patience beats a
-round of retries.
+back to back is enough to trip it. A throttled call comes back as a JSON-RPC error with the code
+`-32000` and the seconds to wait in its data as `retryAfterSeconds`, so you will know what happened, but
+a second of patience beats a round of retries.
 
 Start with the recipe that matches the shape of the problem. A riser and a ring are the two topologies
 almost everything else is a variation on, and reading one complete worked design teaches the op
@@ -131,7 +131,7 @@ network, and 30 s of computing (free-use defaults, which may be lower), and the 
 transient at a time, shared by all users.
 A run that meets a limit is not refused: it returns the steps it computed with `completed: false` and an
 INCOMPLETE warning first. Tell the user it is unfinished, never present its last state as the answer,
-and suggest a longer `timeStep` or a shorter duration; longer runs are quoted individually at
+and suggest a longer `timeStep` or a shorter duration. Longer runs are quoted individually at
 info@energyflowx.com. While another run is in progress the call is refused with when to retry.
 `detail` is the number of rows in each ranking: the worst edges by the head they consume, the fastest
 pipes, and the lowest and highest pressure nodes. The default is 5 and the maximum is 50, so a network
@@ -184,9 +184,8 @@ A client that needs both connects to both.
 
 ## Errors you will actually meet
 
-**`-32000` with `retryAfterSeconds`**: rate limited. Wait the stated seconds. An API key raises the
-budget. Batching edits and reading each vocabulary resource once are the two things that keep you
-under it.
+**`-32000` with `retryAfterSeconds`**: rate limited. Wait the stated seconds. Batching edits and reading
+each vocabulary resource once are the two things that keep you under it.
 
 **"needs your EnergyFlowX account"**: the hydronic tools need a signed-in account (or an API key).
 The message says how to connect. Relay the access terms with it.
@@ -199,8 +198,12 @@ second.
 means the pressure was driven to or below zero somewhere, which means the network cannot deliver the
 demand being asked of it. The server now explains this and keeps the original message underneath.
 
-**"This run was NOT started"**: the transient was predicted to take over a minute. The message gives
-the step that fits.
+**"This transient run is INCOMPLETE"**, as the first warning of a transient: the run met its step or
+time limit and returned the steps it computed, with `completed: false`. It is an answer about part of the
+run, never about its end. SKILL.md, "A run over time", says what to tell the user.
+
+**"Another transient run is in progress"**: the server runs a limited number of runs at once for all
+users together. Wait the seconds the message gives, then solve again. Nothing is wrong with the design.
 
 **"has ports with no pipe"**: pipe every port of the device named, or for a compressor leave both water
 ports open.

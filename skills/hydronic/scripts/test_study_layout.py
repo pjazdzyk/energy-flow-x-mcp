@@ -95,6 +95,32 @@ def ring(size: int = 8) -> dict:
     return {"title": "ring", "converged": True, "nodes": nodes, "edges": edges}
 
 
+def compressor_room(consumers: int = 5) -> dict:
+    """Plant drawn with symbols: a compressor and a pump as devices reached through their ports, a receiver,
+    a ring of consumers, and the heat-recovery water side, so the bigger plates meet the no-overlap guard."""
+    nodes = [{"id": "intake", "kind": "FIXED_PRESSURE", "elevation_m": 0, "pressure_kPa": 100, "flow_kg_s": -0.6},
+             {"id": "receiver", "kind": "PRESSURE_TANK", "elevation_m": 0, "pressure_kPa": 800},
+             {"id": "header", "kind": "JUNCTION", "elevation_m": 3, "pressure_kPa": 790},
+             {"id": "boilerRoom", "kind": "FIXED_PRESSURE", "elevation_m": 0, "pressure_kPa": 250}]
+    edges = [{"id": "in", "from": "intake", "to": "comp.airIn", "size": "DN100", "flow_kg_s": 0.6},
+             {"id": "out", "from": "comp.airOut", "to": "receiver", "size": "DN65", "flow_kg_s": 0.6},
+             {"id": "up", "from": "receiver", "to": "header", "size": "DN65", "flow_kg_s": 0.6},
+             {"id": "w1", "from": "boilerRoom", "to": "pump.inlet", "size": "DN32", "flow_kg_s": 0.4},
+             {"id": "w2", "from": "pump.outlet", "to": "comp.waterIn", "size": "DN32", "flow_kg_s": 0.4},
+             {"id": "w3", "from": "comp.waterOut", "to": "store.in", "size": "DN32", "flow_kg_s": 0.4}]
+    previous = "header"
+    for k in range(1, consumers + 1):
+        nodes.append({"id": f"press-{k}", "kind": "FIXED_DEMAND", "elevation_m": 3, "pressure_kPa": 780 - 4 * k,
+                      "flow_kg_s": 0.12})
+        edges.append({"id": f"r{k}", "from": previous, "to": f"press-{k}", "size": "DN40",
+                      "flow_kg_s": 0.12 * (consumers - k + 1)})
+        previous = f"press-{k}"
+    devices = [{"id": "comp", "type": "COMPRESSOR", "electricalPower_kW": 61.0, "recoveredHeat_kW": 44.0},
+               {"id": "pump", "type": "PUMP", "massFlow_kgps": 0.4, "rise_kPa": 38.0},
+               {"id": "store", "type": "STORAGE_TANK", "stored_C": 52.0}]
+    return {"title": "compressor room", "converged": True, "nodes": nodes, "edges": edges, "devices": devices}
+
+
 def flat() -> dict:
     study = sprinkler()
     for node in study["nodes"]:
@@ -194,6 +220,7 @@ def test_degenerate_graphs_still_lay_out() -> None:
 _TEXT = re.compile(r'<text class="([^"]+)" x="([-\d.]+)" y="([-\d.]+)"(?: text-anchor="middle")?>([^<]*)</text>')
 _POLY = re.compile(r'<polyline class="([^"]+)" points="([^"]+)"')
 _NODE = re.compile(r'<(?:circle|rect|polygon) class="node[^"]*"[^>]*?(?:cx="([-\d.]+)" cy="([-\d.]+)"|x="([-\d.]+)" y="([-\d.]+)"|points="([-\d.]+),([-\d.]+))')
+_PLATE = re.compile(r'<rect class="node (?:symbol|device)" x="([-\d.]+)" y="([-\d.]+)" width="([\d.]+)" height="([\d.]+)"')
 _CALLOUT = re.compile(r'<rect class="callout" x="([-\d.]+)" y="([-\d.]+)" width="([-\d.]+)" height="([-\d.]+)"')
 _FONT = {"node-label": 12.0, "edge-label": 10.5, "datum-label": 11.0, "callout-label": 11.0}
 
@@ -230,7 +257,8 @@ def overlaps(a: tuple, b: tuple, slack: float = 1.0) -> bool:
 
 def test_the_drawing_can_be_read() -> None:
     for name, study in (("the sprinkler tree", sprinkler()), ("the sprinkler grid", sprinkler(grid=True)),
-                        ("a ring main", ring()), ("a wide tree", sprinkler(branches=5, heads=9)), ("no elevations", flat())):
+                        ("a ring main", ring()), ("a wide tree", sprinkler(branches=5, heads=9)), ("no elevations", flat()),
+                        ("a compressor room drawn in symbols", compressor_room())):
         print(f"the drawing of {name}")
         svg = _svg(render(study))
         labels = boxes(svg)
@@ -248,7 +276,12 @@ def test_the_drawing_can_be_read() -> None:
         inside = all(0 <= b[1] and b[3] <= width and 0 <= b[2] and b[4] <= height for b in labels + callout_boxes)
         check("everything is inside the canvas", inside)
         check("the canvas grew with the network rather than squeezing it", width >= 96 * (len(study["nodes"]) ** 0.5))
-        check("every node is drawn", len(_NODE.findall(svg)) == len(study["nodes"]))
+        check("every node is drawn, and every device a run reaches",
+              len(_NODE.findall(svg)) == len(study["nodes"]) + len(study.get("devices", [])))
+        plates = [tuple(float(v) for v in m.groups()) for m in _PLATE.finditer(svg)]
+        hidden = [l[0] for l in labels for (px, py, pw, ph) in plates
+                  if overlaps(l, ("plate", px, py, px + pw, py + ph), slack=0.0)]
+        check("no label sits on a symbol", not hidden, f"{hidden[:3]}")
         check("every edge is drawn", len(_POLY.findall(svg)) == len(study["edges"]))
 
 
@@ -264,6 +297,13 @@ def test_the_page_says_what_the_picture_means() -> None:
     check("a closer is drawn dashed", 'class="run closer"' in page)
     check("the critical path is marked", 'class="run critical"' in page)
     check("the supply and the far end carry call-outs", page.count('class="callout"') >= 2)
+    key = re.findall(r"<span>([^<]+)</span></li>", page)
+    check("the key explains every kind of mark on the drawing, plain shapes by the kinds they stand for",
+          {"Pressure boundary", "Junction", "K80 head", "PUMP inlet, PUMP outlet"} <= set(key), str(key))
+    room = render(compressor_room())
+    check("a symbol in the key is the one on the drawing",
+          all(f'href="#efx-sym-{name}"' in room.split('class="key"', 1)[1]
+              for name in ("compressor-screw-recovery", "pump-horizontal", "storage-tank", "pressure-tank")))
 
 
 def main() -> int:

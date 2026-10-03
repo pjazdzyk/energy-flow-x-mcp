@@ -21,6 +21,15 @@ Ask a chatbot for the density of 30 % propylene glycol at 5 °C and you get a co
 nowhere. Ask it with this plugin installed and the number comes from the same engine that powers
 [energyflowx.com](https://energyflowx.com), **with the method and its validity range attached**.
 
+Two things follow from that:
+
+- **Computed, not generated.** Every figure comes from the engine's equations, not from what the
+  model thinks the answer should be. The same question gives the same answer every time.
+- **You do not need a frontier model.** The largest models can often work a calculation out on
+  their own. With the engine behind it, an assistant only states the inputs and reads back the
+  result, so a smaller, faster and cheaper model gets the same figures as the biggest one. The
+  quality of your numbers does not depend on which model or which vendor you use.
+
 This repository is the official, maintained Claude plugin for the EnergyFlowX MCP service. It does two
 things at once:
 
@@ -63,13 +72,13 @@ anonymously, 20 with a key.
 | Family | Fluids | Method | Access |
 | --- | --- | --- | --- |
 | Water and steam | liquid water, steam (from any two of p, T, h, s, x) | IAPWS-IF97 | free |
-| Air | dry air, humid air (six input pairs, from RH, humidity ratio, wet bulb, dew point and enthalpy) | Lemmon reference EOS, psychrometrics | free |
+| Air | dry air, humid air (six input pairs, from RH, humidity ratio, wet bulb, dew point and enthalpy), with its full psychrometric state | Lemmon reference EOS, psychrometrics | free |
 | Industrial gases | hydrogen, CO₂, ammonia, propane, nitrogen, oxygen, argon, helium, methane, N₂O | multiparameter Helmholtz EOS | free |
-| Natural gas | presets or your own composition, plus calorific value and Wobbe index | GERG-2008 (ISO 20765-2), ISO 6976 | free |
+| Natural gas | presets or your own composition, plus calorific value and Wobbe index at six reference conditions, and flammability limits | GERG-2008 (ISO 20765-2), ISO 6976 | free |
 | Glycols | ethylene glycol, propylene glycol | Melinder correlations | free |
 | Refrigerants | R134a, R1234ze, R1234yf, R32, R125, R454B, R410A, R407C | multiparameter Helmholtz EOS | **API key** |
 | Brines | calcium chloride, ethanol, methanol, potassium formate solutions | Melinder correlations | **API key** |
-| Solids | ice | | free |
+| Solids | ice, with enthalpy on both datums | IAPWS-06 | free |
 
 Also saturation (boiling point at a pressure and the reverse, phase densities, latent heat, critical
 and triple points) and unit conversion.
@@ -87,8 +96,8 @@ and triple points) and unit conversion.
 ### Air handling (AHU processes)
 
 Heating and cooling coils with condensate and water flow, mixing up to six streams, heat recovery to
-EN 16798-3 and EN 308 with frost protection, fans and the heat they add, steam humidification,
-air-water contact, dehumidification and desiccant wheels. One block or a chain of up to eight. A
+EN 16798-3 and EN 308 with frost protection, fans and the heat they add, steam humidification
+(any steam state and target, API key), air-water contact, dehumidification and desiccant wheels. One block or a chain of up to eight. A
 target a step cannot reach is reported as not feasible, never as a clean answer.
 
 ### Hydronic MCP: complex hydraulics (free account)
@@ -102,8 +111,8 @@ check before trusting the numbers. Pumps, compressors with heat recovery, heater
 storage tanks and receivers are devices (a pump on a liquid only), and a design runs over time too, with
 schedules, pressure or flow switches and PI loops: receiver swings, compressor starts, how long the air lasts after a trip, how far a store
 charges. There are no control valves, balancing, fans or water hammer yet. The skill turns the result into
-a **self-contained HTML study** with a network diagram, flow and pressure schedules and the checks,
-ready to hand to a colleague.
+a **self-contained HTML study** with a network diagram drawn in P&ID symbols, flow and pressure
+schedules and the checks, ready to hand to a colleague.
 
 **Size limit.** One design holds up to 2,000 nodes and pipes together, which covers a building, a plant
 room, a campus loop or a district branch. A whole city network does not fit in one design: it is split
@@ -156,12 +165,13 @@ Restart Claude Code, then run `/mcp`. You should see two servers:
 
 | Server | Endpoint | Key |
 | --- | --- | --- |
-| `energy-flow-x` | `https://energyflowx.com/energy-flow-x/mcp` | not needed, except for refrigerants and brines |
+| `energy-flow-x` | `https://energyflowx.com/energy-flow-x/mcp` | not needed, except for refrigerants, brines and the steam humidifier |
 | `energy-flow-x-hydronic` | `https://energyflowx.com/energy-flow-x/mcp/hydronic` | your account: sign in from `/mcp` |
 
 That is all. Water, steam, air, gases, natural gas, glycols, ice, saturation, unit conversion,
-conduit sizing and air processes work straight away, with no account. Refrigerants and brines
-need [an API key](#the-api-key), and network solving needs [a free account](#the-api-key).
+conduit sizing and air processes work straight away, with no account. Refrigerants, brines and
+the steam humidifier need [an API key](#the-api-key), and network solving needs
+[a free account](#the-api-key).
 
 ## Try it
 
@@ -211,8 +221,8 @@ Paste any of these into Claude Code after installing:
 | --- | --- | --- | --- |
 | [`fluid-properties`](skills/fluid-properties/SKILL.md) | 29 fluids and solids: water and steam, humid air, glycols, brines, refrigerants, industrial gases, natural gas (GERG-2008, ISO 6976), ice, unit conversion | 6 | free, key for refrigerants and brines |
 | [`conduit-sizing`](skills/conduit-sizing/SKILL.md) | one pipe or duct against real catalogues: velocity, pressure drop, regime, the size below and above | 4 | free |
-| [`hvac-processes`](skills/hvac-processes/SKILL.md) | coils with condensate, mixing, heat recovery (EN 16798-3, EN 308), fans, humidification, dehumidification, desiccant wheels | 1 | free |
-| [`hydronic`](skills/hydronic/SKILL.md) | whole pipe and duct networks of liquids, gases and steam, several fluids in one design, with pumps, compressors, heat exchangers, stores and receivers, steady or over time: build, solve, check, and render an HTML study with a network diagram and tables | 4 + 9 resources | free account |
+| [`hvac-processes`](skills/hvac-processes/SKILL.md) | coils with condensate, mixing, heat recovery (EN 16798-3, EN 308), fans, humidification, dehumidification, desiccant wheels | 1 | free, key for the steam humidifier |
+| [`hydronic`](skills/hydronic/SKILL.md) | whole pipe and duct networks of liquids, gases and steam, several fluids in one design, with pumps, compressors, heat exchangers, stores and receivers, steady or over time: build, solve, check, and render an HTML study with a P&ID-symbol network diagram and tables | 4 + 9 resources | free account |
 
 Every tool on the main server is read-only and idempotent, so Claude does not stop to ask
 permission for a lookup. Two network tools change a session you own, and say so.
@@ -228,6 +238,7 @@ The account is free. You need it for:
 | --- | --- |
 | **Refrigerants**: R134a, R1234ze, R1234yf, R32, R125, R454B, R410A, R407C | members-only fluids |
 | **Brines**: calcium chloride, ethanol, methanol, potassium formate solutions | members-only fluids |
+| **Steam humidifier**: the `STEAM_HUMIDIFIER` block of `calculate_air_process` | members-only process |
 | **Hydronic MCP**: all four hydronic tools | a network session needs an owner |
 | **Larger sweeps**: up to 20 states per call instead of 5 | anonymous calls are capped |
 
@@ -246,9 +257,9 @@ disconnect it; it then has to ask you again.
 starts with `efxk_`) unlocks the members-only fluids and larger sweeps on the free server, and works
 for Hydronic too in a client that cannot sign in, sent as an `Authorization: Bearer efxk_...` header.
 
-**For refrigerants and brines, one more step.** The plugin connects the free server anonymously, so
-it works for everyone out of the box. To unlock the members-only fluids, add a keyed connection to
-the same server once:
+**For refrigerants, brines and the steam humidifier, one more step.** The plugin connects the free
+server anonymously, so it works for everyone out of the box. To unlock the members-only fluids and
+the steam humidifier, add a keyed connection to the same server once:
 
 ```shell
 claude mcp add --transport http energy-flow-x-keyed https://energyflowx.com/energy-flow-x/mcp \
@@ -385,6 +396,7 @@ plan around it staying free.
 python tests/check_skills.py                                             # the skills against the server's own docs
 python skills/hydronic/scripts/test_render_study.py                      # the study renderer
 python skills/hydronic/scripts/test_study_layout.py                      # the diagram: layout and a no-overlap guard
+python tools/sync_symbols.py                                             # re-embed the builder's P&ID symbols after one changes
 claude plugin validate . --strict                                        # the marketplace manifest
 claude plugin validate .claude-plugin/plugin.json --strict               # the plugin manifest and its .mcp.json
 ```
