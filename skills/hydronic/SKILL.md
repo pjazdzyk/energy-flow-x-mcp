@@ -48,6 +48,14 @@ would make the answer meaningless and what merely gets assumed. Ask the user onc
 group only, in their words rather than the API's. That beats a twenty-question intake, and it means you
 are never guessing at what is missing.
 
+**Know the size limit before you plan.** One design holds up to 2,000 nodes and pipes together (devices
+count too), one edit call carries up to 500 ops, and an account keeps up to 20 designs open. That is a
+building, a plant room, a campus loop or a district branch, not a whole city. For anything larger, agree
+with the user where to split it, model each part as its own design with the connection to its neighbour
+as a fixed-pressure boundary at the pressure the other part delivers, and say in the study that it was
+split. An export near the limit is about 250,000 characters: hand it over as a file, never paste it back
+into the chat.
+
 Some things are never yours to assume, because each produces a complete and fictional study: a
 **glycol or brine concentration**, **elevations** in anything with more than one floor, the **ΔT**
 behind a duty in kW, and for a gas **what its volume flow was measured at** (free air, normal cubic
