@@ -131,15 +131,16 @@ cycle, and how much heat reaches the hot water?* The answer came back as the dra
 
 - At the design point, the receiver at its 8 bar, 20.2 kPa is lost on the way to the farthest tool, 13.9 kPa of
   it in the dryer.
-- Over the run the paint shop's lowest is 6.25 bar gauge, at the bottom of the receiver's swing, above the 6 bar
+- Over the run the paint shop's lowest is 6.23 bar gauge, at the bottom of the receiver's swing, above the 6 bar
   its tools need.
 - The ring is fed both ways, and the flows meet where the run between two corners carries only 0.006 kg/s.
 - The compressor unloads twice in 20 minutes and runs loaded 83 % of the time at 36.2 kW on average.
-- 25.4 kW recovered from the oil cooler, sending mains water to the store at about 56 °C.
+- 25.4 kW recovered from the oil cooler, sending mains water to the store at about 56 °C. The run's energy
+  balance closes: of the 8.48 kWh recovered, 1.99 kWh stay in the store and 6.49 kWh leave with the hot water.
 
 The study comes in two parts, so no figure is of a state the reader cannot name: the design point, solved steady,
-which the drawing and every schedule show, and the run over time, with each machine over the run and the lowest
-pressure every point saw and when.
+which the drawing and every schedule show, and the run over time, with each machine over the run, the lowest
+pressure every point saw and when, its curves, and a mass and energy balance that says whether the run closes.
 
 The drawing is generated from the design, deterministically: the same design always gives the same drawing,
 and no AI draws it. Five systems sit on it, each line carrying its code: OA outdoor air in a duct (the double

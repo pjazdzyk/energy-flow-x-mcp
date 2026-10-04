@@ -261,7 +261,8 @@ Three things about it are not optional:
 
 `labels="minimal"` draws ids and sizes only, for a dense plant. `mode="transient"` reports the plant in
 two parts: the design point, solved steady, which the drawing and every schedule show, and the run over time
-apart from it, with each machine over the run and the lowest pressure each point saw and when. Quote a figure
+apart from it, with each machine over the run, the lowest pressure each point saw and when, and a mass and
+energy balance per fluid circuit (`data.balance` in a transient solve's reply). Quote a figure
 with the part it comes from: "at the design point" or "over the run". `references/report.md` says what the page
 shows and how to read it.
 

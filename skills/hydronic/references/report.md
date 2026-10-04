@@ -128,7 +128,10 @@ design point: the plant solved steady, every machine at its stated command and e
 and the drawing, the design checks, the critical path, the equipment and the schedules are all this state. Part 2 is
 the run over time: whether it completed and every instant converged, each vessel's swing, each machine over the run
 (a compressor's averages, energy and starts), the lowest pressure each point reached and when, judged at a draw
-point against the least its system must keep, a chart per unit and every command change. A draw point that keeps
+point against the least its system must keep, a mass and energy balance per fluid circuit, charts with their ticks
+(one per range, a command drawn as the step it is) and every command change. The balance counts what a gas
+receiver kept twice, from its flows and from its own state, and the two agree when the run conserved mass; an energy
+residual near zero says the same of energy. Quote both before trusting a run's energy figures. A draw point that keeps
 its pressure at the design point but falls below it at the bottom of a receiver's swing fails the verdict. The bill of materials aggregates like items: pipe and duct by material, size and system
 with their total length, fittings by type and the size of the run carrying them, valves, equipment and vessels by
 type, each line naming its members. Tees and crosses are counted from the network, one wherever three or four

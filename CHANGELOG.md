@@ -4,6 +4,12 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 ## 2.0.0 (2026-10-04)
 
+### A run over time reports its mass and energy balance
+
+- The hydronic skill and `references/report.md` describe the balance a run now reports (`data.balance`, and a
+  section of the report): per fluid circuit the mass in, out and kept, a gas receiver's counted from its flows and
+  from its own state, and the energy per device and circuit with what is left over. The README example quotes it.
+
 ### A run over time is reported with its design point, apart
 
 - The hydronic skill and `references/report.md` describe the two-part report `hydronic_report(mode="transient")`
