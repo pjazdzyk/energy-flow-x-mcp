@@ -113,7 +113,11 @@ Mach number for a gas) and any node where the fluid condenses, flashes or boils,
 check before trusting the numbers. Pumps, compressors with heat recovery, heaters, heat exchangers,
 storage tanks and receivers are devices (a pump on a liquid only), and a design runs over time too, with
 schedules, pressure or flow switches and PI loops: receiver swings, compressor starts, how long the air lasts after a trip, how far a store
-charges. There are no control valves, balancing, fans or water hammer yet. `hydronic_report` turns the
+charges. There are no control valves, balancing, fans or water hammer yet. Before any solve,
+`hydronic_preview` draws the design the way the engine read it, in the same symbols the report uses, and says
+in words how many separate pieces and closed loops it has and where a branch ends nowhere. Your assistant
+can set that beside your sketch or a photo of your schematic and catch a wrong connection before it is
+solved. After the solve, `hydronic_report` turns the
 result into a **self-contained HTML study** with a network diagram drawn in P&ID symbols and labelled
 with flows and pressures, schedules and the checks, ready to hand to a colleague, and the same diagram as
 a **DXF** to open in CAD. The server makes it, and the chat shows the diagram as soon as it returns.
@@ -279,7 +283,7 @@ works, the members-only ones included:
 | **Refrigerants**: R134a, R1234ze, R1234yf, R32, R125, R454B, R410A, R407C | members-only fluids |
 | **Brines**: calcium chloride, ethanol, methanol, potassium formate solutions | members-only fluids |
 | **Steam humidifier**: the `STEAM_HUMIDIFIER` block of `calculate_air_process` | members-only process |
-| **Hydronic**: all five hydronic tools | a network session needs an owner |
+| **Hydronic**: all six hydronic tools | a network session needs an owner |
 | **Larger sweeps**: up to 20 states per call instead of 5 | anonymous calls are capped |
 
 **Sign in.** Create a free account at

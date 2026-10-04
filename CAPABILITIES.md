@@ -376,7 +376,7 @@ Tool: `calculate_air_process`.
 ## Hydronic (complex hydraulics)
 
 Server: the members server, `/energy-flow-x/mcp/members`, only. Tools: `hydronic_session`, `hydronic_edit`,
-`hydronic_solve`, `hydronic_inspect`, `hydronic_report`. Every call needs your account: the client signs in
+`hydronic_preview`, `hydronic_solve`, `hydronic_inspect`, `hydronic_report`. Every call needs your account: the client signs in
 (it opens energyflowx.com for you to approve), or sends an API key.
 
 ### What this release solves
@@ -553,6 +553,22 @@ real one, so none is assumed.
 - `mode="transient"` reports two parts: the design point, solved steady, which the drawing and every schedule
   show, and the run over time apart from it, with each machine over the run and the lowest pressure each point
   saw and when. A draw point that falls below its least pressure at any instant of the run fails the verdict.
+
+### Previewing, before a solve
+
+- `hydronic_preview` draws the design as the engine reads it, without solving it. The drawing is the report's
+  own, laid out by the same code, with ids and sizes and no flows, and each figure is titled "Preview, not
+  solved". It returns an image of each connected group (up to three, at most 1,600 px on the long side).
+- With it comes the same network in words, per group: the systems in it and the node it is drawn from, its
+  nodes by kind, its devices and the systems each joins, its runs and stated length, and its closed `loops`,
+  counted per system. Then its boundaries and draw points, `openEnds` (junctions only one run reaches), the
+  elevations stated, and `onDatum`, the nodes with no elevation, drawn and solved at 0 m. Runs whose end is no
+  node or device are listed as `unattached`, and what would still stop a solve as `blocking`.
+- It is the check between building a design from a user's sketch, photo or description and paying for a
+  solve. A group more than the sketch has, a ring that reads no loop, or an open end is a pipe given a wrong
+  end, which solves cleanly and answers a different question.
+- With no flows, a loop is opened where the design's order puts it, not where its flow divides as the report
+  shows it. The topology is the same. It is read-only and idempotent, and keeps nothing.
 
 ### Inspecting
 

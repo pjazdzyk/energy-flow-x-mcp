@@ -317,7 +317,8 @@ RETIRED = {
     "render_study": "the study is made on the server by hydronic_report, and the plugin ships no renderer",
     "study JSON": "same: nothing is transcribed by hand any more",
     "bundled renderer": "same: the plugin ships no renderer",
-    "all four hydronic tools": "there are five: hydronic_report joined them",
+    "all four hydronic tools": "there are six: hydronic_report and hydronic_preview joined them",
+    "all five hydronic tools": "there are six: hydronic_preview joined them",
 }
 
 
@@ -344,6 +345,11 @@ def test_the_report_is_made_on_the_server() -> None:
     check("no script ships in the plugin", not code, f"{code}")
     skill = (SKILLS / "hydronic" / "SKILL.md").read_text(encoding="utf-8")
     check("the hydronic skill hands a study over with hydronic_report", "hydronic_report(" in skill)
+    # A design built from a user's sketch is first seen as the engine read it on the report, after the solve is
+    # paid for, unless the skill previews it before solving.
+    loop = skill[skill.index("## The loop"):skill.index("## Reading the answer")]
+    check("the hydronic skill previews the drawing before it solves",
+          "hydronic_preview(" in loop and loop.index("hydronic_preview(") < loop.index("hydronic_solve("))
     report = " ".join((SKILLS / "hydronic" / "references" / "report.md").read_text(encoding="utf-8").split())
     check("its report reference says what a link is and how long it lasts",
           "anyone holding one can open the report" in report and "24 hours" in report)

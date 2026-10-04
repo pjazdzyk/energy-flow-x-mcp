@@ -105,7 +105,7 @@ by a few kelvin at the highest pressure in the system, and condensate as `WATER`
 
 | Server | Address | Tools | Account |
 | --- | --- | --- | --- |
-| Members | `https://energyflowx.com/energy-flow-x/mcp/members` | every tool: `hydronic_session`, `hydronic_edit`, `hydronic_solve`, `hydronic_inspect`, `hydronic_report`, and the free property, sizing and air tools | **required**: sign-in, or an API key |
+| Members | `https://energyflowx.com/energy-flow-x/mcp/members` | every tool: `hydronic_session`, `hydronic_edit`, `hydronic_preview`, `hydronic_solve`, `hydronic_inspect`, `hydronic_report`, and the free property, sizing and air tools | **required**: sign-in, or an API key |
 | Free | `https://energyflowx.com/energy-flow-x/mcp/free` | the free property, sizing and air tools only | none |
 
 The hydronic tools are on the members server only. A client connects one of the two: the members
@@ -128,12 +128,21 @@ then the free access can change at any time. Never ask the user to paste a token
    server and is never passed as an argument.
 3. **Edit in batches.** One `hydronic_edit` call carries many ops and is all-or-nothing. Build the whole
    topology in one or two calls.
-4. **Solve.** `hydronic_solve(handle)` for one operating state. For behaviour over time, add the
+4. **Check the drawing before you solve.** `hydronic_preview(handle)` draws the design the way the
+   engine reads it, in the report's own symbols, and says the same in words: the separate groups, the
+   node each is drawn from, its closed `loops`, its `openEnds` and the nodes drawn at 0 m for want of an
+   elevation (`onDatum`), and which systems each device joins. Set it beside what the user asked for:
+   their sketch, photo or description. A figure more than they drew, a ring with no loop, or an open
+   end is a pipe given a wrong end, and it would solve cleanly and answer a different question. Fix it
+   with `hydronic_edit` and preview again. It solves nothing and costs no solve, so do it after every
+   batch that changes the topology. When the user gave a picture, show them the preview and ask whether
+   it is their network before you solve.
+5. **Solve.** `hydronic_solve(handle)` for one operating state. For behaviour over time, add the
    schedules and controllers, state the run with `set_transient`, solve steady first as a check that the
    plant works at all, then solve with `mode="transient"`.
-5. **Read the rest.** `detail=50` returns every element of a network up to 50 elements.
+6. **Read the rest.** `detail=50` returns every element of a network up to 50 elements.
    `hydronic_inspect` reads the design back as authored, never solved values.
-6. **Report.** See "Handing it over".
+7. **Report.** See "Handing it over".
 
 Quantities are strings that carry their units: `"150mm"`, `"2.5bar"`, `"70oC"`, `"1.2kg/s"`,
 `"12m3/h"`. A bare number is the most common way an answer comes out wrong by three orders of

@@ -4,6 +4,16 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 ## 2.0.0 (2026-10-04)
 
+### The design is checked against the user's sketch before it is solved
+
+- A new members tool, `hydronic_preview`, draws the design the way the engine reads it, without solving it. It
+  uses the report's own drawing and symbols, and also describes the network in words: the separate groups, the
+  closed loops, the branches that end nowhere, the nodes drawn at 0 m for want of an elevation, and which
+  systems each device joins.
+- The hydronic skill's loop gains the step "Check the drawing before you solve", and when the user gave a
+  picture it asks them whether the preview is their network. `references/workflow.md` has the call and every
+  field. The README and the capabilities page list the tool.
+
 ### A run over time reports its mass and energy balance
 
 - The hydronic skill and `references/report.md` describe the balance a run now reports (`data.balance`, and a

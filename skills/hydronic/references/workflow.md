@@ -10,9 +10,10 @@ this file would drift the first time the server gained an op.
 - [Step 0: read the vocabulary](#step-0-read-the-vocabulary)
 - [Step 1: open a session](#step-1-open-a-session)
 - [Step 2: build the network](#step-2-build-the-network)
-- [Step 3: solve](#step-3-solve)
-- [Step 4: inspect](#step-4-inspect)
-- [Step 5: keep or discard the session](#step-5-keep-or-discard-the-session)
+- [Step 3: check the drawing](#step-3-check-the-drawing)
+- [Step 4: solve](#step-4-solve)
+- [Step 5: inspect](#step-5-inspect)
+- [Step 6: keep or discard the session](#step-6-keep-or-discard-the-session)
 - [The free endpoint](#the-free-endpoint)
 - [Errors you will actually meet](#errors-you-will-actually-meet)
 
@@ -117,7 +118,36 @@ Two things that are easy to get wrong and expensive to miss:
 - **Schedules and controllers last.** Each names a device or node that must already exist, and a device
   takes its command from one source, a schedule or a controller. `set_transient` can go anywhere.
 
-## Step 3: solve
+## Step 3: check the drawing
+
+```
+hydronic_preview(handle="...")
+```
+
+Draws the design as the engine reads it, without solving it, and returns two things. The first is an image of each
+connected group, up to three, in the report's own symbols: ids and sizes, no flows, each titled "Preview, not
+solved". The second is the same network in words, one entry under `groups` per group:
+
+| field | what it says, and the mistake it catches |
+| --- | --- |
+| `figure` | which image draws it. A group more than the user drew is a piece the design does not join |
+| `systems`, `devices[].systems` | the fluid systems in it, and which ones each machine joins. A heat-recovery loop that is a group of its own has a misnamed port |
+| `drawnFrom` | the node the drawing grows from: a pressure boundary where there is one |
+| `nodesByKind`, `runs`, `length_m` | what it holds, to count against the sketch |
+| `loops` | independent closed loops, each system apart. A ring that reads 0 has a run given a wrong end |
+| `openEnds` | junctions only one run reaches: a branch that ends nowhere |
+| `boundaries`, `drawPoints` | where the pressure is held and where flow is drawn |
+| `lowest_m`, `highest_m`, `onDatum` | the elevations stated, and the nodes with none, which are drawn and solved at 0 m |
+
+`unattached` lists runs whose end is no node and no device, and `blocking` lists what would still stop a solve.
+A loop is opened where the design's order puts it, because nothing carries a flow yet, so the report may open it
+elsewhere. The topology is the same.
+
+Set it beside what the user asked for. When they gave a sketch or a photo, show them the image and ask whether it is
+their network. Fix what differs with `hydronic_edit` and preview again: it solves nothing and keeps nothing, so it
+costs a fraction of a solve.
+
+## Step 4: solve
 
 ```
 hydronic_solve(handle="...", detail=<n>)
@@ -147,7 +177,7 @@ The solve **refuses to report numbers for a design that failed validation**. Tha
 route around: a design that cannot be validated cannot be solved meaningfully, and a plausible answer
 would be worse than no answer.
 
-## Step 4: inspect
+## Step 5: inspect
 
 ```
 hydronic_inspect(handle="...", what="...", id="...", limit=<n>)
@@ -167,7 +197,7 @@ Inspect reads the design, never the solution. Computed flows and pressures come 
 you are editing in, and it distinguishes what would make the answer meaningless from what merely gets
 assumed.
 
-## Step 5: keep or discard the session
+## Step 6: keep or discard the session
 
 Sessions belong to the account that made them, however it connected. `export` before `close` if the design is worth keeping;
 hand the exported document back to the user, because it is the only copy they control.
