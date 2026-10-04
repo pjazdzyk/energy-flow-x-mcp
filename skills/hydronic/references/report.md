@@ -25,8 +25,9 @@ report is made.
 
 | Field | What it is |
 | --- | --- |
-| `data.verdict` | the page's headline, which starts with `Solved`, `Solved, with qualifications`, `The run stopped early, before its end`, `The solve did not converge` or `These results are withdrawn`, and may end with the iteration count |
-| `data.verdictDetail` | the sentence under it |
+| `data.verdict` | the page's headline: `Solved`, `Solved, and meets every stated criterion`, `Solved, with qualifications`, `The design fails its criteria`, `The run stopped early, before its end`, `The solve did not converge` or `These results are withdrawn`, and may end with the iteration count |
+| `data.verdictDetail` | the sentence under it, which also says whether anything was judged against criteria |
+| `data.failedChecks` | when the design fails its criteria: each failed check in words, e.g. `branch_a: velocity 1.80 m/s is over its limit` (at most 20, then a count) |
 | `data.criticalPath` | per figure: `from`, `to`, `lostInItsRuns_kPa` and the `runs` in flow order |
 | `data.qualifications` | each as `element: finding`. The engine's own sentences are in `warnings` |
 | `data.files` | each file's `name`, what it is, its `url` (HTTPS), its `resource` (`hydronic://reports/...`) and size |
@@ -51,6 +52,11 @@ Two headlines change everything else and are said first, in words, before the pi
 
 `The solve did not converge` means the numbers are a last iterate. `Solved, with qualifications` means a number was
 produced by something other than ordinary evaluation of the design, and you say which.
+
+**`The design fails its criteria`** is a converged, valid solve of a design that does not meet what `set_criteria`
+stated for it: a run too fast or too steep, a draw point short of its least pressure, a peak over the rating. Never
+call that design solved or fine. Say what fails, from `failedChecks`, and what would cure it. Plain `Solved` means
+no criteria were stated, so nothing was judged a pass: say so rather than imply one.
 
 ## Qualifications
 
@@ -79,20 +85,25 @@ coordinates.
   open. Those runs are drawn dashed, routed around the tree.
 - **One lane per branch**, one step across per node, so a run reads left to right and the far end of the network
   lands at the far end of the page.
-- **Elevation in bands**, each above the levels below it, with a dotted datum line and its level at the left.
+- **Elevation in bands**, each above the levels below it, each level a thin solid grey line with its height at the
+  left. The 0.0 m datum is the only dotted line on the drawing, and a dashed line is only ever a run closing a ring.
   With no elevations it is a topology sketch and the page says so.
 - **P&ID symbols** for pressure boundaries, demands, outlets, receivers and every device, each on a plate.
   Equipment has an orange frame and turns to face the way its fluid runs. A junction is a dot. A device is drawn
-  once, with every run to any of its ports ending on it.
+  once, with every run to any of its ports ending on it. **A dot on a line is a tee**: where a branch leaves a line
+  it was drawn along, away from any node, so the reader sees where the flow splits.
 - **Valves, strainers and Kv elements** in their runs: a `VALVE` or `STRAINER` fitting on a pipe, and a lumped
   resistance given by its Kv, which is drawn as a balancing valve. The run's label sits at the valve.
 - **Line weight is mass flow**, relative to the largest. **The arrow is the way the fluid runs**, from the sign of
   the solved flow. **A faint tint is pressure**, strongest where it is plentiful.
 - **What flows where**: a demand "draws", a boundary "feeds" or "takes", a receiver is "charging" or
   "discharging", from the exact balance of the solved runs.
-- **The critical path**, highlighted: from the draw point with the lowest pressure, upstream along the run bringing
-  it the most flow, through any pump or compressor, to a pressure boundary or a receiver. Its total is what its runs
-  lose to friction and fittings, never start pressure minus end pressure, which across a pump is a gain.
+- **The critical path**, highlighted, ends at the most disadvantaged draw point. With a `minPressure` stated it is
+  the one with the least to spare above it, static head and all, as a water supply's top tap is. With none it is
+  the index circuit: the draw point that has lost the most head reaching it, its height set aside, so a high floor
+  is not chosen merely for being high. From there it runs upstream along the run bringing the most flow, through
+  any pump or compressor, to a pressure boundary or a receiver. Its total is what its runs lose to friction and
+  fittings, never start pressure minus end pressure, which across a pump is a gain.
 - **A plant of separate systems** is one figure per connected group, each system in one colour throughout.
 - **A legend in every figure**, naming every symbol, colour and line style that figure uses, so a saved image
   explains itself.
@@ -104,9 +115,22 @@ It is a schematic, not a P&ID, and not to scale. A run over time is drawn at its
 ## The study page
 
 One self-contained HTML file that works offline, in light and dark, and prints: the verdict, the qualifications,
-the drawing, the critical path, the equipment and what each device did, a run over time (completed or not, each
-receiver's swing, every command change, a chart per unit), every run and every node, and the assumptions and
-warnings. A small plant's page carries its DXF inside it as a download, so the page alone can be sent on.
+the drawing, the critical path, the equipment and what each device did, a bill of materials, a run over time
+(completed or not, each receiver's swing, every command change, a chart per unit), every run and every node, and the
+assumptions and warnings. The bill of materials aggregates like items: pipe and duct by material, size and system
+with their total length, fittings by type and the size of the run carrying them, valves, equipment and vessels by
+type, each line naming its members. Tees and crosses are counted from the network, one wherever three or four
+connections meet, because a tee's loss is entered once for each path through it; an entry or exit loss at a vessel
+is not a part, and an enlargement is billed as a reducer. It lists only what the design states: a run with no
+length is counted as unstated, never given one, and allowances (waste, supports, insulation) are left to whoever
+orders from it. A small plant's page carries its DXF inside it as a download, so the page alone can be sent on.
+
+Each pump is drawn on the curve the engine solved on, at the speed it actually ran (a controller or schedule may
+have changed it): capped at its shut-off rise, and past the datasheet's last flow the engine's steep runout, drawn
+thin, which is not the pump's curve. The system curve through the duty counts the drop across any equipment on the
+route as flow loss, and is left out, with the reason, when a second pump drives the same route. NPSH available is
+judged at the temperature the liquid reaches the pump at. An expansion vessel given a `precharge` shows the water it
+holds; without one it shows none, because the volume is then only its gas cushion.
 
 ## The DXF
 

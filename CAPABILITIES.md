@@ -601,8 +601,9 @@ the tenth is a report's files:
 | Pipe and duct sizing, size selection, air processes | yes | yes |
 | Hydronic MCP | asked to sign in | yes, and so does signing in |
 
-- Rate limits apply per client IP address: currently 20 requests per second and 1,000 per hour. A
-  throttled call comes back as a JSON-RPC error with a retry time, not as an empty result.
+- Rate limits: with a key or a sign-in, currently 25 requests per second and 5,000 per hour for your account,
+  shared by both servers. Without an account, currently 20 per second and 1,000 per hour. A throttled call
+  comes back as a JSON-RPC error with a retry time, not as an empty result.
 - The current limits are published at `https://energyflowx.com/energy-flow-x/api/mcp/limits`.
 - **Network solving is free while it is being tested, and that is temporary.** It costs real compute
   and will become a paid feature. The free access can be limited, metered or withdrawn at any time and
