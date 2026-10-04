@@ -14,7 +14,7 @@ which is described as built and is checked live when it is released.
 ## Contents
 
 - [The two servers](#the-two-servers)
-- [How every tool on the main server behaves](#how-every-tool-on-the-main-server-behaves)
+- [How every free tool behaves](#how-every-free-tool-behaves)
 - [Fluid properties](#fluid-properties)
 - [Saturation](#saturation)
 - [Natural gas](#natural-gas)
@@ -29,19 +29,20 @@ which is described as built and is checked live when it is released.
 
 ## The two servers
 
-| | Main server | Hydronic MCP |
+| | Free server | Members server |
 | --- | --- | --- |
-| Address | `https://energyflowx.com/energy-flow-x/mcp` | `https://energyflowx.com/energy-flow-x/mcp/hydronic` |
-| Name in the plugin | `energy-flow-x` | `energy-flow-x-hydronic` |
-| Tools | 11 | 5, plus 10 resources |
-| Account | an API key is optional: refrigerants, brines, the steam humidifier, larger sweeps | required: sign in (OAuth), or an API key |
-| What it does | properties, sizing, air processes | builds and solves whole pipe networks |
+| Address | `https://energyflowx.com/energy-flow-x/mcp/free` | `https://energyflowx.com/energy-flow-x/mcp/members` |
+| Name in the plugin | not connected | `energy-flow-x` |
+| Tools | 11 | 16, plus 10 resources |
+| Account | none, and none is accepted | required: sign in (OAuth), or an API key |
+| What it does | properties, sizing, air processes, without refrigerants, brines and the steam humidifier | everything: the 11 free tools with nothing held back, and the 5 tools that build and solve whole pipe networks |
 
-The network tools live on their own address because a client carries every tool's schema on every
-turn. Keeping them apart means someone who only wants the density of water does not pay for a
-network vocabulary.
+Connect one of the two: the members server already carries every free tool, so with both connected each free
+tool appears twice. The free server stays separate because many clients carry every tool's schema on every
+turn, so someone who only wants the density of water should not pay for a network vocabulary. These two
+replaced `/mcp` and `/mcp/hydronic` on 2026-10-04.
 
-## How every tool on the main server behaves
+## How every free tool behaves
 
 - **Inputs carry their units.** Every quantity is a string such as `"20oC"`, `"293.15K"`, `"70degF"`,
   `"1.5bar"`, `"101.325kPa"`, `"14.7psi"`, `"8g/kg"` or `"40%"`. There is no input unit setting to get
@@ -61,7 +62,7 @@ network vocabulary.
 - **Every tool is read-only, idempotent and closed-world**, and declares itself so. Clients do not
   need to ask permission for a lookup.
 - **Sweeps.** `get_fluid_properties` takes a list of `states` and returns one table in one call. The
-  cap is 5 states per call anonymously and 20 with an API key. Top-level fields act as defaults for every
+  cap is 5 states per call on the free server and 20 on the members server. Top-level fields act as defaults for every
   state, so "one temperature, many pressures" is a short request.
 
 ## Fluid properties
@@ -103,9 +104,9 @@ Tools: `get_fluid_properties`, `list_fluids`.
   - Concentration can be given by mass, volume or mole fraction.
   - The lowest valid temperature is the freezing point at the concentration given, and the upper
     limit is 100 °C.
-- **Refrigerants** (API key): R134a, R1234ze, R1234yf, R32, R125, R454B, R410A and R407C, each by its
+- **Refrigerants** (members server): R134a, R1234ze, R1234yf, R32, R125, R454B, R410A and R407C, each by its
   multiparameter Helmholtz reference equation of state.
-- **Brines** (API key): calcium chloride, ethanol, methanol and potassium formate solutions, by the
+- **Brines** (members server): calcium chloride, ethanol, methanol and potassium formate solutions, by the
   Melinder correlations. Each needs a concentration.
 
 ### The 20 properties
@@ -131,7 +132,7 @@ Tools: `get_fluid_properties`, `list_fluids`.
 Tool: `get_saturation_properties`.
 
 - **Fluids**: nitrogen, oxygen, argon, methane, nitrous oxide, carbon dioxide, ammonia, propane and
-  hydrogen. With an API key, also the pure refrigerants R134a, R1234ze, R1234yf, R32 and R125.
+  hydrogen. On the members server, also the pure refrigerants R134a, R1234ze, R1234yf, R32 and R125.
 - **Inputs**: a temperature, giving the saturation pressure, or a pressure, giving the boiling or
   condensing temperature.
 - **Outputs**: saturation temperature and pressure, saturated liquid and vapour densities, latent heat
@@ -340,7 +341,7 @@ Tool: `calculate_air_process`.
     and recovered power at 0 % and 100 % effectiveness), whether or not the target was reached.
 - **Fan**: a total pressure rise and a total efficiency. Returns air, shaft and electrical power, the
   specific fan power, and the heat the fan adds to the stream.
-- **Steam humidifier** (API key): everything the web calculator does.
+- **Steam humidifier** (members server): everything the web calculator does.
   - The steam: saturated at a stated supply pressure (2 bar absolute if omitted), superheated
     (`steamState` a temperature, e.g. `"180oC"`), wet (`steamState` a vapour quality, e.g. `"0.95"`)
     or from an electrode or resistive generator (`steamState` `ELECTRODE`, which boils at one
@@ -374,9 +375,9 @@ Tool: `calculate_air_process`.
 
 ## Hydronic MCP (complex hydraulics)
 
-Server: `/mcp/hydronic`. Tools: `hydronic_session`, `hydronic_edit`, `hydronic_solve`,
-`hydronic_inspect`, `hydronic_report`. Every call needs your free account: the client signs in (it opens energyflowx.com
-for you to approve), or sends an API key.
+Server: the members server, `/energy-flow-x/mcp/members`, only. Tools: `hydronic_session`, `hydronic_edit`,
+`hydronic_solve`, `hydronic_inspect`, `hydronic_report`. Every call needs your free account: the client signs in
+(it opens energyflowx.com for you to approve), or sends an API key.
 
 ### What this release solves
 
@@ -593,20 +594,21 @@ the tenth is a report's files:
 
 ## Limits and access
 
-| | Anonymous | With a free API key |
+| | Free server, no account | Members server, signed in or with an API key |
 | --- | --- | --- |
 | Water, steam, air, gases, natural gas, glycols, ice | yes | yes |
-| Refrigerants and brines | refused, with the reason | yes |
+| Refrigerants and brines | refused, with the members server's address | yes |
+| Steam humidifier | refused, with the members server's address | yes |
 | States per property call | 5 | 20 |
 | Pipe and duct sizing, size selection, air processes | yes | yes |
-| Hydronic MCP | asked to sign in | yes, and so does signing in |
+| Hydronic network tools | not served | yes |
 
-- Rate limits: with a key or a sign-in, currently 25 requests per second and 5,000 per hour for your account,
-  shared by both servers. Without an account, currently 20 per second and 1,000 per hour. A throttled call
+- Rate limits: on the members server, currently 25 requests per second and 5,000 per hour for your account.
+  On the free server, currently 20 per second and 1,000 per hour. A throttled call
   comes back as a JSON-RPC error with a retry time, not as an empty result.
 - The current limits are published at `https://energyflowx.com/energy-flow-x/api/mcp/limits`.
 - **Network solving is free while it is being tested, and that is temporary.** It costs real compute
   and will become a paid feature. The free access can be limited, metered or withdrawn at any time and
-  without notice. The tools on the main server are free today and need no key.
+  without notice. The free tools are free today and need no account on the free server.
 - Keys are created in [account settings](https://energyflowx.com/settings). A key is shown once and
   stored only as a hash, so a lost key is revoked and replaced, not recovered.

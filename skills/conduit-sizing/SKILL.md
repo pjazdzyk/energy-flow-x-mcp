@@ -14,9 +14,10 @@ description: >-
 
 # Sizing one pipe or duct
 
-Four free tools on the `/mcp` endpoint, no key, connected by the plugin as the `energy-flow-x`
-server. They answer the single-conduit question properly, against a real product catalogue and real
-fluid properties. The network server, `energy-flow-x-hydronic`, is for the moment a flow is unknown.
+Four free tools, on both EnergyFlowX MCP servers: the free one (`/energy-flow-x/mcp/free`, no account)
+and the members one (`/energy-flow-x/mcp/members`, which carries every tool). They answer the
+single-conduit question properly, against a real product catalogue and real fluid properties. The
+network tools (`hydronic_*`, members server only) are for the moment a flow is unknown.
 
 | Tool | For |
 | --- | --- |

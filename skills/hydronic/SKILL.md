@@ -101,20 +101,21 @@ refused. The density follows the pressure along every pipe, and for a gas the ve
 decides the size before the pressure drop does. Each system stays in one phase: model steam superheated
 by a few kelvin at the highest pressure in the system, and condensate as `WATER` in a system of its own.
 
-## The two servers
+## Where the tools are
 
-| | address | plugin server name | tools | key |
-| --- | --- | --- | --- | --- |
-| Networks | `/mcp/hydronic` | `energy-flow-x-hydronic` | `hydronic_session`, `hydronic_edit`, `hydronic_solve`, `hydronic_inspect`, `hydronic_report` | **required** |
-| Fluids and single conduits | `/mcp` | `energy-flow-x` | property, saturation, unit-conversion and conduit-sizing tools | none |
+| Server | Address | Tools | Account |
+| --- | --- | --- | --- |
+| Members | `https://energyflowx.com/energy-flow-x/mcp/members` | every tool: `hydronic_session`, `hydronic_edit`, `hydronic_solve`, `hydronic_inspect`, `hydronic_report`, and the free property, sizing and air tools | **required**: sign-in, or an API key |
+| Free | `https://energyflowx.com/energy-flow-x/mcp/free` | the free property, sizing and air tools only | none |
 
-They are separate MCP servers, and the plugin connects both. The hydronic server needs the user's free
-EnergyFlowX account, and a client that supports MCP sign-in asks for it on its own: in Claude Code the
-server shows as needing authentication, and the user runs `/mcp`, picks `energy-flow-x-hydronic` and
-approves in the browser. A client that cannot sign in sends an API key instead. If a hydronic call comes
-back saying it needs an account, relay that with the access terms it states:
-network solving is free while it is being tested, that is temporary, and it can change at any time.
-Never ask the user to paste a token or a key into the chat.
+The hydronic tools are on the members server only. A client connects one of the two: the members
+server already carries every free tool, so with both connected each free tool appears twice. The
+members server needs the user's free EnergyFlowX account, and a client that supports MCP sign-in asks
+for it on its own (in Claude Code, for example, the server shows as needing authentication, and the
+user runs `/mcp`, picks it and approves in the browser). A client that cannot sign in sends an API key
+instead. If a hydronic call comes back saying it needs an account, relay that with the access terms it
+states: network solving is free while it is being tested, that is temporary, and it can change at any
+time. Never ask the user to paste a token or a key into the chat.
 
 ## The loop
 
@@ -267,7 +268,7 @@ going to send it to anyone, make the report.
 ## When the network is one pipe
 
 A single run with a known flow, "what size for 2 kg/s over 40 m", is answered by `size_conduit` or
-`select_conduit_size` on the free `/mcp` endpoint, with no account and no session.
+`select_conduit_size`, free tools on either server, with no session.
 
 The line between them: **sizing one pipe assumes its flow is already known.** The moment the flow
 through a pipe depends on the rest of the system (anything in a loop, anything downstream of a branch,

@@ -14,8 +14,9 @@ description: >-
 
 # Air handling and psychrometrics
 
-One free tool on the `/mcp` endpoint, `calculate_air_process`, on the plugin's `energy-flow-x`
-server. It needs no key for any block but the steam humidifier (see Access below). It computes one
+One tool, `calculate_air_process`, free and on both EnergyFlowX MCP servers: the free one
+(`/energy-flow-x/mcp/free`, no account) and the members one (`/energy-flow-x/mcp/members`, which
+carries every tool). Only the steam humidifier needs the account (see Access below). It computes one
 block or a straight chain of up to eight, and every block is one the network engine carries as a real
 step rather than a simplified stand-in.
 
@@ -57,10 +58,10 @@ existed. Check `feasible` on every step, not just the last one.
 
 ## Access
 
-Every block is free and anonymous except `STEAM_HUMIDIFIER`, which is members-only. An anonymous
-call with a steam humidifier in it is refused with an explanation, even when the other steps are
-free, so relay what it says. If the client also has a keyed connection to the same `/mcp` address
-(the README suggests naming it `energy-flow-x-keyed`), run chains with a humidifier through that one.
+Every block is free except `STEAM_HUMIDIFIER`, which is members-only. On the members server, where
+the user is signed in, it simply runs. On the free server a chain with a steam humidifier in it is
+refused with the members server's address, even when the other steps are free, so relay what it
+says: connecting the members server, with the user's free account, is what unlocks it.
 
 ## Chains are linear only
 

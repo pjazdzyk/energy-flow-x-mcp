@@ -158,10 +158,10 @@ def test_mcp_wiring_matches_the_published_endpoints() -> None:
     servers = json.loads((PLUGIN / ".mcp.json").read_text(encoding="utf-8"))["mcpServers"]
     urls = {name: entry["url"] for name, entry in servers.items()}
 
-    check("the free endpoint is wired",
-          any(url.endswith("/energy-flow-x/mcp") for url in urls.values()))
-    check("the hydronic endpoint is wired",
-          any(url.endswith("/energy-flow-x/mcp/hydronic") for url in urls.values()))
+    # One server since 2.0.0: the members server carries every tool behind one sign-in, so a user who signed in
+    # never needs an API key, and connecting the free server too would list every free tool twice.
+    check("exactly one server is wired, the members server",
+          list(urls.values()) == ["https://energyflowx.com/energy-flow-x/mcp/members"], str(urls))
     check("every endpoint is https",
           all(url.startswith("https://") for url in urls.values()),
           "an API key must never travel over http")
@@ -176,6 +176,31 @@ def test_mcp_wiring_matches_the_published_endpoints() -> None:
     check("the wiring reads no variable at all", not variables, f"references: {sorted(variables)}")
     plugin = json.loads((PLUGIN / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
     check("the plugin asks for no credential", "userConfig" not in plugin, sorted(plugin.get("userConfig", {})))
+
+
+# What only the plugin's own wiring, or an address that no longer exists, would make true. A skill is also
+# downloaded on its own and used in assistants that never installed this plugin, so it names tools and the two
+# servers by role and address, never by a name the plugin happened to give a connection.
+NOT_PORTABLE = {
+    "energy-flow-x-hydronic": "a plugin connection name from before 2.0.0",
+    "energy-flow-x-keyed": "a connection name the old README suggested",
+    "/mcp/hydronic": "an address removed on 2026-10-04",
+    # The address, not Claude Code's /mcp command, which a skill may show as one client's example.
+    "`/mcp` endpoint": "an address removed on 2026-10-04",
+    "`/mcp` address": "an address removed on 2026-10-04",
+    "`/mcp` is a separate server": "an address removed on 2026-10-04",
+    "plugin server name": "a column that only makes sense with the plugin installed",
+    "the plugin connects": "a claim about the plugin, which a downloaded skill does not have",
+}
+
+
+def test_skills_are_portable() -> None:
+    for skill in skill_dirs():
+        files = [skill / "SKILL.md", *sorted((skill / "references").glob("*.md"))]
+        for path in files:
+            text = path.read_text(encoding="utf-8")
+            found = [f"{phrase} ({why})" for phrase, why in NOT_PORTABLE.items() if phrase in text]
+            check(f"{skill.name}/{path.name}: reads correctly without the plugin", not found, "; ".join(found))
 
 
 def test_directory_listing_fields() -> None:
@@ -335,6 +360,7 @@ def main() -> int:
                  test_the_license_is_named_the_way_the_directory_reads_it,
                  test_manifests_parse,
                  test_frontmatter_is_portable,
+                 test_skills_are_portable,
                  test_tool_names_match_the_server,
                  test_access_terms_are_stated,
                  test_mcp_wiring_matches_the_published_endpoints,

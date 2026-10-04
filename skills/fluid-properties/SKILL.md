@@ -14,9 +14,9 @@ description: >-
 # Fluid properties
 
 These tools answer "what is this fluid actually like at this state" from reference equations of
-state, not from a table someone typed in. They are free, need no API key, and live on the `/mcp`
-endpoint, which the plugin connects as the `energy-flow-x` server. The network tools are a separate
-server, `energy-flow-x-hydronic`, and nothing here needs it.
+state, not from a table someone typed in. They are free and on both EnergyFlowX MCP servers: the free
+one (`/energy-flow-x/mcp/free`, no account) and the members one (`/energy-flow-x/mcp/members`, which
+carries every tool). Nothing here needs the network tools.
 
 ## Why not just recall the number
 
@@ -91,11 +91,11 @@ unusual. A conversion done in your head is the one step of a calculation nobody 
 
 ## Access
 
-The tools are free and anonymous. A few fluids, the refrigerants and brines, are members-only, and
-`list_fluids` states the tier per fluid. An anonymous call for one of those is refused with an
-explanation rather than a blank, so relay what it says. If the client also has a keyed connection to
-the same `/mcp` address (the README suggests naming it `energy-flow-x-keyed`), call those fluids
-through that one instead.
+The tools are free. A few fluids, the refrigerants and brines, are members-only, and `list_fluids`
+states the tier per fluid. On the members server, where the user is signed in, they simply answer. On
+the free server a call for one of those is refused with the members server's address rather than a
+blank, so relay what it says: connecting the members server, with the user's free account, is what
+unlocks them.
 
 ## When the question is bigger than a property
 

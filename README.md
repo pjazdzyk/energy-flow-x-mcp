@@ -33,9 +33,11 @@ Two things follow from that:
 This repository is the official, maintained Claude plugin for the EnergyFlowX MCP service. It does two
 things at once:
 
-1. **Connects the MCP servers** so Claude can call the calculation tools.
+1. **Connects the EnergyFlowX members server**, every tool behind one sign-in to your free account, so
+   Claude can call the calculation tools and you never handle an API key.
 2. **Adds four skills** that teach Claude how to use them well: which inputs matter, what to check
-   before quoting a result, and how to present it so an engineer can verify it.
+   before quoting a result, and how to present it so an engineer can verify it. Each skill can also be
+   [downloaded on its own](#install-a-single-skill) for an assistant that reads skills but not plugins.
 
 Want the full picture of EnergyFlowX, beyond this plugin? The web platform, its physics, its
 validation evidence and every reference behind it are documented in
@@ -60,25 +62,26 @@ validation evidence and every reference behind it are documented in
 
 ## What it can do
 
-Fifteen tools across two MCP servers, grouped here by the question they answer.
+Sixteen tools, all on the members server the plugin connects, grouped here by the question they answer.
+Eleven of them are also on the free server, which needs no account (see [Other clients](#other-clients)).
 [CAPABILITIES.md](CAPABILITIES.md) lists every fluid, block, rule set, fitting and limit in detail.
 
 ### Fluid and material properties
 
 Any property at any valid state, from the reference equation of state for that fluid, with the
-method and its validity range stated in every answer. Sweeps over up to 5 states in one call
-anonymously, 20 with a key.
+method and its validity range stated in every answer. Sweeps over up to 20 states in one call through the
+plugin (5 on the free server).
 
-| Family | Fluids | Method | Access |
+| Family | Fluids | Method | On the free server too |
 | --- | --- | --- | --- |
-| Water and steam | liquid water, steam (from any two of p, T, h, s, x) | IAPWS-IF97 | free |
-| Air | dry air, humid air (six input pairs, from RH, humidity ratio, wet bulb, dew point and enthalpy), with its full psychrometric state | Lemmon reference EOS, psychrometrics | free |
-| Industrial gases | hydrogen, CO₂, ammonia, propane, nitrogen, oxygen, argon, helium, methane, N₂O | multiparameter Helmholtz EOS | free |
-| Natural gas | presets or your own composition, plus calorific value and Wobbe index at six reference conditions, and flammability limits | GERG-2008 (ISO 20765-2), ISO 6976 | free |
-| Glycols | ethylene glycol, propylene glycol | Melinder correlations | free |
-| Refrigerants | R134a, R1234ze, R1234yf, R32, R125, R454B, R410A, R407C | multiparameter Helmholtz EOS | **API key** |
-| Brines | calcium chloride, ethanol, methanol, potassium formate solutions | Melinder correlations | **API key** |
-| Solids | ice, with enthalpy on both datums | IAPWS-06 | free |
+| Water and steam | liquid water, steam (from any two of p, T, h, s, x) | IAPWS-IF97 | yes |
+| Air | dry air, humid air (six input pairs, from RH, humidity ratio, wet bulb, dew point and enthalpy), with its full psychrometric state | Lemmon reference EOS, psychrometrics | yes |
+| Industrial gases | hydrogen, CO₂, ammonia, propane, nitrogen, oxygen, argon, helium, methane, N₂O | multiparameter Helmholtz EOS | yes |
+| Natural gas | presets or your own composition, plus calorific value and Wobbe index at six reference conditions, and flammability limits | GERG-2008 (ISO 20765-2), ISO 6976 | yes |
+| Glycols | ethylene glycol, propylene glycol | Melinder correlations | yes |
+| Refrigerants | R134a, R1234ze, R1234yf, R32, R125, R454B, R410A, R407C | multiparameter Helmholtz EOS | no, members server |
+| Brines | calcium chloride, ethanol, methanol, potassium formate solutions | Melinder correlations | no, members server |
+| Solids | ice, with enthalpy on both datums | IAPWS-06 | yes |
 
 Also saturation (boiling point at a pressure and the reverse, phase densities, latent heat, critical
 and triple points) and unit conversion.
@@ -97,7 +100,7 @@ and triple points) and unit conversion.
 
 Heating and cooling coils with condensate and water flow, mixing up to six streams, heat recovery to
 EN 16798-3 and EN 308 with frost protection, fans and the heat they add, steam humidification
-(any steam state and target, API key), air-water contact, dehumidification and desiccant wheels. One block or a chain of up to eight. A
+(any steam state and target, members server), air-water contact, dehumidification and desiccant wheels. One block or a chain of up to eight. A
 target a step cannot reach is reported as not feasible, never as a clean answer.
 
 ### Hydronic MCP: complex hydraulics (free account)
@@ -159,20 +162,17 @@ claude plugin marketplace add pjazdzyk/energy-flow-x-mcp
 claude plugin install energyflowx@energyflowx
 ```
 
-Nothing to configure. Hydronic MCP needs your free EnergyFlowX account: Claude Code shows that server
-as needing authentication, and you sign in once from `/mcp` ([Your account](#the-api-key)).
+Restart Claude Code and run `/mcp`. You should see one server:
 
-Restart Claude Code, then run `/mcp`. You should see two servers:
-
-| Server | Endpoint | Key |
+| Server | Endpoint | Account |
 | --- | --- | --- |
-| `energy-flow-x` | `https://energyflowx.com/energy-flow-x/mcp` | not needed, except for refrigerants, brines and the steam humidifier |
-| `energy-flow-x-hydronic` | `https://energyflowx.com/energy-flow-x/mcp/hydronic` | your account: sign in from `/mcp` |
+| `energy-flow-x` | `https://energyflowx.com/energy-flow-x/mcp/members` | your free EnergyFlowX account: sign in from `/mcp` |
 
-That is all. Water, steam, air, gases, natural gas, glycols, ice, saturation, unit conversion,
-conduit sizing and air processes work straight away, with no account. Refrigerants, brines and
-the steam humidifier need [an API key](#the-api-key), and network solving needs
-[a free account](#the-api-key).
+Pick it and choose **Authenticate**. Your browser opens energyflowx.com, you sign in and approve, and
+every tool works from then on: fluids, refrigerants and brines included, sizing, air handling, the
+steam humidifier and network solving. The plugin stores no key and asks for none
+([Your account](#the-api-key)). The account is free. If you would rather not create one, connect the
+free server yourself instead ([Other clients](#other-clients)).
 
 ## Try it
 
@@ -187,7 +187,7 @@ Paste any of these into Claude Code after installing:
 > Humid air at 26 °C and 55 % RH at 97.8 kPa (about 300 m above sea level): density, enthalpy, dew
 > point and humidity ratio.
 
-> R32 at 40 °C: saturation pressure, liquid and vapour density, latent heat. *(API key)*
+> R32 at 40 °C: saturation pressure, liquid and vapour density, latent heat.
 
 **Pipe and duct sizing**
 
@@ -218,14 +218,14 @@ Paste any of these into Claude Code after installing:
 
 ## What is inside
 
-| Skill | What it covers | Tools | Key |
+| Skill | What it covers | Tools | Account |
 | --- | --- | --- | --- |
-| [`fluid-properties`](skills/fluid-properties/SKILL.md) | 29 fluids and solids: water and steam, humid air, glycols, brines, refrigerants, industrial gases, natural gas (GERG-2008, ISO 6976), ice, unit conversion | 6 | free, key for refrigerants and brines |
-| [`conduit-sizing`](skills/conduit-sizing/SKILL.md) | one pipe or duct against real catalogues: velocity, pressure drop, regime, the size below and above | 4 | free |
-| [`hvac-processes`](skills/hvac-processes/SKILL.md) | coils with condensate, mixing, heat recovery (EN 16798-3, EN 308), fans, humidification, dehumidification, desiccant wheels | 1 | free, key for the steam humidifier |
-| [`hydronic`](skills/hydronic/SKILL.md) | whole pipe and duct networks of liquids, gases and steam, several fluids in one design, with pumps, compressors, heat exchangers, stores and receivers, steady or over time: build, solve, check, and report it as an HTML study with a P&ID-symbol network diagram, tables and a DXF of the drawing | 5 + 10 resources | free account |
+| [`fluid-properties`](skills/fluid-properties/SKILL.md) | 29 fluids and solids: water and steam, humid air, glycols, brines, refrigerants, industrial gases, natural gas (GERG-2008, ISO 6976), ice, unit conversion | 6 | refrigerants and brines only |
+| [`conduit-sizing`](skills/conduit-sizing/SKILL.md) | one pipe or duct against real catalogues: velocity, pressure drop, regime, the size below and above | 4 | not needed |
+| [`hvac-processes`](skills/hvac-processes/SKILL.md) | coils with condensate, mixing, heat recovery (EN 16798-3, EN 308), fans, humidification, dehumidification, desiccant wheels | 1 | the steam humidifier only |
+| [`hydronic`](skills/hydronic/SKILL.md) | whole pipe and duct networks of liquids, gases and steam, several fluids in one design, with pumps, compressors, heat exchangers, stores and receivers, steady or over time: build, solve, check, and report it as an HTML study with a P&ID-symbol network diagram, tables and a DXF of the drawing | 5 + 10 resources | required |
 
-Every tool on the main server is read-only and idempotent, so Claude does not stop to ask
+Every free tool is read-only and idempotent, so Claude does not stop to ask
 permission for a lookup. Two network tools change a session you own, and say so, and `hydronic_report` keeps a
 new report on every call, so it is not read-only either.
 Inputs carry their own units (`"20oC"`, `"1.5bar"`, `"70degF"`, `"8g/kg"`), and every response names
@@ -234,57 +234,55 @@ the unit it produced.
 <a id="the-api-key"></a>
 ## Your account: sign in, or an API key
 
-The account is free. You need it for:
+The account is free, and with the plugin it is the only thing you need. Sign in once and every tool
+works, the members-only ones included:
 
-| What | Why |
+| What needs the account | Why |
 | --- | --- |
 | **Refrigerants**: R134a, R1234ze, R1234yf, R32, R125, R454B, R410A, R407C | members-only fluids |
 | **Brines**: calcium chloride, ethanol, methanol, potassium formate solutions | members-only fluids |
 | **Steam humidifier**: the `STEAM_HUMIDIFIER` block of `calculate_air_process` | members-only process |
-| **Hydronic MCP**: all five hydronic tools | a network session needs an owner |
+| **Hydronic**: all five hydronic tools | a network session needs an owner |
 | **Larger sweeps**: up to 20 states per call instead of 5 | anonymous calls are capped |
 
-Everything else works without one.
-
-**Hydronic: sign in.** Create a free account at
+**Sign in.** Create a free account at
 [energyflowx.com/registration](https://energyflowx.com/registration). Then run `/mcp` in Claude Code,
-choose `energy-flow-x-hydronic` and **Authenticate**. Your browser opens energyflowx.com: sign in if
-asked, check that the page names Claude Code and your account, and approve. Claude Code keeps the
-connection and renews it on its own, so the plugin holds no credential and asks for none. On
-claude.ai and in Cowork the same server shows a **Connect** button that does the same. Every connected
-app is listed under [Settings](https://energyflowx.com/settings), **Connected apps**, where you can
-disconnect it; it then has to ask you again.
+choose `energy-flow-x` and **Authenticate**. Your browser opens energyflowx.com: sign in if asked,
+check that the page names Claude Code and your account, and approve. Claude Code keeps the connection
+and renews it on its own, so the plugin holds no credential and asks for none. On claude.ai and in
+Cowork the same server shows a **Connect** button that does the same. Every connected app is listed
+under [Settings](https://energyflowx.com/settings), **Connected apps**, where you can disconnect it.
+It then has to ask you again.
 
-**API keys.** A key (create one under [Settings](https://energyflowx.com/settings), **API keys**; it
-starts with `efxk_`) unlocks the members-only fluids and larger sweeps on the free server, and works
-for Hydronic too in a client that cannot sign in, sent as an `Authorization: Bearer efxk_...` header.
-
-**For refrigerants, brines and the steam humidifier, one more step.** The plugin connects the free
-server anonymously, so it works for everyone out of the box. To unlock the members-only fluids and
-the steam humidifier, add a keyed connection to the same server once:
-
-```shell
-claude mcp add --transport http energy-flow-x-keyed https://energyflowx.com/energy-flow-x/mcp \
-  --header "Authorization: Bearer efxk_your_key_here"
-```
+**API keys are for assistants that cannot sign in**, such as a script or a local model, never for the
+plugin. Create one under [Settings](https://energyflowx.com/settings), **API keys** (it starts with
+`efxk_`), and send it as an `Authorization: Bearer efxk_...` header to the members server.
 
 <a id="other-clients"></a>
 ## Other clients: Claude Desktop, Cursor, VS Code
 
-The skills are for Claude, but the MCP servers work with any MCP client. The exact, current snippets
-for each client are on [energyflowx.com/mcp-server](https://energyflowx.com/mcp-server). The short
-version:
+The skills are written for any assistant, and the servers work with any MCP client. There are two,
+and you connect **one** of them: the members server already carries every free tool, so with both
+connected each free tool appears twice.
+
+| Server | Address | Account | Tools |
+| --- | --- | --- | --- |
+| Free | `https://energyflowx.com/energy-flow-x/mcp/free` | none | the 11 property, sizing and air tools, without the members-only fluids and the steam humidifier |
+| Members | `https://energyflowx.com/energy-flow-x/mcp/members` | sign in, or an API key | all 16 tools |
+
+The exact, current snippets for each client are on
+[energyflowx.com/mcp-server](https://energyflowx.com/mcp-server). The short version:
 
 **Claude Code without the plugin**
 
 ```shell
-claude mcp add --transport http energy-flow-x https://energyflowx.com/energy-flow-x/mcp
-claude mcp add --transport http energy-flow-x-hydronic https://energyflowx.com/energy-flow-x/mcp/hydronic
+claude mcp add --transport http energy-flow-x https://energyflowx.com/energy-flow-x/mcp/members
 ```
 
-**Claude Desktop**: Settings → Connectors → Add custom connector, and paste
-`https://energyflowx.com/energy-flow-x/mcp`. Add `https://energyflowx.com/energy-flow-x/mcp/hydronic`
-the same way and press **Connect** to sign in.
+Then `/mcp`, choose it and **Authenticate**. Use the `/mcp/free` address instead for no account.
+
+**claude.ai, Claude Desktop, Cowork**: Settings → Connectors → Add custom connector, paste the
+members address and press **Connect** to sign in, or paste the free address, which needs no sign-in.
 
 **Cursor** (`.cursor/mcp.json`):
 
@@ -292,7 +290,7 @@ the same way and press **Connect** to sign in.
 {
   "mcpServers": {
     "energy-flow-x": {
-      "url": "https://energyflowx.com/energy-flow-x/mcp"
+      "url": "https://energyflowx.com/energy-flow-x/mcp/members"
     }
   }
 }
@@ -305,30 +303,34 @@ the same way and press **Connect** to sign in.
   "servers": {
     "energy-flow-x": {
       "type": "http",
-      "url": "https://energyflowx.com/energy-flow-x/mcp"
+      "url": "https://energyflowx.com/energy-flow-x/mcp/members"
     }
   }
 }
 ```
 
-Add the hydronic endpoint the same way. A client that supports MCP sign-in (OAuth) opens
-energyflowx.com to connect your account; for one that does not, send an API key as an
-`Authorization: Bearer efxk_...` header.
+A client that supports MCP sign-in (OAuth) opens energyflowx.com to connect your account. For one
+that does not, send an API key as an `Authorization: Bearer efxk_...` header.
 
 ## Install a single skill
 
-Each folder under [`skills/`](skills/) is a self-contained
-[Agent Skill](https://agentskills.io), so you can take only the one you need.
+Each folder under [`skills/`](skills/) is a self-contained [Agent Skill](https://agentskills.io), so an
+assistant that reads skills but not plugins can take only the one it needs. Every release carries a
+zip per skill:
 
-- **Claude Code**: copy the folder into your skills directory.
+| Skill | Download |
+| --- | --- |
+| `fluid-properties` | [fluid-properties.zip](https://github.com/pjazdzyk/energy-flow-x-mcp/releases/latest/download/fluid-properties.zip) |
+| `conduit-sizing` | [conduit-sizing.zip](https://github.com/pjazdzyk/energy-flow-x-mcp/releases/latest/download/conduit-sizing.zip) |
+| `hvac-processes` | [hvac-processes.zip](https://github.com/pjazdzyk/energy-flow-x-mcp/releases/latest/download/hvac-processes.zip) |
+| `hydronic` | [hydronic.zip](https://github.com/pjazdzyk/energy-flow-x-mcp/releases/latest/download/hydronic.zip) |
+| all four | [energyflowx-skills.zip](https://github.com/pjazdzyk/energy-flow-x-mcp/releases/latest/download/energyflowx-skills.zip) |
 
-  ```bash
-  cp -r skills/hydronic ~/.claude/skills/
-  ```
+- **claude.ai, Claude Desktop, Cowork**: upload the zip in the Skills section of your settings.
+- **Claude Code**: unzip it into your skills directory, for example `~/.claude/skills/`.
+- **Another assistant that reads Agent Skills**: unzip it where that assistant looks for skills.
 
-- **claude.ai**: zip the folder and upload it in the Skills section of your settings.
-
-A skill on its own does not connect the servers, so add them as shown in
+A skill on its own does not connect a server, so add one as shown in
 [Other clients](#other-clients).
 
 ## Update, disable, uninstall
@@ -342,16 +344,17 @@ claude plugin uninstall energyflowx@energyflowx # remove it
 
 ## Troubleshooting
 
-**A server shows as failed in `/mcp`.** Check you can reach
+**The server shows as failed in `/mcp`.** Check you can reach
 [energyflowx.com](https://energyflowx.com) from that machine. Corporate proxies sometimes block
 streaming HTTP.
 
-**`energy-flow-x-hydronic` shows as needing authentication.** That is expected until you sign in:
-run `/mcp`, choose it and **Authenticate**. If it stops working after you disconnected it under
-Settings, **Connected apps**, authenticate again the same way.
+**`energy-flow-x` shows as needing authentication.** That is expected until you sign in: run `/mcp`,
+choose it and **Authenticate**. If it stops working after you disconnected it under Settings,
+**Connected apps**, authenticate again the same way.
 
-**A refrigerant or brine is refused.** Those fluids need a key on the free server, which the plugin
-connects anonymously. Add the keyed connection described in [The API key](#the-api-key).
+**A refrigerant, a brine or the steam humidifier is refused.** You are on the free server, which
+needs no account and leaves those out. The refusal names the members server: connect that one and
+sign in.
 
 **Something is wrong with a number.** Tell us: see [Links](#links). Include the prompt, the inputs
 and what you expected. Every result states its method, so quoting it helps.
@@ -360,16 +363,15 @@ and what you expected. Every result states its method, so quoting it helps.
 ## What the plugin sends, and where
 
 The plugin runs nothing on install. It has no hooks, no executables and no package installs. It
-connects two remote MCP servers, both on `energyflowx.com`, over HTTPS:
+connects one remote MCP server on `energyflowx.com`, over HTTPS:
 
-- **`energy-flow-x`** receives the arguments of each tool call: fluid states, conduit and flow data,
-  air-process inputs. It returns the computed result. No key is sent to it.
-- **`energy-flow-x-hydronic`** receives the network design you build and the calls that edit, solve,
-  inspect and report it, plus the access token Claude Code received when you signed in, in the
+- **`energy-flow-x`**, the members server, receives the arguments of each tool call (fluid states,
+  conduit and flow data, air-process inputs, the network design you build and the calls that edit,
+  solve, inspect and report it), plus the access token Claude Code received when you signed in, in the
   `Authorization` header. The plugin itself holds no credential. A design lives in a server-side
   session owned by your account and expires after 24 hours. A report of it is kept at most 24 hours
-  behind links that anyone holding them can open, and holds the design's figures and the names you gave it,
-  nothing from your account.
+  behind links that anyone holding them can open, and holds the design's figures and the names you gave
+  it, nothing from your account.
 
 The plugin runs no code on your machine: every calculation, and every report, is made on the server.
 It sends nothing to any other destination. How the service treats this data is set out in the
@@ -397,6 +399,7 @@ plan around it staying free.
 
 ```bash
 python tests/check_skills.py                                             # the skills against the server's own docs
+python ../energy-flow-x-iac/scripts/package-plugin-skills.py            # the skill zips, attach them to every release
 claude plugin validate . --strict                                        # the marketplace manifest
 claude plugin validate .claude-plugin/plugin.json --strict               # the plugin manifest and its .mcp.json
 ```
@@ -416,7 +419,7 @@ front a different service.
 
 This repository is client-side instructions only and calculates nothing. The EnergyFlowX engines and
 the service behind them are separate proprietary software with their own terms. Much of the service
-is free within published limits, some of it needs an API key, and the free tiers are granted at the
+is free within published limits, some of it needs a free account, and the free tiers are granted at the
 operator's discretion.
 
 ---

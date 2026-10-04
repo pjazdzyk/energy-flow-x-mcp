@@ -2,11 +2,7 @@
   "mcpServers": {
     "energy-flow-x": {
       "type": "http",
-      "url": "https://energyflowx.com/energy-flow-x/mcp"
-    },
-    "energy-flow-x-hydronic": {
-      "type": "http",
-      "url": "https://energyflowx.com/energy-flow-x/mcp/hydronic"
+      "url": "https://energyflowx.com/energy-flow-x/mcp/members"
     }
   }
 }

@@ -172,9 +172,10 @@ assumed.
 Sessions belong to the account that made them, however it connected. `export` before `close` if the design is worth keeping;
 hand the exported document back to the user, because it is the only copy they control.
 
-## The free endpoint
+## The free tools
 
-`/mcp` is a separate server, no key, eleven tools. Relevant here:
+Eleven free tools sit on the members server beside the hydronic ones, and on the free server alone.
+Relevant here:
 
 - `get_fluid_properties`, `get_saturation_properties`, `list_fluids`: density, viscosity, saturation
   state for 29 fluids and solids.

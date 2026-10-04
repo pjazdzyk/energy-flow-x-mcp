@@ -113,7 +113,7 @@ and **ΔT is a design decision, not a measurement.** It is the single most conse
 intake: doubling ΔT halves the flow, which changes every pipe size and the pump duty with it. Ask for
 it, or state the value you used in the same sentence as the answer. Never let it sit unmentioned.
 
-Get `cp` from the free `/mcp` endpoint with `get_fluid_properties` at the design temperature rather
+Get `cp` with the free `get_fluid_properties` (on either server) at the design temperature rather
 than from memory. Two reasons it matters more than it looks:
 
 - **A glycol needs more flow for the same duty.** Its specific heat is meaningfully lower than water's,
