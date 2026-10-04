@@ -194,7 +194,9 @@ already has:
 3. **Ask the user only for the blocking group**, in one message, in their vocabulary rather than the
    API's. "I need the height of the top floor above the plant room, and whether your 4 bar is gauge"
    beats a list of field names.
-4. **Solve, and report the assumed group as assumptions** alongside the answer.
+4. **Check the drawing**: `hydronic_preview(handle)` draws the network as the server read it. When the
+   user gave a sketch or a photo, show it to them and ask whether it is their network, before any solve.
+5. **Solve, and report the assumed group as assumptions** alongside the answer.
 
 That order means the user is asked once, for the fewest things, at the point where it is obvious why
 each one is needed. It also means you are never guessing at what is missing, because the server knows.
