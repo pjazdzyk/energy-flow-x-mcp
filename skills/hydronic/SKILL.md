@@ -240,7 +240,7 @@ nothing runs on the user's machine. The reply carries:
 - **The verdict** as JSON: the headline the page opens with, the critical path and what its runs lose,
   each qualification, and every warning the solve said, in full. Read it before you show anything.
 - **An image of each figure**, up to three, the network drawn in the EnergyFlowX Hydronic builder's P&ID symbols, every
-  run labelled with its size, flow and pressure drop and every node with its pressure, valves and Kv
+  run labelled with its size, velocity, flow and pressure drop and every node with its pressure, valves and Kv
   elements drawn in their runs, the critical path highlighted, and a legend. Show it: it is the first
   look the user asked for.
 - **Links**: a self-contained study page (verdict, qualifications, the drawing, the critical path,

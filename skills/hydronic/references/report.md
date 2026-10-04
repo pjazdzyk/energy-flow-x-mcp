@@ -13,7 +13,7 @@ figure on the page is the figure the engine computed.
 | --- | --- |
 | `handle` | the session to report |
 | `mode` | `steady` (default) or `transient`, as `hydronic_solve` |
-| `labels` | `data` (default): each run's size, flow and pressure drop, each node's pressure. `minimal`: ids and sizes |
+| `labels` | `data` (default): each run's size, velocity, flow and pressure drop, each node's pressure. `minimal`: ids and sizes |
 | `title` | the page's title, the session's name when left out |
 
 A design that fails validation is refused exactly as `hydronic_solve` refuses it, with every error listed, and no

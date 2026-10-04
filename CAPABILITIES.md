@@ -538,7 +538,7 @@ real one, so none is assumed.
   three, at most 1,600 px on the long side), and a link to each file.
 - **The drawing**: a riser diagram in the EnergyFlowX Hydronic builder's P&ID symbols. A spanning tree grown
   by flow opens each ring where the flow divides, elevation is up the page in bands, and every run is
-  labelled with its size, flow and pressure drop and every node with its pressure. Valves, strainers and
+  labelled with its size, velocity, flow and pressure drop and every node with its pressure. Valves, strainers and
   Kv elements are drawn in their runs, the critical path is highlighted, a plant of separate systems is
   one figure per group, and every figure carries its own legend. `labels="minimal"` keeps ids and sizes.
 - **The study page**: one self-contained HTML file with the verdict, the qualifications (always present),
