@@ -170,9 +170,15 @@ A transient comes back as answers, not a time series:
 2. **`vessels`**: each receiver's lowest and highest pressure, with when. A vessel "held at the floor"
    ran empty, and the demand shown after that is a promise, not delivery.
 3. **`events` and each machine's `starts`**: many starts in a short run is short-cycling.
-4. **`devices`**: power, energy, recovered heat, how far each store charged. The heat a compressor or
-   heater put in should reappear in the store within a few per cent.
-5. **`lowestPressureNodes`** with `at_s`, and the sampled **`series`** for the shape of the curve.
+4. **`devices`**: power, energy, recovered heat, how far each store charged.
+5. **`balance`**: per fluid circuit the mass supplied, drawn and kept in vessels, a gas receiver's counted
+   from its flows (`storedByFlow_kg`) and from its own state (`storedByState_kg`); per device the heat into
+   each circuit (`energy`); per circuit what entered, left, came from devices and stayed (`closure`). The two
+   receiver figures agree and every `residual` is near zero when the run conserved mass and energy, and the
+   heat a compressor or heater put in can then be followed to where it went. Quote the balance before an
+   energy figure.
+6. **`lowestPressureNodes`** with `at_s`, and the sampled **`series`** for the shape of the curve: evenly
+   spaced instants plus each vessel's lowest and highest and both sides of every command change.
 
 ## What goes wrong, and what it means
 
