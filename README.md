@@ -118,6 +118,34 @@ result into a **self-contained HTML study** with a network diagram drawn in P&ID
 with flows and pressures, schedules and the checks, ready to hand to a colleague, and the same diagram as
 a **DXF** to open in CAD. The server makes it, and the chat shows the diagram as soon as it returns.
 
+#### What a report looks like
+
+[![A compressed-air plant solved through the Hydronic tools: five systems on one drawing, each line carrying its system code](assets/example-plant.png)](https://energyflowx.com/case-studies/compressed-air-plant/study.html)
+
+The question, as it was asked: *a 41 kW compressor delivering 6.4 m³/min of free air through a ducted intake
+charges a 6 m³ receiver on a pressure switch at 7.5 and 9 bar absolute, and through a dryer feeds a 210 m ring
+with five work areas drawing 5.5 m³/min. Its oil cooler gives 72 % of the input to a closed water loop that
+preheats mains water through a plate heat exchanger. Does every tool keep its 6 bar, how does the compressor
+cycle, and how much heat reaches the hot water?* The answer came back as the drawing above, the full
+[study page](https://energyflowx.com/case-studies/compressed-air-plant/study.html) and a DXF:
+
+- 21.6 kPa lost on the way to the farthest tool, 14.9 kPa of it in the dryer, so the paint shop keeps 6.3 bar
+  gauge with the receiver near its lowest.
+- The ring is fed both ways, and the flows meet where the run between two corners carries only 0.006 kg/s.
+- The compressor unloads twice in 20 minutes and runs loaded 83 % of the time at 36.2 kW on average.
+- 25.4 kW recovered from the oil cooler, sending mains water to the store at about 56 °C.
+
+The drawing is generated from the design, deterministically: the same design always gives the same drawing,
+and no AI draws it. Five systems sit on it, each line carrying its code: OA outdoor air in a duct (the double
+line), CA compressed air, HRW heat recovery water, DCW domestic cold water and DHW domestic hot water. Water
+leaving a heat source is red and water going to it blue, every gauge and thermometer shows what it reads, and
+the highlighted route is the critical path. The worked example is also on
+[energyflowx.com/hydronic](https://energyflowx.com/hydronic).
+
+> **Illustrative only.** This plant is an example made to show what the server computes, not a real design.
+> Its diagram is not a complete P&ID: fittings, equipment and the control and safety components a built plant
+> needs are left out or simplified.
+
 **Size limit.** One design holds up to 2,000 nodes and pipes together, which covers a building, a plant
 room, a campus loop or a district branch. A whole city network does not fit in one design: it is split
 into parts joined at pressure boundaries, and each part is solved on its own. An exported design near

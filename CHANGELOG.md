@@ -4,6 +4,12 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 ## 2.0.0 (2026-10-04)
 
+### What a report looks like
+
+- The README shows a report: the worked compressed-air plant from energyflowx.com/hydronic, its drawing
+  (`assets/example-plant.png`), the question it answers, what came back, and that it is illustrative only, not a
+  real design or a complete P&ID.
+
 ### Access terms with a year, and no "Hydronic MCP"
 
 - The Hydronic network tools are free for testing and move to a paid plan in **2027**, in the README, CAPABILITIES
