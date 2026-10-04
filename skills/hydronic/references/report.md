@@ -119,7 +119,8 @@ state, never an instant of the run.
 
 ## The study page
 
-One self-contained HTML file that works offline, in light and dark, and prints: the verdict, the qualifications,
+One self-contained HTML file that works offline, in light and dark, and prints. It opens with a table of contents,
+then: the verdict, the qualifications,
 the drawing, the critical path, the equipment and what each device did, a bill of materials, every run and every
 node, and the assumptions and warnings.
 
