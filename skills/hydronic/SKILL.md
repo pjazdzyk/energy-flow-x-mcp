@@ -189,7 +189,10 @@ pressures rest on it.
 the pressure through zero to keep a fixed demand. Reduce the demand, open up the run, or raise the
 supply pressure. Do not report the numbers.
 
-**A request for a control valve, balancing or regulation.** This release has none of them. A pump on a
+**A request for a control valve, balancing or regulation.** This release has no valve that sets or regulates
+itself. A balancing valve left at a setting is a fixed Kv: `add_resistance` with the Kv of that setting, from its
+datasheet, and the solve says what flow it gives. Finding the setting that gives a target flow, or a valve holding a
+pressure or a flow as the plant changes, is not here yet. A pump on a
 liquid is a device with its datasheet curve, and its duty point is the solve's answer. A pump on a gas is
 refused: a gas network is driven by a compressor or by its boundary pressures.
 
@@ -241,7 +244,7 @@ nothing runs on the user's machine. The reply carries:
   elements drawn in their runs, the critical path highlighted, and a legend. Show it: it is the first
   look the user asked for.
 - **Links**: a self-contained study page (verdict, qualifications, the drawing, the critical path,
-  equipment, a run over time with its charts, every run and node) and the same drawing as an R12
+  equipment, every run and node, and a run over time in a part of its own) and the same drawing as an R12
   **DXF** for CAD, every symbol a block and every kind of line on its own layer. Offer the DXF whenever the
   study is for someone who draws.
 
@@ -256,8 +259,11 @@ Three things about it are not optional:
   because each report takes one of the account's 10 places for up to a day, and at that limit the reply says so
   and carries no links.
 
-`labels="minimal"` draws ids and sizes only, for a dense plant. `mode="transient"` reports a run over
-time, drawn at its last instant. `references/report.md` says what the page shows and how to read it.
+`labels="minimal"` draws ids and sizes only, for a dense plant. `mode="transient"` reports the plant in
+two parts: the design point, solved steady, which the drawing and every schedule show, and the run over time
+apart from it, with each machine over the run and the lowest pressure each point saw and when. Quote a figure
+with the part it comes from: "at the design point" or "over the run". `references/report.md` says what the page
+shows and how to read it.
 
 The drawing is a schematic and says so: it is laid out from the graph and the elevations, not from
 coordinates, and it is not a P&ID or to scale.

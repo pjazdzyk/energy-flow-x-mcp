@@ -550,7 +550,9 @@ real one, so none is assumed.
   report is at most 4 MB before compression, and an account keeps
   at most 10 at once. At that limit a report returns its verdict and images without links, and nothing
   kept is removed.
-- `mode="transient"` reports a run over time, drawn at its last instant.
+- `mode="transient"` reports two parts: the design point, solved steady, which the drawing and every schedule
+  show, and the run over time apart from it, with each machine over the run and the lowest pressure each point
+  saw and when. A draw point that falls below its least pressure at any instant of the run fails the verdict.
 
 ### Inspecting
 

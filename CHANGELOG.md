@@ -4,6 +4,14 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 ## 2.0.0 (2026-10-04)
 
+### A run over time is reported with its design point, apart
+
+- The hydronic skill and `references/report.md` describe the two-part report `hydronic_report(mode="transient")`
+  now gives: the design point, solved steady, which the drawing and schedules show, and the run over time apart from
+  it, with each machine over the run and the lowest pressure each point saw. New verdicts and reply fields
+  (`parts`, `runConverged`) are listed. The README example quotes both parts and says all five systems are solved
+  together in one design.
+
 ### What a report looks like
 
 - The README shows a report: the worked compressed-air plant from energyflowx.com/hydronic, its drawing

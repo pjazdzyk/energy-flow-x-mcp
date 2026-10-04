@@ -129,15 +129,23 @@ preheats mains water through a plate heat exchanger. Does every tool keep its 6 
 cycle, and how much heat reaches the hot water?* The answer came back as the drawing above, the full
 [study page](https://energyflowx.com/case-studies/compressed-air-plant/study.html) and a DXF:
 
-- 21.6 kPa lost on the way to the farthest tool, 14.9 kPa of it in the dryer, so the paint shop keeps 6.3 bar
-  gauge with the receiver near its lowest.
+- At the design point, the receiver at its 8 bar, 20.2 kPa is lost on the way to the farthest tool, 13.9 kPa of
+  it in the dryer.
+- Over the run the paint shop's lowest is 6.25 bar gauge, at the bottom of the receiver's swing, above the 6 bar
+  its tools need.
 - The ring is fed both ways, and the flows meet where the run between two corners carries only 0.006 kg/s.
 - The compressor unloads twice in 20 minutes and runs loaded 83 % of the time at 36.2 kW on average.
 - 25.4 kW recovered from the oil cooler, sending mains water to the store at about 56 °C.
 
+The study comes in two parts, so no figure is of a state the reader cannot name: the design point, solved steady,
+which the drawing and every schedule show, and the run over time, with each machine over the run and the lowest
+pressure every point saw and when.
+
 The drawing is generated from the design, deterministically: the same design always gives the same drawing,
 and no AI draws it. Five systems sit on it, each line carrying its code: OA outdoor air in a duct (the double
-line), CA compressed air, HRW heat recovery water, DCW domestic cold water and DHW domestic hot water. Water
+line), CA compressed air, HRW heat recovery water, DCW domestic cold water and DHW domestic hot water, all
+solved together in one design: the compressor joins the air to the water, and the exchanger joins the loop to
+the potable water. Water
 leaving a heat source is red and water going to it blue, every gauge and thermometer shows what it reads, and
 the highlighted route is the critical path. The worked example is also on
 [energyflowx.com/hydronic](https://energyflowx.com/hydronic).

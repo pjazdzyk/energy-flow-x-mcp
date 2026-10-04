@@ -25,10 +25,12 @@ report is made.
 
 | Field | What it is |
 | --- | --- |
-| `data.verdict` | the page's headline: `Solved`, `Solved, and meets every stated criterion`, `Solved, with qualifications`, `The design fails its criteria`, `The run stopped early, before its end`, `The solve did not converge` or `These results are withdrawn`, and may end with the iteration count |
+| `data.verdict` | the page's headline: `Solved`, `Solved, and meets every stated criterion`, `Solved, with qualifications`, `The design fails its criteria`, `The run stopped early, before its end`, `The solve did not converge`, `The design point did not converge`, `The run over time did not converge at every instant` or `These results are withdrawn`, and may end with the iteration count |
 | `data.verdictDetail` | the sentence under it, which also says whether anything was judged against criteria |
 | `data.failedChecks` | when the design fails its criteria: each failed check in words, e.g. `branch_a: velocity 1.80 m/s is over its limit` (at most 20, then a count) |
-| `data.criticalPath` | per figure: `from`, `to`, `lostInItsRuns_kPa` and the `runs` in flow order |
+| `data.criticalPath` | per figure: `from`, `to`, `lostInItsRuns_kPa` and the `runs` in flow order, at the design point |
+| `data.parts` | with `mode="transient"`: the two parts the page has, the design point and the run over time |
+| `data.runConverged` | with `mode="transient"`: whether every instant of the run converged |
 | `data.qualifications` | each as `element: finding`. The engine's own sentences are in `warnings` |
 | `data.files` | each file's `name`, what it is, its `url` (HTTPS), its `resource` (`hydronic://reports/...`) and size |
 | `data.expiresAt` | when the links stop working |
@@ -54,7 +56,9 @@ Two headlines change everything else and are said first, in words, before the pi
 produced by something other than ordinary evaluation of the design, and you say which.
 
 **`The design fails its criteria`** is a converged, valid solve of a design that does not meet what `set_criteria`
-stated for it: a run too fast or too steep, a draw point short of its least pressure, a peak over the rating. Never
+stated for it: a run too fast or too steep, a draw point short of its least pressure, a peak over the rating, or,
+for a run over time, a draw point that falls below its least pressure at some instant of the run (that check says
+when). Never
 call that design solved or fine. Say what fails, from `failedChecks`, and what would cure it. Plain `Solved` means
 no criteria were stated, so nothing was judged a pass: say so rather than imply one.
 
@@ -110,14 +114,22 @@ coordinates.
 - **Labels never touch.** A label with no clear spot is left off: every figure is on hover on the page and in its
   schedules.
 
-It is a schematic, not a P&ID, and not to scale. A run over time is drawn at its last instant.
+It is a schematic, not a P&ID, and not to scale. A report of a run over time draws the design point, the steady
+state, never an instant of the run.
 
 ## The study page
 
 One self-contained HTML file that works offline, in light and dark, and prints: the verdict, the qualifications,
-the drawing, the critical path, the equipment and what each device did, a bill of materials, a run over time
-(completed or not, each receiver's swing, every command change, a chart per unit), every run and every node, and the
-assumptions and warnings. The bill of materials aggregates like items: pipe and duct by material, size and system
+the drawing, the critical path, the equipment and what each device did, a bill of materials, every run and every
+node, and the assumptions and warnings.
+
+A report with `mode="transient"` comes in two parts, so no table mixes two states of the plant. Part 1 is the
+design point: the plant solved steady, every machine at its stated command and every vessel at its stated pressure,
+and the drawing, the design checks, the critical path, the equipment and the schedules are all this state. Part 2 is
+the run over time: whether it completed and every instant converged, each vessel's swing, each machine over the run
+(a compressor's averages, energy and starts), the lowest pressure each point reached and when, judged at a draw
+point against the least its system must keep, a chart per unit and every command change. A draw point that keeps
+its pressure at the design point but falls below it at the bottom of a receiver's swing fails the verdict. The bill of materials aggregates like items: pipe and duct by material, size and system
 with their total length, fittings by type and the size of the run carrying them, valves, equipment and vessels by
 type, each line naming its members. Tees and crosses are counted from the network, one wherever three or four
 connections meet, because a tee's loss is entered once for each path through it; an entry or exit loss at a vessel
