@@ -4,6 +4,13 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 ## 2.0.0 (2026-10-04)
 
+### Access terms with a year, and no "Hydronic MCP"
+
+- The Hydronic network tools are free for testing and move to a paid plan in **2027**, in the README, CAPABILITIES
+  and the hydronic skill alike. `check_skills.py` fails when any of them names another year, or drops the year.
+- "Hydronic MCP" is gone as a name: since 2.0.0 the Hydronic tools are on the members server, not a server of their
+  own. `check_skills.py` refuses the phrase in a skill.
+
 ### BREAKING: one server, one sign-in, no API key
 
 The plugin now connects **one** server, `energy-flow-x`, at `https://energyflowx.com/energy-flow-x/mcp/members`. It

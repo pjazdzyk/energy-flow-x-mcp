@@ -61,7 +61,7 @@ existed. Check `feasible` on every step, not just the last one.
 Every block is free except `STEAM_HUMIDIFIER`, which is members-only. On the members server, where
 the user is signed in, it simply runs. On the free server a chain with a steam humidifier in it is
 refused with the members server's address, even when the other steps are free, so relay what it
-says: connecting the members server, with the user's free account, is what unlocks it.
+says: connecting the members server, with the user's account, is what unlocks it.
 
 ## Chains are linear only
 

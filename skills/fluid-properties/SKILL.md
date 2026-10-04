@@ -94,7 +94,7 @@ unusual. A conversion done in your head is the one step of a calculation nobody 
 The tools are free. A few fluids, the refrigerants and brines, are members-only, and `list_fluids`
 states the tier per fluid. On the members server, where the user is signed in, they simply answer. On
 the free server a call for one of those is refused with the members server's address rather than a
-blank, so relay what it says: connecting the members server, with the user's free account, is what
+blank, so relay what it says: connecting the members server, with the user's account, is what
 unlocks them.
 
 ## When the question is bigger than a property

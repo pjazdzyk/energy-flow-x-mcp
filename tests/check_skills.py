@@ -143,14 +143,20 @@ def test_access_terms_are_stated() -> None:
     # These terms are a commercial position and they change. A skill that says "free" without the
     # qualification gets relayed to an end user as a promise the product never made, and an agent
     # repeats it far more confidently than a web page would.
-    check("hydronic says the free period is temporary",
-          "free while it is being tested" in hydronic and
-          ("temporary" in hydronic or "change at any time" in hydronic))
+    check("hydronic says the network tools are free for testing, until a paid plan in a stated year",
+          "free for testing" in hydronic and re.search(r"paid plan in 20\d\d", hydronic) is not None)
+    # One year everywhere the plugin states it: a year changed in one file and not the others tells the
+    # reader of the README and the assistant reading the skill two different dates.
+    years = {}
+    for path in [PLUGIN / "README.md", PLUGIN / "CAPABILITIES.md", SKILLS / "hydronic" / "SKILL.md"]:
+        years[path.name] = set(re.findall(r"paid plan in (20\d\d)", path.read_text(encoding="utf-8")))
+    check("every file names the same paid-plan year", len(set().union(*years.values())) == 1
+          and all(years.values()), years)
     check("hydronic says an account is required, by sign-in", "account" in hydronic and "sign" in hydronic)
 
     readme = (REPO / "README.md").read_text(encoding="utf-8").lower()
     check("the README says it too, for anyone who reads no further",
-          "temporary" in readme and "without notice" in readme)
+          "free for testing" in readme and "without notice" in readme)
 
 
 def test_mcp_wiring_matches_the_published_endpoints() -> None:
@@ -190,6 +196,7 @@ NOT_PORTABLE = {
     "`/mcp` address": "an address removed on 2026-10-04",
     "`/mcp` is a separate server": "an address removed on 2026-10-04",
     "plugin server name": "a column that only makes sense with the plugin installed",
+    "Hydronic MCP": "a separate server's name, gone since 2.0.0: the Hydronic tools are on the members server",
     "the plugin connects": "a claim about the plugin, which a downloaded skill does not have",
 }
 

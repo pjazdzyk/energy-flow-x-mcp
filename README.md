@@ -33,7 +33,7 @@ Two things follow from that:
 This repository is the official, maintained Claude plugin for the EnergyFlowX MCP service. It does two
 things at once:
 
-1. **Connects the EnergyFlowX members server**, every tool behind one sign-in to your free account, so
+1. **Connects the EnergyFlowX members server**, every tool behind one sign-in to your account, so
    Claude can call the calculation tools and you never handle an API key.
 2. **Adds four skills** that teach Claude how to use them well: which inputs matter, what to check
    before quoting a result, and how to present it so an engineer can verify it. Each skill can also be
@@ -103,7 +103,7 @@ EN 16798-3 and EN 308 with frost protection, fans and the heat they add, steam h
 (any steam state and target, members server), air-water contact, dehumidification and desiccant wheels. One block or a chain of up to eight. A
 target a step cannot reach is reported as not feasible, never as a clean answer.
 
-### Hydronic MCP: complex hydraulics (free account)
+### Hydronic: complex hydraulics (members server)
 
 Whole pipe and duct networks built step by step on the server: pressure boundaries, demands, pipes,
 fittings and resistances, branched or looped. Water and glycol circuits, compressed air, natural gas,
@@ -205,7 +205,7 @@ Paste any of these into Claude Code after installing:
 > Cooling coil: 30 °C / 50 % RH in, 13 °C off-coil. Duty, condensate rate and chilled-water flow at
 > 7/12 °C.
 
-**Hydronic MCP** (free account)
+**Hydronic** (members server)
 
 > A plant room at 3 bar feeds a heating riser in 35 mm copper at 70 °C, with three floors 3.5 m apart
 > each drawing 0.25 kg/s. Solve it: what pressure reaches the top floor, and which run costs the most?
@@ -380,10 +380,10 @@ It sends nothing to any other destination. How the service treats this data is s
 
 ## Access terms
 
-The free tools are free today. **Network solving is free while it is being tested, and that is
-temporary**: it costs real compute, it will become a paid feature, and the free access can be
-limited, metered or withdrawn at any time and without notice. Build on it by all means, but do not
-plan around it staying free.
+The eleven tools on the free server are free today and need no account. **The Hydronic network
+tools are free for testing and move to a paid plan in 2027.** Solving networks costs real compute,
+and until then the free access can be limited, metered or withdrawn at any time and without notice.
+Build on it by all means, but do not plan around it staying free.
 
 ## Links
 

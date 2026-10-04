@@ -4,7 +4,7 @@ This is the detailed list, tool by tool, of what the two EnergyFlowX MCP servers
 The [README](README.md) is the short version and the place to start.
 
 The servers themselves are the final authority, and they describe themselves. `list_fluids` returns
-the live fluid catalogue with every validity range. Hydronic MCP publishes its full vocabulary
+the live fluid catalogue with every validity range. The Hydronic tools publish their full vocabulary
 as MCP resources. If this page and a server ever disagree, the server is right, and we would like to
 hear about it.
 
@@ -24,7 +24,7 @@ which is described as built and is checked live when it is released.
 - [Sizing one pipe or duct](#sizing-one-pipe-or-duct)
 - [Choosing a size](#choosing-a-size)
 - [Air handling](#air-handling)
-- [Hydronic MCP (complex hydraulics)](#hydronic-mcp-complex-hydraulics)
+- [Hydronic (complex hydraulics)](#hydronic-complex-hydraulics)
 - [Limits and access](#limits-and-access)
 
 ## The two servers
@@ -373,10 +373,10 @@ Tool: `calculate_air_process`.
 - No loops, splitters or zones. A process where air goes two ways is not a straight chain, and the
   tool says so rather than approximating it.
 
-## Hydronic MCP (complex hydraulics)
+## Hydronic (complex hydraulics)
 
 Server: the members server, `/energy-flow-x/mcp/members`, only. Tools: `hydronic_session`, `hydronic_edit`,
-`hydronic_solve`, `hydronic_inspect`, `hydronic_report`. Every call needs your free account: the client signs in
+`hydronic_solve`, `hydronic_inspect`, `hydronic_report`. Every call needs your account: the client signs in
 (it opens energyflowx.com for you to approve), or sends an API key.
 
 ### What this release solves
@@ -607,8 +607,8 @@ the tenth is a report's files:
   On the free server, currently 20 per second and 1,000 per hour. A throttled call
   comes back as a JSON-RPC error with a retry time, not as an empty result.
 - The current limits are published at `https://energyflowx.com/energy-flow-x/api/mcp/limits`.
-- **Network solving is free while it is being tested, and that is temporary.** It costs real compute
-  and will become a paid feature. The free access can be limited, metered or withdrawn at any time and
-  without notice. The free tools are free today and need no account on the free server.
+- **The Hydronic network tools are free for testing and move to a paid plan in 2027.** Solving networks
+  costs real compute, and until then the free access can be limited, metered or withdrawn at any time
+  and without notice. The tools on the free server are free today and need no account.
 - Keys are created in [account settings](https://energyflowx.com/settings). A key is shown once and
   stored only as a hash, so a lost key is revoked and replaced, not recovered.

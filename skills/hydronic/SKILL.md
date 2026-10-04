@@ -1,7 +1,7 @@
 ---
 name: hydronic
 description: >-
-  Design and solve piped and ducted networks with the EnergyFlowX Hydronic MCP server, then present the
+  Design and solve piped and ducted networks with the Hydronic tools on the EnergyFlowX members server, then present the
   result as an engineering study with a P&ID-symbol diagram and schedules. Use it whenever the work is a
   network rather than a single run: heating, chilled-water and glycol circuits, ring mains, risers,
   compressed-air rings and compressor rooms, gas distribution, ducts, steam mains, refrigerant lines,
@@ -114,8 +114,8 @@ members server needs the user's free EnergyFlowX account, and a client that supp
 for it on its own (in Claude Code, for example, the server shows as needing authentication, and the
 user runs `/mcp`, picks it and approves in the browser). A client that cannot sign in sends an API key
 instead. If a hydronic call comes back saying it needs an account, relay that with the access terms it
-states: network solving is free while it is being tested, that is temporary, and it can change at any
-time. Never ask the user to paste a token or a key into the chat.
+states: the Hydronic network tools are free for testing and move to a paid plan in 2027, and until
+then the free access can change at any time. Never ask the user to paste a token or a key into the chat.
 
 ## The loop
 
