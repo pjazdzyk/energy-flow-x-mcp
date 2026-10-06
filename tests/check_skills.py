@@ -143,6 +143,25 @@ def test_every_client_manifest_agrees() -> None:
         path = face.get(field, "")
         check(f"the OpenAI {field} is a file in the plugin", bool(path) and (REPO / path).is_file(), path)
     check("the OpenAI manifest reads the shared skills", codex.get("skills") == "./skills/")
+    # The review OpenAI requires for an MCP plugin: exactly five cases it should handle and three it should not, each
+    # naming only tools the server really has. A case naming a renamed tool sends a reviewer looking for nothing.
+    review = codex.get("extensions", {}).get("com.openai", {}).get("review", {})
+    cases = review.get("test_cases", {})
+    positive, negative = cases.get("positive", []), cases.get("negative", [])
+    check("the OpenAI review has exactly 5 positive and 3 negative cases", (len(positive), len(negative)) == (5, 3),
+          f"{len(positive)} positive, {len(negative)} negative")
+    check("every positive case states its description, prompt, tools and expected behaviour",
+          all(case.get(k) for case in positive for k in ["description", "prompt", "tools_triggered",
+                                                           "expected_behavior"]))
+    check("every negative case states its description and prompt",
+          all(case.get("description") and case.get("prompt") for case in negative))
+    check("the review declares no commerce", review.get("commerce") is False)
+    if MCP_MD.is_file():
+        served = set(re.findall(r"^\| `([a-z_]+)`", MCP_MD.read_text(encoding="utf-8"), re.M))
+        named = {tool.strip() for case in positive for tool in case.get("tools_triggered", "").split(",")}
+        check("every tool a review case names is one the server documents", named <= served,
+              f"unknown: {sorted(named - served)}")
+
     wiring = REPO / codex.get("mcpServers", "missing")
     codex_servers = json.loads(wiring.read_text(encoding="utf-8"))["mcpServers"] if wiring.is_file() else {}
     check("OpenAI wires the members server by url, with no header",

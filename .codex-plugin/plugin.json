@@ -51,5 +51,63 @@
     "brandColor": "#1DBFFA",
     "logo": "./assets/icon.svg",
     "composerIcon": "./assets/icon.svg"
+  },
+  "extensions": {
+    "com.openai": {
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "A thermophysical property lookup for liquid water, computed from the IAPWS-IF97 reference formulation rather than remembered.",
+              "prompt": "What are the density, specific heat and dynamic viscosity of water at 60 °C and 3 bar?",
+              "tools_triggered": "get_fluid_properties",
+              "expected_behavior": "Calls get_fluid_properties for LIQUID_WATER at 60 °C and 3 bar and reports the density as about 983 kg/m3, the specific heat as about 4.18 kJ/(kg·K) and the dynamic viscosity as about 0.47 mPa·s, naming IAPWS-IF97 as the method the tool returned."
+            },
+            {
+              "description": "A refrigerant saturation lookup. R134a is a members-only fluid, so this also shows that the signed-in test account reaches the members tools.",
+              "prompt": "At what temperature does R134a boil at 3 bar absolute, and what is its latent heat there?",
+              "tools_triggered": "get_saturation_properties",
+              "expected_behavior": "Calls get_saturation_properties for R134A at 3 bar and reports a saturation temperature of about 0.7 °C, with the latent heat of vaporisation and the saturated liquid and vapour densities the tool returns."
+            },
+            {
+              "description": "An air-handling process: heating cold outdoor air in a heating coil, with the psychrometric state before and after.",
+              "prompt": "Heat 5000 m3/h of outdoor air from -10 °C and 80% relative humidity to 20 °C. What heating power does the coil need, and what is the relative humidity after it?",
+              "tools_triggered": "calculate_air_process",
+              "expected_behavior": "Calls calculate_air_process with one HEATING step, an inlet of 5000 m3/h at -10 °C and 80% and a target of 20 °C. Reports the coil duty the tool returns, of the order of 50 to 60 kW, and the outlet relative humidity of about 9%, since heating adds no moisture."
+            },
+            {
+              "description": "Pipe sizing against a real product catalogue: the smallest catalogue size that meets a velocity limit, with the size below and the limit it breaks.",
+              "prompt": "Which size of steel pipe do I need for 2 kg/s of water at 70 °C if the velocity must stay at or below 1.5 m/s? Show the size below too.",
+              "tools_triggered": "search_conduit_catalog, select_conduit_size",
+              "expected_behavior": "Finds a steel pipe product with search_conduit_catalog, then calls select_conduit_size with 2 kg/s of water at 70 °C and a maximum velocity of 1.5 m/s. Reports the selected nominal size with its inner diameter, velocity and pressure drop per metre, and the next size down with the velocity by which it exceeds 1.5 m/s."
+            },
+            {
+              "description": "A hydraulic network built, checked, solved and reported: a small closed heating loop with a pump and two radiators, handed over as a study page, a CAD drawing (DXF) and a PDF.",
+              "prompt": "Design a small closed heating loop with EnergyFlowX: a circulation pump, about 20 m of DN25 supply and return pipe, and two radiators of 3 kW each at 70/50 °C. Solve it and give me the report.",
+              "tools_triggered": "hydronic_session, hydronic_edit, hydronic_preview, hydronic_solve, hydronic_report",
+              "expected_behavior": "Asks for or states any missing input it assumes (such as the pump duty or the fill pressure), opens a session, builds the loop with hydronic_edit, checks the drawing with hydronic_preview, solves it, and calls hydronic_report. Shows the verdict and the network image, and gives the links to the study page, the DXF drawing and the PDF. Each radiator carries about 0.036 kg/s of water (3 kW over a 20 K drop)."
+            }
+          ],
+          "negative": [
+            {
+              "description": "A general question with no engineering calculation in it. EnergyFlowX should not be called.",
+              "prompt": "What will the weather be like in Warsaw tomorrow?"
+            },
+            {
+              "description": "An electrical design question. EnergyFlowX covers fluids, air and pipework, not electrical circuits, so it should not be called and should not be presented as able to answer it.",
+              "prompt": "What cross-section of copper cable do I need for a 32 A circuit 40 m long?"
+            },
+            {
+              "description": "A pressure-surge (water hammer) analysis. EnergyFlowX solves networks steady or over time but does not model pressure waves, so it should not be used to produce a surge pressure.",
+              "prompt": "Calculate the peak pressure surge when a quick-closing valve shuts at the end of a 300 m DN150 water main."
+            }
+          ]
+        },
+        "commerce": false
+      },
+      "publication": {
+        "release_notes": "First release in the OpenAI plugin directory: validated fluid properties for 29 fluids, air-handling processes, pipe and duct sizing against real product catalogues, and hydraulic network design and solving with a study page, a DXF drawing and a PDF. Four skills teach the method. Sign in with a free EnergyFlowX account."
+      }
+    }
   }
 }
