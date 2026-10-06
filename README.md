@@ -51,7 +51,7 @@ validation evidence and every reference behind it are documented in
 - [Try it](#try-it)
 - [What is inside](#what-is-inside)
 - [Your account: sign in, or an API key](#the-api-key)
-- [Other clients: Claude Desktop, Cursor, VS Code](#other-clients)
+- [Other clients: Claude Desktop, Gemini CLI, Cursor, VS Code](#other-clients)
 - [Install a single skill](#install-a-single-skill)
 - [Update, disable, uninstall](#update-disable-uninstall)
 - [Troubleshooting](#troubleshooting)
@@ -300,7 +300,7 @@ plugin. Create one under [Settings](https://energyflowx.com/settings), **API key
 `efxk_`), and send it as an `Authorization: Bearer efxk_...` header to the members server.
 
 <a id="other-clients"></a>
-## Other clients: Claude Desktop, Cursor, VS Code
+## Other clients: Claude Desktop, Gemini CLI, Cursor, VS Code
 
 The skills are written for any assistant, and the servers work with any MCP client. There are two,
 and you connect **one** of them: the members server already carries every free tool, so with both
@@ -324,6 +324,16 @@ Then `/mcp`, choose it and **Authenticate**. Use the `/mcp/free` address instead
 
 **claude.ai, Claude Desktop, Cowork**: Settings → Connectors → Add custom connector, paste the
 members address and press **Connect** to sign in, or paste the free address, which needs no sign-in.
+
+**Gemini CLI**: this repository is also a Gemini CLI extension, the members server and the four skills:
+
+```shell
+gemini extensions install https://github.com/pjazdzyk/energy-flow-x-mcp
+```
+
+Restart Gemini CLI and run `/mcp auth energy-flow-x` to sign in. Gemini CLI starts MCP servers only in a
+folder you trust, so if `/mcp` lists the server as disabled, trust the folder when Gemini asks, or with
+`/permissions`.
 
 **Cursor** (`.cursor/mcp.json`):
 

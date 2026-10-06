@@ -94,6 +94,35 @@ def test_manifests_parse() -> None:
     check("the marketplace name is not a reserved one", marketplace["name"] not in reserved)
 
 
+def test_every_client_manifest_agrees() -> None:
+    print("client manifests: Claude and Gemini CLI")
+    # One repository, one manifest per client, read by different crawlers. Each listing shows its own
+    # manifest's words, so a manifest that lags shows an old version or a blank description somewhere
+    # nobody here looks. Claude reads only .claude-plugin/, Gemini CLI only gemini-extension.json.
+    plugin = json.loads((PLUGIN / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    entry = json.loads((REPO / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8"))["plugins"][0]
+    gemini = json.loads((REPO / "gemini-extension.json").read_text(encoding="utf-8"))
+
+    check("Gemini CLI's manifest has the plugin's name and version",
+          (gemini.get("name"), gemini.get("version")) == (plugin["name"], plugin["version"]),
+          f"{gemini.get('name')} {gemini.get('version')}")
+    for label, manifest in [("plugin", plugin), ("marketplace entry", entry), ("Gemini CLI", gemini)]:
+        check(f"the {label} manifest has a description a listing can show",
+              len(manifest.get("description", "")) >= 80, manifest.get("description", "missing"))
+    check("the plugin and its marketplace entry carry the same keywords",
+          bool(plugin.get("keywords")) and plugin.get("keywords") == entry.get("keywords"))
+
+    # Gemini CLI names a Streamable HTTP server `httpUrl` (`url` is its SSE transport) and signs in with OAuth
+    # discovered from the 401, as Claude does. Same rules as .mcp.json: the members server, no header, no variable.
+    servers = gemini.get("mcpServers", {})
+    check("Gemini CLI wires the members server, over Streamable HTTP",
+          [entry.get("httpUrl") for entry in servers.values()]
+          == ["https://energyflowx.com/energy-flow-x/mcp/members"], str(servers))
+    raw = (REPO / "gemini-extension.json").read_text(encoding="utf-8")
+    check("Gemini CLI's wiring carries no header and reads no variable",
+          "headers" not in raw and "${" not in raw and "settings" not in gemini)
+
+
 def test_frontmatter_is_portable() -> None:
     print("frontmatter stays inside the Agent Skills spec")
     # Only these six survive upload to claude.ai or the Skills API. A Claude Code-only field such as
@@ -372,6 +401,7 @@ def main() -> int:
                  test_the_report_is_made_on_the_server,
                  test_the_license_is_named_the_way_the_directory_reads_it,
                  test_manifests_parse,
+                 test_every_client_manifest_agrees,
                  test_frontmatter_is_portable,
                  test_skills_are_portable,
                  test_tool_names_match_the_server,

@@ -11,7 +11,35 @@
       "name": "energyflowx",
       "source": "./",
       "description": "Validated thermophysical properties, HVAC process calculations, conduit sizing and hydraulic network design, from the EnergyFlowX engines over MCP.",
-      "version": "2.0.0"
+      "version": "2.1.0",
+      "author": {
+        "name": "Piotr Jazdzyk",
+        "url": "https://energyflowx.com"
+      },
+      "homepage": "https://energyflowx.com/mcp-server",
+      "repository": "https://github.com/pjazdzyk/energy-flow-x-mcp",
+      "license": "LicenseRef-EnergyFlowX-Proprietary",
+      "keywords": [
+        "hvac",
+        "engineering",
+        "thermodynamics",
+        "fluid-properties",
+        "psychrometrics",
+        "hydraulics",
+        "hydronic",
+        "pipe-network",
+        "pipe-sizing",
+        "duct-sizing",
+        "heating",
+        "cooling",
+        "steam",
+        "refrigerants",
+        "glycol",
+        "dxf",
+        "mep",
+        "building-services",
+        "mcp"
+      ]
     }
   ]
 }

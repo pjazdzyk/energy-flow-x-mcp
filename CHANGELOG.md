@@ -2,6 +2,18 @@
 
 Notable changes, newest first. Breaking changes are marked as such.
 
+## 2.1.0 (2026-10-06)
+
+### A Gemini CLI extension
+
+- `gemini-extension.json` at the root makes this repository a Gemini CLI extension as well: the members server
+  over Streamable HTTP, signed in with OAuth, and the same four skills from `skills/`. Install it with
+  `gemini extensions install https://github.com/pjazdzyk/energy-flow-x-mcp`. Claude reads only `.claude-plugin/`,
+  so nothing changes for Claude.
+- The marketplace entry carries the plugin's author, homepage, repository, licence and keywords, and the keywords
+  add `hydronic`, `pipe-network`, `dxf` and `mcp`.
+- `tests/check_skills.py` holds every client manifest to the same name, version, description and server.
+
 ## 2.0.0 (2026-10-04)
 
 ### The design is checked against the user's sketch before it is solved
