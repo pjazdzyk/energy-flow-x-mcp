@@ -35,7 +35,7 @@
   "mcpServers": "./.codex-mcp.json",
   "interface": {
     "displayName": "EnergyFlowX",
-    "shortDescription": "Fluid properties, HVAC processes, pipe sizing and hydraulic networks",
+    "shortDescription": "Fluids, HVAC and pipe networks",
     "longDescription": "Engineering calculations for fluids, air and pipework from the EnergyFlowX engines. Validated thermophysical properties for 29 fluids from reference equations of state, with the method and validity range on every result. Air-handling processes: heating, cooling with condensate, mixing, heat recovery, fans and humidification. Pipe and duct sizing against real product catalogues. Hydraulic network design and solving for liquids, gases and steam, with pumps, compressors, heat exchangers, tanks and receivers, steady or over time, handed over as a study page, a CAD drawing (DXF) and a PDF. Four skills teach the method: which inputs matter, what to check before quoting a number, and how to present a result.",
     "developerName": "SYNERSET - Piotr Jazdzyk",
     "category": "Productivity",

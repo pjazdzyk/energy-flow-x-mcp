@@ -132,6 +132,9 @@ def test_every_client_manifest_agrees() -> None:
           == [plugin[k] for k in ["name", "version", "description", "keywords"]])
     check("the OpenAI display name fits its 30 characters", 0 < len(face.get("displayName", "")) <= 30,
           face.get("displayName", "missing"))
+    # The dashboard shows shortDescription as the listing's subtitle and flags it past 30 characters (2026-10-06).
+    check("the OpenAI subtitle fits its 30 characters", 0 < len(face.get("shortDescription", "")) <= 30,
+          face.get("shortDescription", "missing"))
     for field in ["shortDescription", "longDescription", "developerName", "category"]:
         check(f"the OpenAI listing has {field}", bool(face.get(field)), field)
     # OpenAI refuses the upload without `capabilities`, a list drawn from these three words (found 2026-10-06; Codex
