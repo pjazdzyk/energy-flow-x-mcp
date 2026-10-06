@@ -134,6 +134,15 @@ def test_every_client_manifest_agrees() -> None:
           face.get("displayName", "missing"))
     for field in ["shortDescription", "longDescription", "developerName", "category"]:
         check(f"the OpenAI listing has {field}", bool(face.get(field)), field)
+    # OpenAI refuses the upload without `capabilities`, a list drawn from these three words (found 2026-10-06; Codex
+    # installed the package without it, so only the dashboard catches it). The Hydronic tools build and change
+    # networks and write reports on the server, so Write belongs in it alongside Read.
+    capabilities = face.get("capabilities")
+    check("the OpenAI listing declares its capabilities as a list of OpenAI's words",
+          isinstance(capabilities, list) and bool(capabilities)
+          and all(c in {"Interactive", "Read", "Write"} for c in capabilities), str(capabilities))
+    check("the OpenAI capabilities say the plugin reads and writes",
+          isinstance(capabilities, list) and {"Read", "Write"} <= set(capabilities), str(capabilities))
     pairs = {"websiteURL": "documentationUrl", "supportURL": "supportUrl",
              "privacyPolicyURL": "privacyPolicyUrl", "termsOfServiceURL": "termsOfServiceUrl"}
     check("the OpenAI listing links the same pages as the Claude one",
