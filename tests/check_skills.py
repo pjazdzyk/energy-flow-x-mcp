@@ -95,7 +95,7 @@ def test_manifests_parse() -> None:
 
 
 def test_every_client_manifest_agrees() -> None:
-    print("client manifests: Claude and Gemini CLI")
+    print("client manifests: Claude, Gemini CLI and OpenAI")
     # One repository, one manifest per client, read by different crawlers. Each listing shows its own
     # manifest's words, so a manifest that lags shows an old version or a blank description somewhere
     # nobody here looks. Claude reads only .claude-plugin/, Gemini CLI only gemini-extension.json.
@@ -121,6 +121,34 @@ def test_every_client_manifest_agrees() -> None:
     raw = (REPO / "gemini-extension.json").read_text(encoding="utf-8")
     check("Gemini CLI's wiring carries no header and reads no variable",
           "headers" not in raw and "${" not in raw and "settings" not in gemini)
+
+    # OpenAI (ChatGPT and Codex) reads .codex-plugin/plugin.json, whose presentation fields sit under `interface`,
+    # and its own server file: Codex names a remote server by `url` alone, where Claude's .mcp.json needs
+    # `type: http`, so the two cannot share one file.
+    codex = json.loads((REPO / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    face = codex.get("interface", {})
+    check("the OpenAI manifest has the plugin's name, version, description and keywords",
+          [codex.get(k) for k in ["name", "version", "description", "keywords"]]
+          == [plugin[k] for k in ["name", "version", "description", "keywords"]])
+    check("the OpenAI display name fits its 30 characters", 0 < len(face.get("displayName", "")) <= 30,
+          face.get("displayName", "missing"))
+    for field in ["shortDescription", "longDescription", "developerName", "category"]:
+        check(f"the OpenAI listing has {field}", bool(face.get(field)), field)
+    pairs = {"websiteURL": "documentationUrl", "supportURL": "supportUrl",
+             "privacyPolicyURL": "privacyPolicyUrl", "termsOfServiceURL": "termsOfServiceUrl"}
+    check("the OpenAI listing links the same pages as the Claude one",
+          all(face.get(theirs) == plugin.get(ours) for theirs, ours in pairs.items()),
+          str({k: face.get(k) for k in pairs}))
+    for field in ["logo", "composerIcon"]:
+        path = face.get(field, "")
+        check(f"the OpenAI {field} is a file in the plugin", bool(path) and (REPO / path).is_file(), path)
+    check("the OpenAI manifest reads the shared skills", codex.get("skills") == "./skills/")
+    wiring = REPO / codex.get("mcpServers", "missing")
+    codex_servers = json.loads(wiring.read_text(encoding="utf-8"))["mcpServers"] if wiring.is_file() else {}
+    check("OpenAI wires the members server by url, with no header",
+          [entry.get("url") for entry in codex_servers.values()]
+          == ["https://energyflowx.com/energy-flow-x/mcp/members"]
+          and not any("headers" in entry for entry in codex_servers.values()), str(codex_servers))
 
 
 def test_frontmatter_is_portable() -> None:
@@ -172,12 +200,17 @@ def test_access_terms_are_stated() -> None:
     # These terms are a commercial position and they change. A skill that says "free" without the
     # qualification gets relayed to an end user as a promise the product never made, and an agent
     # repeats it far more confidently than a web page would.
-    check("hydronic says the network tools are free for testing, until a paid plan in a stated year",
-          "free for testing" in hydronic and re.search(r"paid plan in 20\d\d", hydronic) is not None)
-    # One year everywhere the plugin states it: a year changed in one file and not the others tells the
-    # reader of the README and the assistant reading the skill two different dates.
+    check("hydronic says the network tools are free while in testing and will become part of a paid plan",
+          "free while in testing" in hydronic and "paid energyflowx plan" in hydronic)
+    # The skill is read in the chat, where app directories keep selling out: OpenAI's rules let a plugin serve a
+    # paid account but not display plans or promote upgrades. So it states the fact and links the terms, and the
+    # year and the conditions stay on the page and in the README, for people.
+    check("hydronic links the access terms instead of quoting a year or a price",
+          "energyflowx.com/mcp-server" in hydronic and re.search(r"paid plan in 20\d\d|€|\$\d", hydronic) is None)
+    # One year everywhere the plugin states it to a reader: a year changed in one file and not the other tells
+    # two readers two different dates.
     years = {}
-    for path in [PLUGIN / "README.md", PLUGIN / "CAPABILITIES.md", SKILLS / "hydronic" / "SKILL.md"]:
+    for path in [PLUGIN / "README.md", PLUGIN / "CAPABILITIES.md"]:
         years[path.name] = set(re.findall(r"paid plan in (20\d\d)", path.read_text(encoding="utf-8")))
     check("every file names the same paid-plan year", len(set().union(*years.values())) == 1
           and all(years.values()), years)

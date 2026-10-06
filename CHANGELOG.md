@@ -2,6 +2,25 @@
 
 Notable changes, newest first. Breaking changes are marked as such.
 
+## 2.2.0 (2026-10-06)
+
+### For OpenAI too: ChatGPT and Codex
+
+- `.codex-plugin/plugin.json` makes this repository an OpenAI plugin as well, for ChatGPT and Codex: the same
+  four skills from `skills/`, and the members server from its own `.codex-mcp.json` (Codex names a remote
+  server by `url` alone, where Claude's `.mcp.json` needs `type: http`). Its listing (`interface`) links the
+  same pages as the Claude one. Each release carries `energyflowx-openai-<version>.zip`, the archive ChatGPT's
+  "Upload plugin" takes. Claude reads only `.claude-plugin/`, so nothing changes for Claude.
+- `tests/check_skills.py` holds the OpenAI manifest to the plugin's name, version, description, keywords,
+  links and server.
+
+### The access terms link the page instead of quoting the year
+
+- The hydronic skill relays the access terms as the server now states them in the chat: the network tools are
+  free while in testing, that can change, they will become part of a paid EnergyFlowX plan, and the plans and
+  terms are at energyflowx.com/mcp-server. App directories keep selling out of the conversation, so the year
+  stays in the README and on the page, for people, and the skill names no price or plan of its own.
+
 ## 2.1.0 (2026-10-06)
 
 ### A Gemini CLI extension

@@ -51,7 +51,7 @@ validation evidence and every reference behind it are documented in
 - [Try it](#try-it)
 - [What is inside](#what-is-inside)
 - [Your account: sign in, or an API key](#the-api-key)
-- [Other clients: Claude Desktop, Gemini CLI, Cursor, VS Code](#other-clients)
+- [Other clients: Claude Desktop, Gemini CLI, Codex, ChatGPT, Cursor, VS Code](#other-clients)
 - [Install a single skill](#install-a-single-skill)
 - [Update, disable, uninstall](#update-disable-uninstall)
 - [Troubleshooting](#troubleshooting)
@@ -300,7 +300,7 @@ plugin. Create one under [Settings](https://energyflowx.com/settings), **API key
 `efxk_`), and send it as an `Authorization: Bearer efxk_...` header to the members server.
 
 <a id="other-clients"></a>
-## Other clients: Claude Desktop, Gemini CLI, Cursor, VS Code
+## Other clients: Claude Desktop, Gemini CLI, Codex, ChatGPT, Cursor, VS Code
 
 The skills are written for any assistant, and the servers work with any MCP client. There are two,
 and you connect **one** of them: the members server already carries every free tool, so with both
@@ -334,6 +334,17 @@ gemini extensions install https://github.com/pjazdzyk/energy-flow-x-mcp
 Restart Gemini CLI and run `/mcp auth energy-flow-x` to sign in. Gemini CLI starts MCP servers only in a
 folder you trust, so if `/mcp` lists the server as disabled, trust the folder when Gemini asks, or with
 `/permissions`.
+
+**Codex**: this repository is also an OpenAI plugin, the members server and the four skills:
+
+```shell
+codex plugin marketplace add pjazdzyk/energy-flow-x-mcp
+codex plugin add energyflowx@energyflowx
+```
+
+Then `codex mcp login energy-flow-x` to sign in. In ChatGPT, a plugin that is not in its directory is
+added under Plugins, **+**, **Upload plugin**, from the `energyflowx-openai-*.zip` attached to the
+[latest release](https://github.com/pjazdzyk/energy-flow-x-mcp/releases/latest).
 
 **Cursor** (`.cursor/mcp.json`):
 
@@ -459,7 +470,7 @@ The repository root is both the plugin and its one-entry marketplace, so the roo
 submitted to Anthropic's plugin directory.
 
 Gemini CLI installs the source of the newest GitHub release, not `master`. So every version is
-released, with the skill zips attached: a release that lacks them or carries exactly one asset, or an asset
+released, with the skill zips and the OpenAI zip attached: a release that lacks them or carries exactly one asset, or an asset
 named for a platform (`win32.`, `linux.`, `darwin.`), makes Gemini CLI install that asset instead of the
 extension.
 

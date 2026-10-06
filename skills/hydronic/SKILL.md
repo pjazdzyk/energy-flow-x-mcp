@@ -114,8 +114,10 @@ members server needs the user's free EnergyFlowX account, and a client that supp
 for it on its own (in Claude Code, for example, the server shows as needing authentication, and the
 user runs `/mcp`, picks it and approves in the browser). A client that cannot sign in sends an API key
 instead. If a hydronic call comes back saying it needs an account, relay that with the access terms it
-states: the Hydronic network tools are free for testing and move to a paid plan in 2027, and until
-then the free access can change at any time. Never ask the user to paste a token or a key into the chat.
+states: the Hydronic network tools are free while in testing, that free access can change at any time,
+and they will become part of a paid EnergyFlowX plan, with plans and access terms at
+https://energyflowx.com/mcp-server. Relay it as it is, with no prices or plan names of your own. Never ask
+the user to paste a token or a key into the chat.
 
 ## The loop
 
