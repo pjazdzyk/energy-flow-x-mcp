@@ -458,6 +458,11 @@ claude plugin validate .claude-plugin/plugin.json --strict               # the p
 The repository root is both the plugin and its one-entry marketplace, so the root is also the folder
 submitted to Anthropic's plugin directory.
 
+Gemini CLI installs the source of the newest GitHub release, not `master`. So every version is
+released, with the skill zips attached: a release that lacks them or carries exactly one asset, or an asset
+named for a platform (`win32.`, `linux.`, `darwin.`), makes Gemini CLI install that asset instead of the
+extension.
+
 ## Licence
 
 Proprietary. See [LICENSE](LICENSE).
