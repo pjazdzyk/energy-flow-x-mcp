@@ -132,6 +132,12 @@ def test_every_client_manifest_agrees() -> None:
           == [plugin[k] for k in ["name", "version", "description", "keywords"]])
     check("the OpenAI display name fits its 30 characters", 0 < len(face.get("displayName", "")) <= 30,
           face.get("displayName", "missing"))
+    # The listing shows the first three defaultPrompt entries, each cut at 128 characters. Every one was run on the
+    # live members server before it went in (2026-10-07): an example that answers badly is the first thing seen.
+    prompts = face.get("defaultPrompt", [])
+    check("the OpenAI listing has three example prompts, each within 128 characters",
+          isinstance(prompts, list) and len(prompts) == 3 and all(0 < len(p) <= 128 for p in prompts),
+          str([len(p) for p in prompts]) if isinstance(prompts, list) else str(prompts))
     # The dashboard shows shortDescription as the listing's subtitle and flags it past 30 characters (2026-10-06).
     check("the OpenAI subtitle fits its 30 characters", 0 < len(face.get("shortDescription", "")) <= 30,
           face.get("shortDescription", "missing"))

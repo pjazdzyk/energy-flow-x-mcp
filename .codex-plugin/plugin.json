@@ -45,9 +45,9 @@
     "privacyPolicyURL": "https://energyflowx.com/legal/privacy-policy",
     "termsOfServiceURL": "https://energyflowx.com/legal/terms-of-use",
     "defaultPrompt": [
-      "What are the density and viscosity of 30% propylene glycol at 5 °C?",
-      "Which pipe size for 2 kg/s of water at 70 °C, at most 1.5 m/s?",
-      "Heat 5000 m3/h of outdoor air from -10 °C, 80% RH to 20 °C. What heating power?"
+      "Steam enters a turbine at 100 bar, 540 °C and expands isentropically to 0.1 bar. Inlet enthalpy, exit quality and work per kg?",
+      "Plate recovery 75%: supply 5000 m3/h at -15 °C, 85% RH; extract 4000 m3/h at 22 °C, 45% RH. Supply temp, condensate, frost risk?",
+      "Compressed-air ring: 7 barg receiver, 160 m DN50 steel loop, four 2 Nm3/min drops. Worst pressure, and with one section shut?"
     ],
     "brandColor": "#1DBFFA",
     "logo": "./assets/icon.svg",
