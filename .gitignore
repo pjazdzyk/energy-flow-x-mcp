@@ -1,3 +1,6 @@
 __pycache__/
 *.pyc
 .DS_Store
+
+# Claude Code per-user settings (personal permission rules and local paths)
+.claude/settings.local.json
