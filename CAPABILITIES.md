@@ -214,7 +214,9 @@ Tools: `search_conduit_catalog`, `get_conduit_dimensions`.
   concrete and brick ducts, PVC chemically resistant ducts in rectangular, circular and thickened
   circular, textile supply and exhaust ducts, and a rigid board-type duct.
 - **Where the numbers come from**: pipe dimensions are compiled from manufacturer datasheets. Series
-  names follow common trade usage. Check the standard your project requires.
+  names follow common trade usage. Check the standard your project requires. A pipe product's
+  description names the manufacturers behind its dimensions and, where their own datasheets print a
+  standard designation, says so as their attribution only. A series with none is called generic.
 - **Dimensions**: for every size in every class, the inner and outer size, wall thickness, SDR, the
   size basis and, for metal pipe, an informational working pressure. This `innerSize` is the bore that
   `size_conduit` needs. A nominal DN is not a bore.
