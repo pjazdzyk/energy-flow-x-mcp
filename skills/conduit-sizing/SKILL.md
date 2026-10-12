@@ -23,7 +23,7 @@ network tools (`hydronic_*`, members server only) are for the moment a flow is u
 | --- | --- |
 | `size_conduit` | one pipe or duct at a known flow: velocity, pressure drop, Reynolds, friction factor, regime |
 | `select_conduit_size` | the catalogue size that passes your criteria, plus the ones either side |
-| `search_conduit_catalog` | standard products by code or manufacturer: shape, roughness, size classes, every size |
+| `search_conduit_catalog` | catalogue products by code or manufacturer: shape, roughness, size classes, every size |
 | `get_conduit_dimensions` | one product's full size table: inner and outer size, wall thickness, SDR, size basis |
 
 ## The boundary that matters most

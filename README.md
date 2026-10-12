@@ -91,8 +91,8 @@ and triple points) and unit conversion.
 - Velocity, pressure drop, Reynolds number, friction factor and flow regime for one pipe or duct.
 - **Size selection** against design criteria or your own limits: the smallest size that passes, the
   size below and the limit it breaks, and the size above.
-- Real product catalogues: inner bore, wall thickness, SDR and roughness for standard pipes and
-  ducts.
+- Real product catalogues: inner bore, wall thickness, SDR and roughness for common pipe and
+  duct products, with dimensions compiled from manufacturer datasheets.
 - Schedules of up to 20 segments with fittings, judged against a total pressure-drop budget.
 - A heat load in place of a flow, for water, glycols, brines and air.
 

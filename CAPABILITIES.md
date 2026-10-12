@@ -200,17 +200,19 @@ Tools: `search_conduit_catalog`, `get_conduit_dimensions`.
   ducts, a shape (`RECTANGULAR`, `CIRCULAR`). Each product returns its shape,
   its wall roughness variants, its size classes (PN, SDR or schedule for pipe) and every size it comes
   in.
-- **17 pipe products**:
-  - Steel: EN 10216 and EN 10217 pressure pipe (EN-L, EN-M, EN-H), ASME B36.10M carbon steel (SCH10
-    to SCH160), ASME B36.10M A335 alloy steel for high-pressure steam, ASME B36.19M stainless (SCH10S
-    to SCH80S), and EN 10255 threaded galvanised tube (light, medium, heavy).
-  - Copper: EN 1057 for water and heating, EN 12735-1 metric and ASTM B280 inch refrigeration tube.
-  - Plastics: PE100 and PE80 water pressure pipe (Pipelife), PE100 SDR11 for gas (EN 1555), PE-X,
-    PE-RT, PP-R, PVC-U and CPVC.
+- **17 pipe products**, described by material and use:
+  - Steel: pressure pipe in light, medium and heavy wall classes, inch-schedule carbon steel (SCH10
+    to SCH160), inch-schedule alloy steam pipe for high-pressure steam, stainless in the S schedules
+    (SCH10S to SCH80S), and galvanised threaded tube in light, medium and heavy series.
+  - Copper: water and heating tube, and refrigeration tube, each in metric and inch sizes.
+  - Plastics: PE100 and PE80 water pressure pipe, PE100 SDR11 for gas, PE-X, PE-RT, PP-R, PVC-U and
+    CPVC pressure pipe families.
   - Aluminium tube for compressed-air mains.
-- **11 duct products**: galvanised steel rectangular and Spiro, aluminium flex, concrete and brick
-  ducts, PVC chemically resistant ducts in rectangular, circular and thickened circular (Chemowent),
-  textile supply and exhaust ducts (A-WENT), and PROMADUCT-500 fire-rated ducts (Etex).
+- **11 duct products**: galvanised steel rectangular and spiral-wound circular, aluminium flex,
+  concrete and brick ducts, PVC chemically resistant ducts in rectangular, circular and thickened
+  circular, textile supply and exhaust ducts, and a rigid board-type duct.
+- **Where the numbers come from**: pipe dimensions are compiled from manufacturer datasheets. Series
+  names follow common trade usage. Check the standard your project requires.
 - **Dimensions**: for every size in every class, the inner and outer size, wall thickness, SDR, the
   size basis and, for metal pipe, an informational working pressure. This `innerSize` is the bore that
   `size_conduit` needs. A nominal DN is not a bore.
