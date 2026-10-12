@@ -201,12 +201,14 @@ Tools: `search_conduit_catalog`, `get_conduit_dimensions`.
   its wall roughness variants, its size classes (PN, SDR or schedule for pipe) and every size it comes
   in.
 - **17 pipe products**, described by material and use:
-  - Steel: pressure pipe in light, medium and heavy wall classes, inch-schedule carbon steel (SCH10
-    to SCH160), inch-schedule alloy steam pipe for high-pressure steam, stainless in the S schedules
-    (SCH10S to SCH80S), and galvanised threaded tube in light, medium and heavy series.
-  - Copper: water and heating tube, and refrigeration tube, each in metric and inch sizes.
-  - Plastics: PE100 and PE80 water pressure pipe, PE100 SDR11 for gas, PE-X, PE-RT, PP-R, PVC-U and
-    CPVC pressure pipe families.
+  - Steel: pressure pipe in light, medium and heavy wall classes, inch-schedule carbon steel (SCH10,
+    SCH40, SCH80, SCH160), inch-schedule alloy steam pipe (SCH80, SCH160, XXS) for high-pressure steam,
+    stainless in the S schedules (SCH10S, SCH40S, SCH80S), and galvanised threaded tube in light,
+    medium and heavy series.
+  - Copper: water and heating tube in metric sizes only, in a thick and a thin wall series, and
+    refrigeration tube in metric and in inch sizes.
+  - Plastics: PE100 and PE80 water pressure pipe, PE100 SDR11 for gas, PE-X (SDR7.4), PE-RT (SDR11),
+    PP-R (SDR11 and SDR7.4), PVC-U (SDR13.6) and CPVC (SDR13.6).
   - Aluminium tube for compressed-air mains.
 - **11 duct products**: galvanised steel rectangular and spiral-wound circular, aluminium flex,
   concrete and brick ducts, PVC chemically resistant ducts in rectangular, circular and thickened

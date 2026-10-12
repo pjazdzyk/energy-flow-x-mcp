@@ -5,7 +5,7 @@ description: >-
   pressure drop, Reynolds number and flow regime for a known flow, or the catalogue size that passes
   a stated rule set with the size below and above it and the limit each one breaks. Use this for
   "what size pipe for 2 kg/s", "is DN50 enough for this duct run", "which duct for 3000 m3/h at
-  4 m/s", choosing between standard products, looking up a real pipe's inner bore, wall thickness or
+  4 m/s", choosing between catalogue products, looking up a real pipe's inner bore, wall thickness or
   SDR, or sizing a short schedule of segments with fittings against a total pressure-drop budget.
   Works for water, glycols, brines, air, gases, steam and natural gas, and accepts a heat load instead
   of a flow. Reach for it whenever a pipe or duct size is being chosen, even if the request does not
