@@ -99,7 +99,7 @@ The catalogue holds two kinds of pipe product, and the default matters.
 A manufacturer's document may print a standard designation for its product. Report it only as the
 catalogue states it, in the form **"Listed as X by Y"**, where Y is the maker or document. Read it from
 `listedAs` (the designation) and `printedAs` (the class label) in `get_conduit_dimensions`. Never write
-that a pipe conforms to, is certified to, or is sized per a standard, and never present a standard as
+that a pipe meets, complies with or is approved to a standard, and never present a standard as
 the source of these numbers: the source is the maker's own document. A series with no `listedAs` is
 described without a standard. Tell the user to check the standard their project requires.
 
