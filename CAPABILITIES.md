@@ -198,25 +198,45 @@ Tools: `search_conduit_catalog`, `get_conduit_dimensions`.
 - **Search** by catalogue code or manufacturer, for pipes or ducts, and narrow it with `filters`: an
   application (`HEATING`, `CHILLED_WATER`, `NATURAL_GAS`, `COMPRESSED_AIR`, `STEAM`, ...) or, for
   ducts, a shape (`RECTANGULAR`, `CIRCULAR`). Each product returns its shape,
-  its wall roughness variants, its size classes (PN, SDR or schedule for pipe) and every size it comes
-  in.
-- **17 pipe products**, described by material and use:
-  - Steel: pressure pipe in light, medium and heavy wall classes, inch-schedule carbon steel (SCH10,
-    SCH40, SCH80, SCH160), inch-schedule alloy steam pipe (SCH80, SCH160, XXS) for high-pressure steam,
-    stainless in the S schedules (SCH10S, SCH40S, SCH80S), and galvanised threaded tube in light,
-    medium and heavy series.
+  its wall roughness variants, its size classes (PN, SDR, schedule or wall class for pipe) and every
+  size it comes in.
+- **14 generic pipe products**, described by material and use. A search with no `codes` and no
+  `manufacturers` returns these and nothing else:
+  - Steel: pressure pipe in medium and heavy wall classes (`WALL-M`, `WALL-H`, 21.3 to 139.7 mm outside
+    diameter, ten sizes each, no light class), inch-schedule carbon steel (SCH10 in eight sizes from DN15
+    to DN100, SCH40, SCH80, SCH160), inch-schedule alloy steam pipe (SCH80, SCH160, XXS) for
+    high-pressure steam, stainless in the S schedules (SCH10S, SCH40S, SCH80S), and galvanised threaded
+    tube in light, medium and heavy series.
   - Copper: water and heating tube in metric sizes only, in a thick and a thin wall series, and
     refrigeration tube in metric and in inch sizes.
-  - Plastics: PE100 and PE80 water pressure pipe, PE100 SDR11 for gas, PE-X (SDR7.4), PE-RT (SDR11),
-    PP-R (SDR11 and SDR7.4), PVC-U (SDR13.6) and CPVC (SDR13.6).
+  - Plastics: PE100 SDR11 for gas, PE-X (SDR7.4), PP-R (SDR11 and SDR7.4), PVC-U (SDR13.6) and CPVC
+    (SDR13.6). There is no generic PE-RT product.
   - Aluminium tube for compressed-air mains.
+- **42 manufacturer pipe series from 26 makers**, each following one maker's own catalogue exactly:
+  the sizes, walls and class names that catalogue prints, with a size written `<OD> x <wall>` where a
+  maker prints several walls at one outside diameter. Some tables are large (a steel pressure pipe grid
+  holds about a thousand outside diameter and wall pairs). They cover carbon, stainless and threaded
+  steel, copper, PE-X, PE-RT, PP-R, PVC-U, CPVC, PE100 and PE80, and include Pipelife Polska
+  (`PIPELIFE_POLSKA`) with SDR classes.
+  - **How to ask for them.** They stay out of an unfiltered search. Pass `manufacturers` with a maker's
+    code (`TENARIS`, `PIPELIFE_POLSKA`, ...), `["GENERIC"]` for the generic series, or `["*"]` for every
+    source. A series asked for by `codes` is found whatever its source. `data.sources` on a generic
+    search names, per generic product, the makers whose series are offered for the same uses.
+  - **What a series adds.** `get_conduit_dimensions` reports the source documents, the maker's product
+    name, the generic product it corresponds to, and per class the label as the document prints it
+    (`printedAs`) and the standard designation the document lists (`listedAs`). `size_conduit` and
+    `select_conduit_size` take a series code like any other.
+  - **Wide tables.** `get_conduit_dimensions` lists at most 60 rows. A larger table answers with a size
+    index and the row count, and the `size` parameter narrows it: an outside diameter, a designation or
+    a range in mm. `select_conduit_size` with `window=ALL` lists at most 60 sizes.
 - **11 duct products**: galvanised steel rectangular and spiral-wound circular, aluminium flex,
   concrete and brick ducts, PVC chemically resistant ducts in rectangular, circular and thickened
   circular, textile supply and exhaust ducts, and a rigid board-type duct.
 - **Where the numbers come from**: pipe dimensions are compiled from manufacturer datasheets. Series
-  names follow common trade usage. Check the standard your project requires. A pipe product's
+  names follow common trade usage. Check the standard your project requires. A generic pipe product's
   description names the manufacturers behind its dimensions and, where their own datasheets print a
-  standard designation, says so as their attribution only. A series with none is called generic.
+  standard designation, says so as their attribution only ("Listed as X by Y"). A manufacturer series says
+  whose document it is read from and is not affiliated with that maker.
 - **Dimensions**: for every size in every class, the inner and outer size, wall thickness, SDR, the
   size basis and, for metal pipe, an informational working pressure. This `innerSize` is the bore that
   `size_conduit` needs. A nominal DN is not a bore.
