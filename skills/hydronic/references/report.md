@@ -25,7 +25,7 @@ report is made.
 
 | Field | What it is |
 | --- | --- |
-| `data.verdict` | the page's headline: `Solved`, `Solved, and meets every stated criterion`, `Solved, with qualifications`, `The design fails its criteria`, `The run stopped early, before its end`, `The solve did not converge`, `The design point did not converge`, `The run over time did not converge at every instant` or `These results are withdrawn`, and may end with the iteration count |
+| `data.verdict` | the page's headline: `Solved`, `Solved. Every stated criterion is met (criteria set by the author, not a code check)`, `Solved, with qualifications`, `The design fails its criteria`, `The run stopped early, before its end`, `The solve did not converge`, `The design point did not converge`, `The run over time did not converge at every instant` or `These results are withdrawn`, and may end with the iteration count |
 | `data.verdictDetail` | the sentence under it, which also says whether anything was judged against criteria |
 | `data.failedChecks` | when the design fails its criteria: each failed check in words, e.g. `branch_a: velocity 1.80 m/s is over its limit` (at most 20, then a count) |
 | `data.criticalPath` | per figure: `from`, `to`, `lostInItsRuns_kPa` and the `runs` in flow order, at the design point |
