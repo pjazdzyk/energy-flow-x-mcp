@@ -290,7 +290,7 @@ coordinates, and it is not a P&ID or to scale.
 
 ## Who reviews it
 
-Results are for review by a professional engineer, who remains responsible, and are not a design certification. Say so when you present numbers. Gas, steam and fire-fighting installations are designed and signed off by the competent professional under the applicable standard and authority, and these results are calculation aids for that review.
+Results are for review by a professional engineer, who remains responsible, and are not a design certification. Say so when you present numbers. When you report a number a user may rely on, quote the software version from `meta.stamp`, pass on any warnings of the response, and if a tool answers that it is out of service, relay its message and do not invent a result. Gas, steam and fire-fighting installations are designed and signed off by the competent professional under the applicable standard and authority, and these results are calculation aids for that review.
 
 If the user only wants a quick answer in chat, give them the answer and offer the report. If they are
 going to send it to anyone, make the report.

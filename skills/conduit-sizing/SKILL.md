@@ -123,7 +123,7 @@ anything over time, such as how long a receiver holds the far tool after a compr
 
 ## Report it so someone can check it
 
-Results are for review by a professional engineer, who remains responsible, and are not a design certification. Say so when you present numbers.
+Results are for review by a professional engineer, who remains responsible, and are not a design certification. Say so when you present numbers. When you report a number a user may rely on, quote the software version from `meta.stamp`, pass on any warnings of the response, and if a tool answers that it is out of service, relay its message and do not invent a result.
 
 Give the chosen size, the criterion it was judged against, the governing number (velocity or
 gradient), and the size below with the limit it breaks. That last part is what turns a number into a

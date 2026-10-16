@@ -6,6 +6,13 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 Nothing here is released. No version number was changed, and the items marked breaking are recorded for the later major version.
 
+### Result evidence
+
+- **`meta.stamp` on every tool response.** Every reply of every tool, free and members, carries `meta.stamp` last in `meta`, with `software` (the service name and version), `engines` (the version of eos-engine, hvac-engine-pro, flow-symphony, solar-engine, numenor-math and unitility), `computedAt` (UTC), `notice` (the review sentence) and `terms` (the Terms of Use address). Nothing under `data` changed. An assistant should relay the version and any warnings when it reports a number a user may rely on. The four skills now say so.
+- **A tool can be switched off with a message.** The service can take one tool out of service without a deploy. The tool then computes nothing and answers with a tool error of the form `<tool> is out of service: <message> (switched off since <date>, ask again in <n> s)`. An assistant relays that message and does not invent a result.
+- **Result-affecting defects are tagged from now on.** A defect that changes a number a user may have relied on is listed in this changelog with the prefix `Result-affecting:`, the date and the tools affected. The current list of known issues is on https://energyflowx.com/known-issues.
+- **Report files carry a result record.** Files of a Hydronic report state the software version, the engine versions, the UTC time and the digests of the inputs and of the outputs, with the review sentence.
+
 ### Wording and legal corrections
 
 - **Paid plans.** The text "free for testing and move to a paid plan in 2027" is replaced everywhere (README, CAPABILITIES, the hydronic skill, the access-terms check) by "free during testing. Paid plans are planned, and no date or price is set." The 2.0.0 entry below keeps its original wording as history.

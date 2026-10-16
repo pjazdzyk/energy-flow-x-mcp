@@ -90,7 +90,7 @@ For "what is the dew point, wet bulb or humidity ratio of this air", use `get_fl
 
 ## Reporting it
 
-Results are for review by a professional engineer, who remains responsible, and are not a design certification. Say so when you present numbers.
+Results are for review by a professional engineer, who remains responsible, and are not a design certification. Say so when you present numbers. When you report a number a user may rely on, quote the software version from `meta.stamp`, pass on any warnings of the response, and if a tool answers that it is out of service, relay its message and do not invent a result.
 
 Give the outlet condition, the duty, and for a wet coil the condensate rate. Then state the two things
 a reviewer will check first: the **barometric pressure used**, and **which humidity input was

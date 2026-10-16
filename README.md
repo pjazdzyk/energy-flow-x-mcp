@@ -450,6 +450,12 @@ It sends nothing to any other destination. How the service treats this data is s
 [privacy policy](https://energyflowx.com/legal/privacy-policy) and the
 [terms of use](https://energyflowx.com/legal/terms-of-use).
 
+## Result evidence and known issues
+
+Every reply of every tool carries a result stamp in `meta.stamp`: the service version, the version of each engine, the UTC time of the computation, the review sentence and the address of the Terms of Use. Ask your assistant to quote the version when you keep a number, and keep it with the figure. The service also publishes its versions at `https://energyflowx.com/energy-flow-x/api/build-info`. Result-affecting defects are listed on the public page [energyflowx.com/known-issues](https://energyflowx.com/known-issues) and tagged `Result-affecting:` in the [changelog](CHANGELOG.md). The service can switch a single tool off with a message. The tool then answers that it is out of service and computes nothing, and a good assistant passes the message on to you.
+
+The stamp says which version produced a number. It does not make the number right for your case. You stay responsible for verifying every result before you rely on it.
+
 ## Access terms
 
 The eleven tools on the free server are free today and need no account. **The Hydronic network

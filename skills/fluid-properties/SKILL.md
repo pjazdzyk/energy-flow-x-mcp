@@ -50,7 +50,7 @@ answer, not decoration.
 - **Check the state is inside the range.** Outside it the tool refuses, or for a glycol above 60 %
   answers with a warning that the values are interpolated. It never extrapolates silently, and that refusal is usually a finding about the calculation rather than an obstacle: if
   you are asking for liquid water at 0.001 bar, something upstream has gone wrong.
-- **Say who reviews it.** Results are for review by a professional engineer, who remains responsible, and are not a design certification. Say so when you present numbers.
+- **Say who reviews it.** Results are for review by a professional engineer, who remains responsible, and are not a design certification. Say so when you present numbers. When you report a number a user may rely on, quote the software version from `meta.stamp`, pass on any warnings of the response, and if a tool answers that it is out of service, relay its message and do not invent a result.
 - **Quote the method when the number goes into a report.** "IAPWS-IF97" or "GERG-2008" is what makes
   a figure checkable by someone else, and it costs a clause.
 - **A zeotropic blend has no single boiling point.** It glides. `get_saturation_properties` covers
