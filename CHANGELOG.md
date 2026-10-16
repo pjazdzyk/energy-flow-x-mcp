@@ -16,7 +16,7 @@ Nothing here is released. No version number was changed, and the items marked br
 
 ### Accuracy against the service documentation
 
-- Seventeen tools (eleven free and six Hydronic), eleven resources: `hydronic://vocabulary/components` is listed.
+- Seventeen tools (eleven free and six Hydronic), eleven resources and two resource templates: `hydronic://vocabulary/components` is listed.
 - Valves, dampers, regulators and emitters are placed as elements (`define_component`, `add_valve`, `add_damper`, `add_emitter`). `hydronic_solve` and `hydronic_report` take `mode="balance"` and `mode="design"`, and `hydronic_inspect` reads `results`, `components` and `elements`. The skill no longer says balancing and regulation are not available. Fans and fire-protection (sprinkler) hydraulics are listed as not available.
 - Pipe catalogue after the evidence rule: 11 generic pipe products (a size needs two independent makers), PE-X, PVC-U and CPVC are manufacturer series only, 46 manufacturer series from 29 makers.
 - Duct series name their makers' documents (Promat, A-WENT circular, Chemowent).

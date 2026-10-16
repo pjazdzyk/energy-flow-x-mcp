@@ -8,7 +8,7 @@ the live fluid catalogue with every validity range. The Hydronic tools publish t
 as MCP resources. If this page and a server ever disagree, the server is right, and we would like to
 hear about it.
 
-The sections on fluids, sizing and air handling were checked against the live servers on 3 October 2026.
+The sections on fluids, sizing and air handling were written against the service documentation of 3 October 2026 and are kept in line with it.
 The Hydronic section follows the service's own documentation, including `hydronic_report` (public) and
 the elements, balance mode and design mode added to the Hydronic tools since. Balancing valves, regulators
 and emitters are available through the assistant on the members server. Anything the page says that the
@@ -36,7 +36,7 @@ server contradicts is the page's error.
 | --- | --- | --- |
 | Address | `https://energyflowx.com/energy-flow-x/mcp/free` | `https://energyflowx.com/energy-flow-x/mcp/members` |
 | Name in the plugin | not connected | `energy-flow-x` |
-| Tools | 11 | 17, plus 11 resources |
+| Tools | 11 | 17, plus 13 resources |
 | Account | none, and none is accepted | required: sign in (OAuth), or an API key |
 | What it does | properties, sizing, air processes, without refrigerants, brines and the steam humidifier | everything: the 11 free tools with nothing held back, and the 6 tools that build, check, solve and report whole pipe networks |
 
@@ -625,8 +625,9 @@ real one, so none is assumed.
 
 ### Resources
 
-Eleven MCP resources. Ten carry the vocabulary and the recipes, so they cost nothing on a turn that does not need them, and
-the last is a report's files:
+Thirteen entries: eleven MCP resources and two resource templates. Ten of the resources carry the vocabulary and the recipes, so they cost
+nothing on a turn that does not need them, one is the saving guide, and the templates are a report's files and a package
+export:
 
 - `hydronic://vocabulary/ops`: every op with its required and optional fields.
 - `hydronic://vocabulary/fittings`: every fitting type.
@@ -643,6 +644,8 @@ the last is a report's files:
   filter as a Kv component.
 - `hydronic://recipes/compressor-heat-recovery`: a compressor on a pressure switch charging a receiver,
   its heat pumped into a hot-water store, run for twenty minutes.
+- `hydronic://guides/saving`: what `hydronic_session` export gives in each format, what open restores and what it drops, and how long a package link lasts.
+- `hydronic://exports/{token}/design`: a template, the package export of a design, read by URI once `hydronic_session` has exported it.
 - `hydronic://reports/{token}/{file}`: a template, read by URI once `hydronic_report` has made a report:
   `study.html`, `network.dxf` and `figure-N.png`.
 
