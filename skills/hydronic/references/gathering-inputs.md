@@ -44,7 +44,7 @@ is not an answer.
 
 **Selection is not sizing.** A pump is chosen against the *system* curve, which only exists once the
 network is solved. Give a candidate pump its datasheet curve as a device and the solve returns its duty
-point; with no pump yet, a `FIXED_PRESSURE` plant gives the pressure the design needs, and the pump is
+point. With no pump yet, a `FIXED_PRESSURE` plant gives the pressure the design needs, and the pump is
 chosen from that. If someone asks for a pump before the pipework is settled, say so: the duty moves
 when the sizes do.
 
@@ -162,7 +162,7 @@ it.** An assumption that is both consequential and invisible is the one to refus
 - *A fittings allowance*, if you must, expressed as a percentage of straight-run loss and labelled as
   an allowance. Counting the fittings is better and the vocabulary supports it.
 - *Ambient temperature*, where it only affects a thermal term nobody is asking about. A pipe exchanges
-  no heat with its surroundings here, so it takes none; a storage tank states its own standby loss.
+  no heat with its surroundings here, so it takes none. A storage tank states its own standby loss.
 
 **Never assume. Ask, or refuse to answer:**
 
@@ -208,7 +208,7 @@ before the solve rather than after:
 
 - **Does the total demand make sense against the source?** A 15 kg/s demand on a 22 mm supply is a
   typo, not a design.
-- **Is the ΔT plausible?** 5 K and 40 K are both real in different systems; 400 K is a unit error.
+- **Is the ΔT plausible?** 5 K and 40 K are both real in different systems, and 400 K is a unit error.
 - **Do the elevations span what the building spans?** All zeros in a six-storey block is the omission
   described above.
 - **Is the fluid right for the temperature?** Water at −10 °C is a hint that the circuit is glycol and

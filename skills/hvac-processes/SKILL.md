@@ -2,8 +2,8 @@
 name: hvac-processes
 description: >-
   Calculate what happens to an air stream through an air-handling unit, using the free EnergyFlowX
-  MCP tool: heating, cooling with condensate, mixing up to six streams, heat recovery to EN 16798-3
-  and EN 308, fans and the heat they add, steam humidification, air-water contact, dehumidification
+  MCP tool: heating, cooling with condensate, mixing up to six streams, heat recovery with frost
+  protection, fans and the heat they add, steam humidification, air-water contact, dehumidification
   and desiccant wheels, as one block or a chain of up to eight. Use it for coil duties, condensate
   rates, water flows, supply conditions, off-coil temperatures, recovery effectiveness and frost
   protection, and for any psychrometric question about an AHU. Reach for it whenever an air stream is
@@ -29,7 +29,7 @@ What each gives you beyond the outlet state:
 
 - **Coils** give duty, condensate and water flow. A cooling coil below dew point is a wet coil, and
   the condensate is part of the answer, not a footnote.
-- **Heat recovery** gives EN 16798-3 ports, EN 308 effectiveness, leakage and frost protection.
+- **Heat recovery** gives its four ports (outdoor, supply, extract, exhaust), effectiveness as EN 308 defines it, leakage and frost protection.
 - **The fan** gives air, shaft and electrical power, and **the heat it adds to the stream**. That heat
   is real and it is routinely left out of hand calculations, which is why a supply temperature comes
   out a degree or two low.
@@ -89,6 +89,8 @@ For "what is the dew point, wet bulb or humidity ratio of this air", use `get_fl
 `HUMID_AIR`: it returns the whole psychrometric state directly, with no process involved.
 
 ## Reporting it
+
+Results are for review by a professional engineer, who remains responsible, and are not a design certification. Say so when you present numbers.
 
 Give the outlet condition, the duty, and for a wet coil the condensate rate. Then state the two things
 a reviewer will check first: the **barometric pressure used**, and **which humidity input was

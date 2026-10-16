@@ -2,6 +2,32 @@
 
 Notable changes, newest first. Breaking changes are marked as such.
 
+## Unreleased
+
+Nothing here is released. No version number was changed, and the items marked breaking are recorded for the later major version.
+
+### Wording and legal corrections
+
+- **Paid plans.** The text "free for testing and move to a paid plan in 2027" is replaced everywhere (README, CAPABILITIES, the hydronic skill, the access-terms check) by "free during testing. Paid plans are planned, and no date or price is set." The 2.0.0 entry below keeps its original wording as history.
+- **Claim words removed.** "Same answer every time", "same figures as the largest model", "real product catalogues" and the "validation evidence" link text are gone. The README states plainly that results produced through an AI assistant are for the user to verify, that the service does not guarantee what an assistant says, and that results are for review by a professional engineer who remains responsible and are not a design certification. Each skill tells the assistant to say so when it presents numbers.
+- **Standards by number only.** Heat recovery is no longer described "to EN 16798-3 and EN 308" (ports are named in plain words, effectiveness "as EN 308 defines it"), calorific values "follow the method of ISO 6976", and free air delivery refers to the conditions of ISO 1217.
+- **Trademark and non-affiliation line** now covers every product, vendor and maker name the README and skills mention, and the standards bodies.
+- The Codex review example uses "two heat demands of 3 kW each" instead of radiators.
+
+### Accuracy against the service documentation
+
+- Seventeen tools (eleven free and six Hydronic), eleven resources: `hydronic://vocabulary/components` is listed.
+- Valves, dampers, regulators and emitters are placed as elements (`define_component`, `add_valve`, `add_damper`, `add_emitter`). `hydronic_solve` and `hydronic_report` take `mode="balance"` and `mode="design"`, and `hydronic_inspect` reads `results`, `components` and `elements`. The skill no longer says balancing and regulation are not available. Fans and fire-protection (sprinkler) hydraulics are listed as not available.
+- Pipe catalogue after the evidence rule: 11 generic pipe products (a size needs two independent makers), PE-X, PVC-U and CPVC are manufacturer series only, 46 manufacturer series from 29 makers.
+- Duct series name their makers' documents (Promat, A-WENT circular, Chemowent).
+
+### Breaking or notable on the service side, for the later major version
+
+- **BREAKING: two duct series are withdrawn with no alias.** The Chemowent PVC thick-wall circular series and the A-WENT rectangular series answer as not found.
+- **BREAKING: the compressed-air water ranks are our own grades.** They are no longer the classes of a standard, and the integers changed.
+- The surge result carries a new optional list of assumptions.
+- The Hydronic MCP greeting and the tool texts changed (wording and the access terms).
+
 ## 2.2.0 (2026-10-06)
 
 ### For OpenAI too: ChatGPT and Codex
@@ -67,7 +93,7 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 ### Access terms with a year, and no "Hydronic MCP"
 
-- The Hydronic network tools are free for testing and move to a paid plan in **2027**, in the README, CAPABILITIES
+- Superseded by the Unreleased wording (no date, no price). At the time the Hydronic network tools were free for testing with a stated paid-plan year, in the README, CAPABILITIES
   and the hydronic skill alike. `check_skills.py` fails when any of them names another year, or drops the year.
 - "Hydronic MCP" is gone as a name: since 2.0.0 the Hydronic tools are on the members server, not a server of their
   own. `check_skills.py` refuses the phrase in a skill.

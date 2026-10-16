@@ -76,7 +76,7 @@ server's refusal over the numbers here, and tell the user when one comes.
 Liquids, gases and steam, in steady state or over time: water and glycol circuits, water mains,
 compressed air, natural gas and other fuel and industrial gases, ventilation ducts of dry or humid air,
 steam mains, and refrigerant liquid or vapour lines, in round, rectangular or elliptic pipes and ducts.
-`hydronic://vocabulary/fluids` lists the fluids and what each needs; `hydronic_inspect(what="fluids")`
+`hydronic://vocabulary/fluids` lists the fluids and what each needs, and `hydronic_inspect(what="fluids")`
 gives the same list to a client that cannot read resources.
 
 **Several fluids, one per system.** The gas supply to a boiler house and the heating circuit it fires
@@ -115,8 +115,8 @@ for it on its own (in Claude Code, for example, the server shows as needing auth
 user runs `/mcp`, picks it and approves in the browser). A client that cannot sign in sends an API key
 instead. If a hydronic call comes back saying it needs an account, relay that with the access terms it
 states: the Hydronic network tools are free while in testing, that free access can change at any time,
-and they will become part of a paid EnergyFlowX plan, with plans and access terms at
-https://energyflowx.com/mcp-server. Relay it as it is, with no prices or plan names of your own. Never ask
+and paid EnergyFlowX plans are planned and no date or price is set, with the terms at
+https://energyflowx.com/mcp-server. Relay it as it is, with no prices, dates or plan names of your own. Never ask
 the user to paste a token or a key into the chat.
 
 ## The loop
@@ -141,7 +141,7 @@ the user to paste a token or a key into the chat.
    it is their network before you solve.
 5. **Solve.** `hydronic_solve(handle)` for one operating state. For behaviour over time, add the
    schedules and controllers, state the run with `set_transient`, solve steady first as a check that the
-   plant works at all, then solve with `mode="transient"`.
+   plant works at all, then solve with `mode="transient"`. `mode="balance"` and `mode="design"` are for designs with placed elements.
 6. **Read the rest.** `detail=50` returns every element of a network up to 50 elements.
    `hydronic_inspect` reads the design back as authored, never solved values.
 7. **Report.** See "Handing it over".
@@ -183,8 +183,8 @@ A transient comes back as answers, not a time series:
 3. **`events` and each machine's `starts`**: many starts in a short run is short-cycling.
 4. **`devices`**: power, energy, recovered heat, how far each store charged.
 5. **`balance`**: per fluid circuit the mass supplied, drawn and kept in vessels, a gas receiver's counted
-   from its flows (`storedByFlow_kg`) and from its own state (`storedByState_kg`); per device the heat into
-   each circuit (`energy`); per circuit what entered, left, came from devices and stayed (`closure`). The two
+   from its flows (`storedByFlow_kg`) and from its own state (`storedByState_kg`), and per device the heat into
+   each circuit (`energy`). Per circuit what entered, left, came from devices and stayed (`closure`). The two
    receiver figures agree and every `residual` is near zero when the run conserved mass and energy, and the
    heat a compressor or heater put in can then be followed to where it went. Quote the balance before an
    energy figure.
@@ -206,10 +206,12 @@ pressures rest on it.
 the pressure through zero to keep a fixed demand. Reduce the demand, open up the run, or raise the
 supply pressure. Do not report the numbers.
 
-**A request for a control valve, balancing or regulation.** This release has no valve that sets or regulates
-itself. A balancing valve left at a setting is a fixed Kv: `add_resistance` with the Kv of that setting, from its
-datasheet, and the solve says what flow it gives. Finding the setting that gives a target flow, or a valve holding a
-pressure or a flow as the plant changes, is not here yet. A pump on a
+**A request for a valve, damper, regulator or emitter.** Describe it once with `define_component` and place it with
+`add_valve`, `add_damper` or `add_emitter` (read `hydronic://vocabulary/components` first). A steady solve takes each
+held element at its setting and lets a regulator regulate. `hydronic_solve(mode="balance")` finds the setting of each
+element held to a design flow, and `mode="design"` also chooses each emitter's size from its series. Read `data.balancing`,
+`data.design` and `data.thermal` with the warnings, and relay a refusal by name. Fans and fire-protection (sprinkler)
+hydraulics are not available. A simple balancing valve can still be a fixed Kv with `add_resistance`. A pump on a
 liquid is a device with its datasheet curve, and its duty point is the solve's answer. A pump on a gas is
 refused: a gas network is driven by a compressor or by its boundary pressures.
 
@@ -285,6 +287,10 @@ shows and how to read it.
 
 The drawing is a schematic and says so: it is laid out from the graph and the elevations, not from
 coordinates, and it is not a P&ID or to scale.
+
+## Who reviews it
+
+Results are for review by a professional engineer, who remains responsible, and are not a design certification. Say so when you present numbers. Gas, steam and fire-fighting installations are designed and signed off by the competent professional under the applicable standard and authority, and these results are calculation aids for that review.
 
 If the user only wants a quick answer in chat, give them the answer and offer the report. If they are
 going to send it to anyone, make the report.

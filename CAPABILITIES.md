@@ -8,8 +8,11 @@ the live fluid catalogue with every validity range. The Hydronic tools publish t
 as MCP resources. If this page and a server ever disagree, the server is right, and we would like to
 hear about it.
 
-Everything on this page was checked against the live servers on 3 October 2026, except `hydronic_report`,
-which is described as built and is checked live when it is released.
+The sections on fluids, sizing and air handling were checked against the live servers on 3 October 2026.
+The Hydronic section follows the service's own documentation, including `hydronic_report` (public) and
+the elements, balance mode and design mode added to the Hydronic tools since. Balancing valves, regulators
+and emitters are available through the assistant on the members server. Anything the page says that the
+server contradicts is the page's error.
 
 ## Contents
 
@@ -33,9 +36,9 @@ which is described as built and is checked live when it is released.
 | --- | --- | --- |
 | Address | `https://energyflowx.com/energy-flow-x/mcp/free` | `https://energyflowx.com/energy-flow-x/mcp/members` |
 | Name in the plugin | not connected | `energy-flow-x` |
-| Tools | 11 | 16, plus 10 resources |
+| Tools | 11 | 17, plus 11 resources |
 | Account | none, and none is accepted | required: sign in (OAuth), or an API key |
-| What it does | properties, sizing, air processes, without refrigerants, brines and the steam humidifier | everything: the 11 free tools with nothing held back, and the 5 tools that build and solve whole pipe networks |
+| What it does | properties, sizing, air processes, without refrigerants, brines and the steam humidifier | everything: the 11 free tools with nothing held back, and the 6 tools that build, check, solve and report whole pipe networks |
 
 Connect one of the two: the members server already carries every free tool, so with both connected each free
 tool appears twice. The free server stays separate because many clients carry every tool's schema on every
@@ -149,13 +152,13 @@ Tool: `get_saturation_properties`.
 Tool: `get_natural_gas_properties`.
 
 - **Method**: the GERG-2008 wide-range equation of state (ISO 20765-2), with calorific values and
-  Wobbe index per ISO 6976. Valid from the composition's own lower limit (about 90 K for a
-  methane-rich gas) to 700 K, up to 70 MPa, the extended range. It is most accurate, about 0.1 % in
-  density, from 90 to 450 K up to 35 MPa, and every answer states the range it used.
+  Wobbe index following the method of ISO 6976. Valid from the composition's own lower limit (about 90 K for a
+  methane-rich gas) to 700 K, up to 70 MPa, the extended range. The equation's authors give its lowest uncertainty,
+  about 0.1 % in density, for 90 to 450 K up to 35 MPa, and every answer states the range it used.
 - **Presets**: `PL_GZ50`, `PL_GZ415`, `PL_GZ35`, `US_PIPELINE`, `NG_H2_20` (20 % hydrogen),
   `RAW_BIOGAS`, `PURE_PROPANE`, `PURE_BUTANE` and `LPG_PROPANE_BUTANE`.
-- **Your own composition**: mole fractions over 21 components. They should sum to 1; a composition that
-  does not is normalised, and the answer says what it summed to. The components are
+- **Your own composition**: mole fractions over 21 components. They should sum to 1, and a composition that
+  does not is normalised, with the answer saying what it summed to. The components are
   methane, nitrogen, carbon dioxide, ethane, propane, isobutane, n-butane, isopentane, n-pentane,
   n-hexane, n-heptane, n-octane, n-nonane, n-decane, hydrogen, oxygen, carbon monoxide, water,
   hydrogen sulfide, helium and argon.
@@ -200,19 +203,18 @@ Tools: `search_conduit_catalog`, `get_conduit_dimensions`.
   ducts, a shape (`RECTANGULAR`, `CIRCULAR`). Each product returns its shape,
   its wall roughness variants, its size classes (PN, SDR, schedule or wall class for pipe) and every
   size it comes in.
-- **14 generic pipe products**, described by material and use. A search with no `codes` and no
-  `manufacturers` returns these and nothing else:
-  - Steel: pressure pipe in medium and heavy wall classes (`WALL-M`, `WALL-H`, 21.3 to 139.7 mm outside
-    diameter, ten sizes each, no light class), inch-schedule carbon steel (SCH10 in eight sizes from DN15
-    to DN100, SCH40, SCH80, SCH160), inch-schedule alloy steam pipe (SCH80, SCH160, XXS) for
-    high-pressure steam, stainless in the S schedules (SCH10S, SCH40S, SCH80S), and galvanised threaded
-    tube in light, medium and heavy series.
-  - Copper: water and heating tube in metric sizes only, in a thick and a thin wall series, and
-    refrigeration tube in metric and in inch sizes.
-  - Plastics: PE100 SDR11 for gas, PE-X (SDR7.4), PP-R (SDR11 and SDR7.4), PVC-U (SDR13.6) and CPVC
-    (SDR13.6). There is no generic PE-RT product.
+- **11 generic pipe products**, described by material and use. A size is in a generic product only when at
+  least two independent makers print it with the same value, so a product with no such rows has no generic
+  series. A search with no `codes` and no `manufacturers` returns these and nothing else:
+  - Steel: pressure pipe in medium and heavy wall classes (`WALL-M`, `WALL-H`, no light class),
+    inch-schedule carbon steel, inch-schedule alloy steam pipe for high-pressure steam, stainless in the
+    S schedules, and galvanised threaded tube. `get_conduit_dimensions` lists the sizes of each.
+  - Copper: water and heating tube in metric sizes, and refrigeration tube in metric and in inch sizes.
+  - Plastics: PE100 SDR11 for gas and PP-R. There is no generic PE-X, PE-RT, PVC-U or CPVC
+    product: those are manufacturer series only, and the retired generic codes open the Uponor PEX and
+    Georg Fischer PVC-U and CPVC series.
   - Aluminium tube for compressed-air mains.
-- **42 manufacturer pipe series from 26 makers**, each following one maker's own catalogue exactly:
+- **46 manufacturer pipe series from 29 makers**, each following one maker's own catalogue exactly:
   the sizes, walls and class names that catalogue prints, with a size written `<OD> x <wall>` where a
   maker prints several walls at one outside diameter. Some tables are large (a steel pressure pipe grid
   holds about a thousand outside diameter and wall pairs). They cover carbon, stainless and threaded
@@ -229,13 +231,18 @@ Tools: `search_conduit_catalog`, `get_conduit_dimensions`.
   - **Wide tables.** `get_conduit_dimensions` lists at most 60 rows. A larger table answers with a size
     index and the row count, and the `size` parameter narrows it: an outside diameter, a designation or
     a range in mm. `select_conduit_size` with `window=ALL` lists at most 60 sizes.
-- **11 duct products**: galvanised steel rectangular and spiral-wound circular, aluminium flex,
-  concrete and brick ducts, PVC chemically resistant ducts in rectangular, circular and thickened
-  circular, textile supply and exhaust ducts, and a rigid board-type duct.
-- **Where the numbers come from**: pipe dimensions are compiled from manufacturer datasheets. Series
-  names follow common trade usage. Check the standard your project requires. A generic pipe product's
-  description names the manufacturers behind its dimensions and, where their own datasheets print a
-  standard designation, says so as their attribution only ("Listed as X by Y"). A manufacturer series says
+- **Duct products**: galvanised steel rectangular and spiral-wound circular, aluminium flex,
+  concrete and brick ducts, PVC chemically resistant ducts in rectangular and circular, textile supply
+  and exhaust ducts, and a rigid board-type duct. Three makers' series name their documents in
+  `get_conduit_dimensions` under `product.source`: Promat (the board duct, in the sizes its documents
+  print, up to 1250 x 1000 mm), A-WENT (circular only) and Chemowent (PVC). Where a maker prints no
+  value, the description says the value is ours. The A-WENT rectangular and the thick-wall PVC series are
+  withdrawn and answer as not found.
+- **Where the numbers come from**: pipe dimensions are read from the makers' own public documents. A
+  generic row needs two independent makers, and a manufacturer series is read from one maker's document.
+  Series names follow common trade usage. Check the standard your project requires. A generic pipe
+  product's description names the manufacturers behind its dimensions and, where their own datasheets
+  print a standard designation, says so as their attribution only ("Listed as X by Y"). A manufacturer series says
   whose document it is read from and is not affiliated with that maker.
 - **Dimensions**: for every size in every class, the inner and outer size, wall thickness, SDR, the
   size basis and, for metal pipe, an informational working pressure. This `innerSize` is the bore that
@@ -355,14 +362,14 @@ Tool: `calculate_air_process`.
   coil wall temperature and the bypass factor.
 - **Mixing**: up to 6 inlets, mixed by mass. Name the fresh-air inlet and it also returns the
   fresh-air share by mass and by volume.
-- **Heat recovery**: a plate (sensible) or sorption rotor (enthalpy) exchanger, to EN 16798-3 ports
+- **Heat recovery**: a plate (sensible) or sorption rotor (enthalpy) exchanger, with four ports
   (outdoor, supply, extract, exhaust).
   - Runs at a stated effectiveness, to a supply temperature or at a recovered power.
   - Leakage from 0 to 20 % in either direction.
   - Frost protection: none, bypass, preheater or stopping both fans, with the trigger surface
     temperature. It reports the coldest surface, whether frost protection engaged and any residual
     risk.
-  - Returns EN 308 temperature and humidity effectiveness, recovered power, preheater power and
+  - Returns temperature and humidity effectiveness as EN 308 defines them, recovered power, preheater power and
     condensate on either side, and, in a target mode, the achievable range (the supply temperature
     and recovered power at 0 % and 100 % effectiveness), whether or not the target was reached.
 - **Fan**: a total pressure rise and a total efficiency. Returns air, shaft and electrical power, the
@@ -431,8 +438,15 @@ Server: the members server, `/energy-flow-x/mcp/members`, only. Tools: `hydronic
   when the run is set, with the step that fits. A run that meets a limit while it solves returns the
   steps it computed, marked incomplete. For free use these limits may be lowered to match server
   capacity, and longer runs are quoted individually.
-- **Not yet**: fans (a pump curve is a liquid's), control valves, balancing and regulation. Also not
-  modelled: two-phase flow (wet steam, condensate with flash steam), heat exchange between a pipe and
+- **Elements** (`define_component`, `add_valve`, `add_damper`, `add_emitter`): a valve, damper,
+  regulator or emitter is described once as a component and placed as an element, on its own edge or
+  inline on a pipe. A steady solve takes each held element at its setting and lets a regulator
+  regulate. `hydronic_solve(mode="balance")` chooses the setting of every element held to a design flow
+  and returns `data.balancing`. `mode="design"` first chooses each emitter's size from its series, then
+  balances. A design with thermal emitters carries `data.thermal` in every reply. `hydronic_report` takes
+  the same modes. The families, forms and settings are in `hydronic://vocabulary/components`.
+- **Not available**: fans (a pump curve is a liquid's) and fire-protection (sprinkler) hydraulics. Also
+  not modelled: two-phase flow (wet steam, condensate with flash steam), heat exchange between a pipe and
   its surroundings, water hammer and surge, and devices that change the fluid, such as dryers and
   coils.
 
@@ -456,7 +470,9 @@ Server: the members server, `/energy-flow-x/mcp/members`, only. Tools: `hydronic
   field. `dryRun` validates a batch without applying it.
 - **Strict fields**: a field that does not belong to its op is refused by name, never ignored.
 - **Ops**: `set_fluid`, `set_conditions`, `add_node`, `add_pipe`, `add_fitting`, `add_resistance`,
-  `set` and `remove`.
+  `add_device`, `add_schedule`, `add_controller`, `set_transient`, `set_criteria`, `name_system`,
+  `name_level`, `define_component`, `add_valve`, `add_damper`, `add_emitter`, `set` and `remove`. The
+  full fields are in `hydronic://vocabulary/ops`.
 - **Systems**: `set_fluid` with a `system` name creates a further fluid system, and `add_pipe` or
   `add_resistance` with that name puts an edge in it. A node belongs to the system of its edges, and a
   node joining two systems is refused, because two fluids meet only inside a device. An edge naming a
@@ -472,7 +488,7 @@ Server: the members server, `/energy-flow-x/mcp/members`, only. Tools: `hydronic
   - A volume flow of a liquid, at the design temperature.
   - A normal or standard gas volume, `"450Nm3/h"`, `"120Sm3/h"` or `"80scfm"`, with the real-gas density
     at that unit's own reference state.
-  - A plain gas volume with `flowBasis`: `FAD`, free air delivery at ISO 1217 (20 °C, 1 bar absolute,
+  - A plain gas volume with `flowBasis`: `FAD`, free air delivery referred to the conditions of ISO 1217 (20 °C, 1 bar absolute,
     dry), for dry air only, or `ACTUAL`, at the node's own solved pressure, which the solve iterates
     until the mass flows settle.
   - A plain gas volume with no basis is refused: 10 m³/min of free air is about eight times the mass of
@@ -599,7 +615,7 @@ real one, so none is assumed.
 ### Inspecting
 
 - `hydronic_inspect` reads the design back as authored: `design` (the whole document), `nodes`,
-  `edges`, one `node` or one `edge` by id, and `readiness`. It never returns solved values.
+  `edges`, one `node` or one `edge` by id, `readiness`, `results` (the kept runs), `components` and `elements`. It never returns solved values.
 - `fluids` lists the fluids this server carries, and needs no session.
 - `readiness` lists what is still missing and runs the full design validator without solving, with
   its error and warning counts. A half-built design is a normal state.
@@ -609,8 +625,8 @@ real one, so none is assumed.
 
 ### Resources
 
-Ten MCP resources. Nine carry the vocabulary, so it costs nothing on a turn that does not need it, and
-the tenth is a report's files:
+Eleven MCP resources. Ten carry the vocabulary and the recipes, so they cost nothing on a turn that does not need them, and
+the last is a report's files:
 
 - `hydronic://vocabulary/ops`: every op with its required and optional fields.
 - `hydronic://vocabulary/fittings`: every fitting type.
@@ -619,6 +635,8 @@ the tenth is a report's files:
   checks.
 - `hydronic://vocabulary/devices`: each device type's ports and settings, schedules, controllers, and
   what a transient run returns.
+- `hydronic://vocabulary/components`: the families of valve, damper, regulator and emitter, their forms
+  and settings.
 - `hydronic://recipes/riser`: a complete, solvable plant riser.
 - `hydronic://recipes/ring-main`: a complete campus ring main, and how to read its result.
 - `hydronic://recipes/compressed-air-ring`: a workshop compressed-air ring in free air delivery, with a
@@ -651,8 +669,8 @@ the tenth is a report's files:
   On the free server, currently 20 per second and 1,000 per hour. A throttled call
   comes back as a JSON-RPC error with a retry time, not as an empty result.
 - The current limits are published at `https://energyflowx.com/energy-flow-x/api/mcp/limits`.
-- **The Hydronic network tools are free for testing and move to a paid plan in 2027.** Solving networks
-  costs real compute, and until then the free access can be limited, metered or withdrawn at any time
-  and without notice. The tools on the free server are free today and need no account.
+- **The Hydronic network tools are free during testing. Paid plans are planned, and no date or price is
+  set.** Solving networks costs real compute, so the free access can be limited, metered or withdrawn at
+  any time and without notice. The tools on the free server are free today and need no account.
 - Keys are created in [account settings](https://energyflowx.com/settings). A key is shown once and
   stored only as a hash, so a lost key is revoked and replaced, not recovered.

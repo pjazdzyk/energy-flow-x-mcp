@@ -12,7 +12,7 @@ figure on the page is the figure the engine computed.
 | Argument | Values |
 | --- | --- |
 | `handle` | the session to report |
-| `mode` | `steady` (default) or `transient`, as `hydronic_solve` |
+| `mode` | `steady` (default), `balance`, `design` or `transient`, as `hydronic_solve` |
 | `labels` | `data` (default): each run's size, velocity, flow and pressure drop, each node's pressure. `minimal`: ids and sizes |
 | `title` | the page's title, the session's name when left out |
 
@@ -44,6 +44,8 @@ scaled down. The page and the DXF have every label at full size.
 resources opens them as `hydronic://reports/{token}/{file}`, and a browser opens the HTTPS `url`.
 
 ## Relaying the verdict
+
+Results are for review by a professional engineer, who remains responsible, and are not a design certification. Say so when you present numbers.
 
 Two headlines change everything else and are said first, in words, before the picture:
 
@@ -131,12 +133,12 @@ the run over time: whether it completed and every instant converged, each vessel
 (a compressor's averages, energy and starts), the lowest pressure each point reached and when, judged at a draw
 point against the least its system must keep, a mass and energy balance per fluid circuit, charts with their ticks
 (one per range, a command drawn as the step it is) and every command change. The balance counts what a gas
-receiver kept twice, from its flows and from its own state, and the two agree when the run conserved mass; an energy
+receiver kept twice, from its flows and from its own state, and the two agree when the run conserved mass, and an energy
 residual near zero says the same of energy. Quote both before trusting a run's energy figures. A draw point that keeps
 its pressure at the design point but falls below it at the bottom of a receiver's swing fails the verdict. The bill of materials aggregates like items: pipe and duct by material, size and system
 with their total length, fittings by type and the size of the run carrying them, valves, equipment and vessels by
 type, each line naming its members. Tees and crosses are counted from the network, one wherever three or four
-connections meet, because a tee's loss is entered once for each path through it; an entry or exit loss at a vessel
+connections meet, because a tee's loss is entered once for each path through it, and an entry or exit loss at a vessel
 is not a part, and an enlargement is billed as a reducer. It lists only what the design states: a run with no
 length is counted as unstated, never given one, and allowances (waste, supports, insulation) are left to whoever
 orders from it. A small plant's page carries its DXF inside it as a download, so the page alone can be sent on.
@@ -146,7 +148,7 @@ have changed it): capped at its shut-off rise, and past the datasheet's last flo
 thin, which is not the pump's curve. The system curve through the duty counts the drop across any equipment on the
 route as flow loss, and is left out, with the reason, when a second pump drives the same route. NPSH available is
 judged at the temperature the liquid reaches the pump at. An expansion vessel given a `precharge` shows the water it
-holds; without one it shows none, because the volume is then only its gas cushion.
+holds. Without one it shows none, because the volume is then only its gas cushion.
 
 ## The DXF
 

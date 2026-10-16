@@ -1,7 +1,7 @@
 {
   "name": "energyflowx",
   "version": "2.2.0",
-  "description": "Engineering calculations for fluids, air and pipework: thermophysical properties for 29 fluids from reference equations of state, checked against published reference data, HVAC process chains, pipe and duct sizing against real product catalogues, and full hydraulic network solving for liquids, gases and steam, with pumps, compressors with heat recovery, heat exchangers, storage tanks and receivers, in steady state or over time. Connects the EnergyFlowX members MCP server, every tool behind one sign-in, and adds the method for using them well.",
+  "description": "Engineering calculations for fluids, air and pipework: thermophysical properties for 29 fluids from reference equations of state, checked against published reference data, HVAC process chains, pipe and duct sizing against manufacturer catalogue data, and full hydraulic network solving for liquids, gases and steam, with pumps, compressors with heat recovery, heat exchangers, storage tanks and receivers, in steady state or over time. Connects the EnergyFlowX members MCP server, every tool behind one sign-in, and adds the method for using them well.",
   "author": {
     "name": "Piotr Jazdzyk",
     "email": "info@energyflowx.com",
@@ -36,7 +36,7 @@
   "interface": {
     "displayName": "EnergyFlowX",
     "shortDescription": "Fluids, HVAC and pipe networks",
-    "longDescription": "Engineering calculations for fluids, air and pipework from the EnergyFlowX engines. Thermophysical properties for 29 fluids from reference equations of state, checked against published reference data, with the method and validity range on every result. Air-handling processes: heating, cooling with condensate, mixing, heat recovery, fans and humidification. Pipe and duct sizing against real product catalogues. Hydraulic network design and solving for liquids, gases and steam, with pumps, compressors, heat exchangers, tanks and receivers, steady or over time, handed over as a study page, a CAD drawing (DXF) and a PDF. Four skills teach the method: which inputs matter, what to check before quoting a number, and how to present a result.",
+    "longDescription": "Engineering calculations for fluids, air and pipework from the EnergyFlowX engines. Thermophysical properties for 29 fluids from reference equations of state, checked against published reference data, with the method and validity range on every result. Air-handling processes: heating, cooling with condensate, mixing, heat recovery, fans and humidification. Pipe and duct sizing against manufacturer catalogue data. Hydraulic network design and solving for liquids, gases and steam, with pumps, compressors, heat exchangers, tanks and receivers, steady or over time, handed over as a study page, a CAD drawing (DXF) and a PDF. Four skills teach the method: which inputs matter, what to check before quoting a number, and how to present a result.",
     "developerName": "SYNERSET Piotr Jażdżyk",
     "category": "Productivity",
     "capabilities": ["Read", "Write"],
@@ -46,7 +46,7 @@
     "termsOfServiceURL": "https://energyflowx.com/legal/terms-of-use",
     "defaultPrompt": [
       "Steam enters a turbine at 100 bar, 540 °C and expands isentropically to 0.1 bar. Inlet enthalpy, exit quality and work per kg?",
-      "Plate recovery 75%: supply 5000 m3/h at -15 °C, 85% RH; extract 4000 m3/h at 22 °C, 45% RH. Supply temp, condensate, frost risk?",
+      "Plate recovery 75%: supply 5000 m3/h at -15 °C, 85% RH, extract 4000 m3/h at 22 °C, 45% RH. Supply temp, condensate, frost risk?",
       "Compressed-air ring: 7 barg receiver, 160 m DN50 steel loop, four 2 Nm3/min drops. Worst pressure, and with one section shut?"
     ],
     "brandColor": "#1DBFFA",
@@ -77,16 +77,16 @@
               "expected_behavior": "Calls calculate_air_process with one HEATING step, an inlet of 5000 m3/h at -10 °C and 80% and a target of 20 °C. Reports the coil duty the tool returns, of the order of 50 to 60 kW, and the outlet relative humidity of about 9%, since heating adds no moisture."
             },
             {
-              "description": "Pipe sizing against a real product catalogue: the smallest catalogue size that meets a velocity limit, with the size below and the limit it breaks.",
+              "description": "Pipe sizing against the product catalogue: the smallest catalogue size that meets a velocity limit, with the size below and the limit it breaks.",
               "prompt": "Which size of steel pipe do I need for 2 kg/s of water at 70 °C if the velocity must stay at or below 1.5 m/s? Show the size below too.",
               "tools_triggered": "search_conduit_catalog, select_conduit_size",
               "expected_behavior": "Finds a steel pipe product with search_conduit_catalog, then calls select_conduit_size with 2 kg/s of water at 70 °C and a maximum velocity of 1.5 m/s. Reports the selected nominal size with its inner diameter, velocity and pressure drop per metre, and the next size down with the velocity by which it exceeds 1.5 m/s."
             },
             {
-              "description": "A hydraulic network built, checked, solved and reported: a small closed heating loop with a pump and two radiators, handed over as a study page, a CAD drawing (DXF) and a PDF.",
-              "prompt": "Design a small closed heating loop with EnergyFlowX: a circulation pump, about 20 m of DN25 supply and return pipe, and two radiators of 3 kW each at 70/50 °C. Solve it and give me the report.",
+              "description": "A hydraulic network built, checked, solved and reported: a small closed heating loop with a pump and two heat demands, handed over as a study page, a CAD drawing (DXF) and a PDF.",
+              "prompt": "Design a small closed heating loop with EnergyFlowX: a circulation pump, about 20 m of DN25 supply and return pipe, and two heat demands of 3 kW each at 70/50 °C. Solve it and give me the report.",
               "tools_triggered": "hydronic_session, hydronic_edit, hydronic_preview, hydronic_solve, hydronic_report",
-              "expected_behavior": "Asks for or states any missing input it assumes (such as the pump duty or the fill pressure), opens a session, builds the loop with hydronic_edit, checks the drawing with hydronic_preview, solves it, and calls hydronic_report. Shows the verdict and the network image, and gives the links to the study page, the DXF drawing and the PDF. Each radiator carries about 0.036 kg/s of water (3 kW over a 20 K drop)."
+              "expected_behavior": "Asks for or states any missing input it assumes (such as the pump duty or the fill pressure), opens a session, builds the loop with hydronic_edit, checks the drawing with hydronic_preview, solves it, and calls hydronic_report. Shows the verdict and the network image, and gives the links to the study page, the DXF drawing and the PDF. Each demand carries about 0.036 kg/s of water (3 kW over a 20 K drop)."
             }
           ],
           "negative": [
@@ -107,7 +107,7 @@
         "commerce": false
       },
       "publication": {
-        "release_notes": "First release in the OpenAI plugin directory: fluid properties for 29 fluids, checked against published reference data, air-handling processes, pipe and duct sizing against real product catalogues, and hydraulic network design and solving with a study page, a DXF drawing and a PDF. Four skills teach the method. Sign in with a free EnergyFlowX account."
+        "release_notes": "First release in the OpenAI plugin directory: fluid properties for 29 fluids, checked against published reference data, air-handling processes, pipe and duct sizing against manufacturer catalogue data, and hydraulic network design and solving with a study page, a DXF drawing and a PDF. Four skills teach the method. Sign in with a free EnergyFlowX account."
       }
     }
   }

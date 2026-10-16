@@ -52,7 +52,7 @@ is where the head was exhausted, and that is a real piece of information about t
 ### `PUMP_OUTSIDE_RATED_RANGE`: qualify
 
 The duty point settled past the flow range the pump curve describes. The off-design policy keeps the
-solve well-posed out there, so the answer is the best the model can give, but the head and the power are
+solve well-posed out there, so the answer is the model's closest estimate, but the head and the power are
 an **extrapolation past the datasheet** rather than a reading off it.
 
 What to do: report the duty with that qualification attached, in those words. Suggest a pump whose curve

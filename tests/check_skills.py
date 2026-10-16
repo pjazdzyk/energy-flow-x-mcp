@@ -237,25 +237,27 @@ def test_access_terms_are_stated() -> None:
     # These terms are a commercial position and they change. A skill that says "free" without the
     # qualification gets relayed to an end user as a promise the product never made, and an agent
     # repeats it far more confidently than a web page would.
-    check("hydronic says the network tools are free while in testing and will become part of a paid plan",
-          "free while in testing" in hydronic and "paid energyflowx plan" in hydronic)
+    check("hydronic says the network tools are free while in testing and that paid plans are planned with no date or price",
+          "free while in testing" in hydronic and "paid energyflowx plans are planned" in hydronic
+          and "no date or price is set" in hydronic)
     # The skill is read in the chat, where app directories keep selling out: OpenAI's rules let a plugin serve a
     # paid account but not display plans or promote upgrades. So it states the fact and links the terms, and the
     # year and the conditions stay on the page and in the README, for people.
     check("hydronic links the access terms instead of quoting a year or a price",
           "energyflowx.com/mcp-server" in hydronic and re.search(r"paid plan in 20\d\d|€|\$\d", hydronic) is None)
-    # One year everywhere the plugin states it to a reader: a year changed in one file and not the other tells
-    # two readers two different dates.
+    # No date and no price is promised for a paid plan, anywhere. The README and the capabilities page say so in
+    # the same words.
     years = {}
     for path in [PLUGIN / "README.md", PLUGIN / "CAPABILITIES.md"]:
-        years[path.name] = set(re.findall(r"paid plan in (20\d\d)", path.read_text(encoding="utf-8")))
-    check("every file names the same paid-plan year", len(set().union(*years.values())) == 1
-          and all(years.values()), years)
+        text = " ".join(path.read_text(encoding="utf-8").split())
+        years[path.name] = (re.findall(r"paid plan in (20\d\d)", text), "no date or price is set" in text)
+    check("no file dates the paid plan, and both say no date or price is set",
+          all(not found and said for found, said in years.values()), years)
     check("hydronic says an account is required, by sign-in", "account" in hydronic and "sign" in hydronic)
 
-    readme = (REPO / "README.md").read_text(encoding="utf-8").lower()
+    readme = " ".join((REPO / "README.md").read_text(encoding="utf-8").lower().split())
     check("the README says it too, for anyone who reads no further",
-          "free for testing" in readme and "without notice" in readme)
+          "free during testing" in readme and "without notice" in readme)
 
 
 def test_mcp_wiring_matches_the_published_endpoints() -> None:
@@ -417,6 +419,7 @@ RETIRED = {
     "study JSON": "same: nothing is transcribed by hand any more",
     "bundled renderer": "same: the plugin ships no renderer",
     "all four hydronic tools": "there are six: hydronic_report and hydronic_preview joined them",
+    "paid plan in 2027": "no date or price is set for a paid plan",
     "all five hydronic tools": "there are six: hydronic_preview joined them",
 }
 

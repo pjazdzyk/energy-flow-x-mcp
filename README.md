@@ -4,7 +4,7 @@
 
 <p align="center">
   <strong>Engineering physics inside your AI assistant, checked against published reference data.</strong><br>
-  Fluid properties, psychrometrics, air handling, pipe and duct sizing and full hydraulic network solving,<br>
+  Fluid properties, psychrometrics, air handling, pipe and duct sizing and hydraulic network solving,<br>
   computed from reference equations of state rather than guessed by a language model.
 </p>
 
@@ -24,11 +24,16 @@ nowhere. Ask it with this plugin installed and the number comes from the same en
 Two things follow from that:
 
 - **Computed, not generated.** Every figure comes from the engine's equations, not from what the
-  model thinks the answer should be. The same question gives the same answer every time.
-- **You do not need a frontier model.** The largest models can often work a calculation out on
-  their own. With the engine behind it, an assistant only states the inputs and reads back the
-  result, so a smaller, faster and cheaper model gets the same figures as the biggest one. The
-  quality of your numbers does not depend on which model or which vendor you use.
+  model thinks the answer should be.
+- **The assistant states the inputs and reads back the result.** The engine does the arithmetic, so
+  a smaller model has less to get wrong than one asked to work a calculation out by itself. How well
+  an assistant chooses the inputs and words the answer still depends on the assistant.
+
+**Results produced through an AI assistant are for you to verify.** The assistant chooses the inputs,
+calls the tools and words the answer, and the service does not guarantee what an assistant says about a
+result. Check the inputs it used and the figures it quotes against what the tool returned. Every result
+is for review by a professional engineer, who remains responsible for the design, and is not a design
+certification.
 
 This repository is the official, maintained Claude plugin for the EnergyFlowX MCP service. It does two
 things at once:
@@ -36,11 +41,11 @@ things at once:
 1. **Connects the EnergyFlowX members server**, every tool behind one sign-in to your account, so
    Claude can call the calculation tools and you never handle an API key.
 2. **Adds four skills** that teach Claude how to use them well: which inputs matter, what to check
-   before quoting a result, and how to present it so an engineer can verify it. Each skill can also be
+   before quoting a result, and how to present it so an engineer can check it. Each skill can also be
    [downloaded on its own](#install-a-single-skill) for an assistant that reads skills but not plugins.
 
 Want the full picture of EnergyFlowX, beyond this plugin? The web platform, its physics, its
-validation evidence and every reference behind it are documented in
+evidence and every reference behind it are documented in
 **[github.com/pjazdzyk/energy-flow-x-docu](https://github.com/pjazdzyk/energy-flow-x-docu)**.
 
 ## Contents
@@ -62,7 +67,7 @@ validation evidence and every reference behind it are documented in
 
 ## What it can do
 
-Sixteen tools, all on the members server the plugin connects, grouped here by the question they answer.
+Seventeen tools, all on the members server the plugin connects, grouped here by the question they answer.
 Eleven of them are also on the free server, which needs no account (see [Other clients](#other-clients)).
 [CAPABILITIES.md](CAPABILITIES.md) lists every fluid, block, rule set, fitting and limit in detail.
 
@@ -77,7 +82,7 @@ plugin (5 on the free server).
 | Water and steam | liquid water, steam (from any two of p, T, h, s, x) | IAPWS-IF97 | yes |
 | Air | dry air, humid air (six input pairs, from RH, humidity ratio, wet bulb, dew point and enthalpy), with its full psychrometric state | Lemmon reference EOS, psychrometrics | yes |
 | Industrial gases | hydrogen, CO₂, ammonia, propane, nitrogen, oxygen, argon, helium, methane, N₂O | multiparameter Helmholtz EOS | yes |
-| Natural gas | presets or your own composition, plus calorific value and Wobbe index at six reference conditions, and flammability limits | GERG-2008 (ISO 20765-2), ISO 6976 | yes |
+| Natural gas | presets or your own composition, plus calorific value and Wobbe index at six reference conditions, and flammability limits | GERG-2008, with calorific values following the method of ISO 6976 | yes |
 | Glycols | ethylene glycol, propylene glycol | Melinder correlations | yes |
 | Refrigerants | R134a, R1234ze, R1234yf, R32, R125, R454B, R410A, R407C | multiparameter Helmholtz EOS | no, members server |
 | Brines | calcium chloride, ethanol, methanol, potassium formate solutions | Melinder correlations | no, members server |
@@ -91,16 +96,18 @@ and triple points) and unit conversion.
 - Velocity, pressure drop, Reynolds number, friction factor and flow regime for one pipe or duct.
 - **Size selection** against design criteria or your own limits: the smallest size that passes, the
   size below and the limit it breaks, and the size above.
-- Real product catalogues: inner bore, wall thickness, SDR and roughness for common pipe and
-  duct products. Pipe dimensions are compiled from manufacturer datasheets. Generic pipe series are the
-  default, and manufacturer series that follow one maker's catalogue exactly are asked for by maker.
+- Catalogue sizes: inner bore, wall thickness, SDR and roughness for common pipe and duct products.
+  Generic pipe series are the default, and a size is in one only when at least two independent
+  makers print it. Manufacturer series follow one maker's own catalogue (46 series from 29 makers),
+  name the document they are read from, and are asked for by maker. PE-X, PVC-U and CPVC are
+  manufacturer series only. Duct series name the maker's documents too.
 - Schedules of up to 20 segments with fittings, judged against a total pressure-drop budget.
 - A heat load in place of a flow, for water, glycols, brines and air.
 
 ### Air handling (AHU processes)
 
-Heating and cooling coils with condensate and water flow, mixing up to six streams, heat recovery to
-EN 16798-3 and EN 308 with frost protection, fans and the heat they add, steam humidification
+Heating and cooling coils with condensate and water flow, mixing up to six streams, heat recovery
+(outdoor, supply, extract and exhaust ports, effectiveness as EN 308 defines it) with frost protection, fans and the heat they add, steam humidification
 (any steam state and target, members server), air-water contact, dehumidification and desiccant wheels. One block or a chain of up to eight. A
 target a step cannot reach is reported as not feasible, never as a clean answer.
 
@@ -114,7 +121,9 @@ Mach number for a gas) and any node where the fluid condenses, flashes or boils,
 check before trusting the numbers. Pumps, compressors with heat recovery, heaters, heat exchangers,
 storage tanks and receivers are devices (a pump on a liquid only), and a design runs over time too, with
 schedules, pressure or flow switches and PI loops: receiver swings, compressor starts, how long the air lasts after a trip, how far a store
-charges. There are no control valves, balancing, fans or water hammer yet. Before any solve,
+charges. Valves, dampers, regulators and emitters are placed as elements, and `hydronic_solve` can balance
+a design (`mode="balance"`) and choose each emitter's size (`mode="design"`). There are no fans, no
+fire-protection (sprinkler) hydraulics and no water hammer. Before any solve,
 `hydronic_preview` draws the design the way the engine read it, in the same symbols the report uses, and says
 in words how many separate pieces and closed loops it has and where a branch ends nowhere. Your assistant
 can set that beside your sketch or a photo of your schematic and catch a wrong connection before it is
@@ -147,8 +156,7 @@ The study comes in two parts, so no figure is of a state the reader cannot name:
 which the drawing and every schedule show, and the run over time, with each machine over the run, the lowest
 pressure every point saw and when, its curves, and a mass and energy balance that says whether the run closes.
 
-The drawing is generated from the design, deterministically: the same design always gives the same drawing,
-and no AI draws it. Five systems sit on it, each line carrying its code: OA outdoor air in a duct (the double
+The drawing is generated from the design by the server, and no AI draws it. Five systems sit on it, each line carrying its code: OA outdoor air in a duct (the double
 line), CA compressed air, HRW heat recovery water, DCW domestic cold water and DHW domestic hot water, all
 solved together in one design: the compressor joins the air to the water, and the exchanger joins the loop to
 the potable water. Water
@@ -177,12 +185,13 @@ lowered at any time to match server capacity.
   coolants and refrigerant properties.
 - **Checking a number** someone has quoted: a supply temperature, a pressure drop, a property from an
   old table.
-- **Teaching and learning**: every result names the method and the standard behind it, so it can be
-  looked up and defended.
+- **Teaching and learning**: every result names its method, so it can be looked up.
 
 **It is not:**
 
-- A replacement for a qualified engineer. It computes, you decide.
+- A replacement for a qualified engineer. It computes, you decide. Gas, steam and fire-fighting
+  installations are designed and signed off by the competent professional under the applicable
+  standard and authority, and these results are calculation aids for that review.
 - A building energy simulation, a CFD tool or a load calculation. It answers questions about fluids,
   conduits, air processes and pipe networks, steady or over time, but not pressure waves.
 - A guess. When an input is out of range or a target cannot be met, it says so instead of returning
@@ -262,10 +271,10 @@ Paste any of these into Claude Code after installing:
 
 | Skill | What it covers | Tools | Account |
 | --- | --- | --- | --- |
-| [`fluid-properties`](skills/fluid-properties/SKILL.md) | 29 fluids and solids: water and steam, humid air, glycols, brines, refrigerants, industrial gases, natural gas (GERG-2008, ISO 6976), ice, unit conversion | 6 | refrigerants and brines only |
-| [`conduit-sizing`](skills/conduit-sizing/SKILL.md) | one pipe or duct against real catalogues: velocity, pressure drop, regime, the size below and above | 4 | not needed |
-| [`hvac-processes`](skills/hvac-processes/SKILL.md) | coils with condensate, mixing, heat recovery (EN 16798-3, EN 308), fans, humidification, dehumidification, desiccant wheels | 1 | the steam humidifier only |
-| [`hydronic`](skills/hydronic/SKILL.md) | whole pipe and duct networks of liquids, gases and steam, several fluids in one design, with pumps, compressors, heat exchangers, stores and receivers, steady or over time: build, solve, check, and report it as an HTML study with a P&ID-symbol network diagram, tables and a DXF of the drawing | 5 + 10 resources | required |
+| [`fluid-properties`](skills/fluid-properties/SKILL.md) | 29 fluids and solids: water and steam, humid air, glycols, brines, refrigerants, industrial gases, natural gas (GERG-2008, calorific values following the method of ISO 6976), ice, unit conversion | 6 | refrigerants and brines only |
+| [`conduit-sizing`](skills/conduit-sizing/SKILL.md) | one pipe or duct against the catalogues: velocity, pressure drop, regime, the size below and above | 4 | not needed |
+| [`hvac-processes`](skills/hvac-processes/SKILL.md) | coils with condensate, mixing, heat recovery (effectiveness as EN 308 defines it), fans, humidification, dehumidification, desiccant wheels | 1 | the steam humidifier only |
+| [`hydronic`](skills/hydronic/SKILL.md) | whole pipe and duct networks of liquids, gases and steam, several fluids in one design, with pumps, compressors, heat exchangers, stores and receivers, steady or over time: build, solve, check, and report it as an HTML study with a P&ID-symbol network diagram, tables and a DXF of the drawing | 6 + 11 resources | required |
 
 Every free tool is read-only and idempotent, so Claude does not stop to ask
 permission for a lookup. Two network tools change a session you own, and say so, and `hydronic_report` keeps a
@@ -310,7 +319,7 @@ connected each free tool appears twice.
 | Server | Address | Account | Tools |
 | --- | --- | --- | --- |
 | Free | `https://energyflowx.com/energy-flow-x/mcp/free` | none | the 11 property, sizing and air tools, without the members-only fluids and the steam humidifier |
-| Members | `https://energyflowx.com/energy-flow-x/mcp/members` | sign in, or an API key | all 16 tools |
+| Members | `https://energyflowx.com/energy-flow-x/mcp/members` | sign in, or an API key | all 17 tools |
 
 The exact, current snippets for each client are on
 [energyflowx.com/mcp-server](https://energyflowx.com/mcp-server). The short version:
@@ -444,9 +453,9 @@ It sends nothing to any other destination. How the service treats this data is s
 ## Access terms
 
 The eleven tools on the free server are free today and need no account. **The Hydronic network
-tools are free for testing and move to a paid plan in 2027.** Solving networks costs real compute,
-and until then the free access can be limited, metered or withdrawn at any time and without notice.
-Build on it by all means, but do not plan around it staying free.
+tools are free during testing. Paid plans are planned, and no date or price is set.** Solving networks
+costs real compute, so the free access can be limited, metered or withdrawn at any time and without
+notice. Build on it by all means, but do not plan around it staying free.
 
 ## Links
 
@@ -455,7 +464,7 @@ Build on it by all means, but do not plan around it staying free.
 | Website | [energyflowx.com](https://energyflowx.com) |
 | MCP server and client setup | [energyflowx.com/mcp-server](https://energyflowx.com/mcp-server) |
 | Knowledge base, the physics behind every tool | [energyflowx.com/knowledge](https://energyflowx.com/knowledge) |
-| Everything about EnergyFlowX: features, physics, validation evidence, references | [github.com/pjazdzyk/energy-flow-x-docu](https://github.com/pjazdzyk/energy-flow-x-docu) |
+| Everything about EnergyFlowX: features, physics, evidence, references | [github.com/pjazdzyk/energy-flow-x-docu](https://github.com/pjazdzyk/energy-flow-x-docu) |
 | Contact and community | [energyflowx.com/misc/social](https://energyflowx.com/misc/social) |
 
 ## For maintainers
@@ -493,7 +502,7 @@ operator's discretion.
 ---
 
 <p align="center">
-  Built by <a href="https://energyflowx.com">Piotr Jazdzyk</a>, SYNERSET.<br>
-  <sub>Claude, ChatGPT, Gemini, Cursor, VS Code and Codex are names of their owners, used here only to describe compatibility. EnergyFlowX is not affiliated with or endorsed by them.</sub><br>
-  <sub>Engineering results are not a substitute for the judgement of a qualified engineer. Verify every result before relying on it.</sub>
+  Built by SYNERSET Piotr Jażdżyk. Contact: <a href="https://energyflowx.com">energyflowx.com</a>.<br>
+  <sub>Claude, Claude Code, Claude Desktop, Cowork, Anthropic, ChatGPT, OpenAI, Codex, Gemini, Cursor, VS Code and GitHub Copilot are names of their owners, used here only to describe compatibility. The names of pipe and duct makers identify whose document a catalogue series is read from. EnergyFlowX is not affiliated with or endorsed by any of them, nor by the standards bodies (ISO, CEN, CENELEC, IAPWS) whose standards and formulations are named here by number or name.</sub><br>
+  <sub>Engineering results are not a substitute for the judgement of a qualified engineer. Results are for review by a professional engineer, who remains responsible, and are not a design certification. Verify every result before relying on it.</sub>
 </p>

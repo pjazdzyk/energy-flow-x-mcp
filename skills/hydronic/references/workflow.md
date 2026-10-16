@@ -21,7 +21,7 @@ this file would drift the first time the server gained an op.
 
 ## Step 0: read the vocabulary
 
-Nine resources, read once per session, then never again:
+Ten vocabulary and recipe resources, read once per session, then never again:
 
 | uri | what it holds |
 | --- | --- |
@@ -33,6 +33,7 @@ Nine resources, read once per session, then never again:
 | `hydronic://recipes/ring-main` | a campus ring main, and what a ring teaches you |
 | `hydronic://recipes/compressed-air-ring` | a compressed-air ring in free air delivery, with a filter as a Kv |
 | `hydronic://vocabulary/devices` | each device's ports and settings, schedules, controllers, and what a run returns |
+| `hydronic://vocabulary/components` | the families of valve, damper, regulator and emitter, their forms and settings, when the design has elements |
 | `hydronic://recipes/compressor-heat-recovery` | a compressor on a pressure switch charging a receiver, its heat into a store, run for twenty minutes |
 
 They are **resources, not tools**, which is why they cost nothing on a turn where you do not need them.
@@ -106,7 +107,7 @@ Two things that are easy to get wrong and expensive to miss:
 - **`elevation` omitted means the datum, not "no elevation".** In a building that is the difference
   between a static head and none. 11 m of water is about 108 kPa, and on a 5 bar system that is a fifth of
   everything you have.
-- **A volume-flow demand is converted using the fluid's density.** A liquid at the design temperature;
+- **A volume-flow demand is converted using the fluid's density.** A liquid at the design temperature,
   a gas at the state its basis names (the unit for a normal or standard volume, `flowBasis` for free air
   or the line pressure). The conversion is stated in the solve response. Read it once to confirm it used
   the density you expected.
@@ -153,7 +154,7 @@ costs a fraction of a solve.
 hydronic_solve(handle="...", detail=<n>)
 ```
 
-`mode` is `steady` (the default) or `transient`, which runs the duration `set_transient` states and
+`mode` is `steady` (the default), `balance`, `design` or `transient`. `balance` chooses the setting of every placed element held to a design flow and returns `data.balancing`. `design` also chooses each emitter's size from its series and returns `data.design`. A design with thermal emitters carries `data.thermal`. `transient` runs the duration `set_transient` states and
 applies the design's schedules and controllers. A transient returns each receiver's swing with when, the
 lowest pressures and when, each machine's starts, power, energy and recovered heat, how far each store
 charged, every command change, and a sampled table. A run takes at most 2,000 steps, fewer on a large
@@ -189,6 +190,8 @@ hydronic_inspect(handle="...", what="...", id="...", limit=<n>)
 | `design` | the whole document as currently authored |
 | `nodes` / `edges` | the authored tables, up to `limit` rows (default 50) |
 | `node` / `edge` | one authored element, with `id` |
+| `results` | the kept runs and whether each is still current |
+| `components` / `elements` | the components with their findings, and the placed elements with their mode and design flow |
 | `fluids` | the fluids this server carries |
 
 Inspect reads the design, never the solution. Computed flows and pressures come from the solve.
@@ -199,8 +202,8 @@ assumed.
 
 ## Step 6: keep or discard the session
 
-Sessions belong to the account that made them, however it connected. `export` before `close` if the design is worth keeping;
-hand the exported document back to the user, because it is the only copy they control.
+Sessions belong to the account that made them, however it connected. `export` before `close` if the design is worth keeping.
+Hand the exported document back to the user, because it is the only copy they control.
 
 ## The free tools
 

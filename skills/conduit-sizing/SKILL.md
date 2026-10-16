@@ -1,7 +1,7 @@
 ---
 name: conduit-sizing
 description: >-
-  Size a single pipe or duct against real criteria using the free EnergyFlowX MCP tools: velocity,
+  Size a single pipe or duct against stated criteria using the free EnergyFlowX MCP tools: velocity,
   pressure drop, Reynolds number and flow regime for a known flow, or the catalogue size that passes
   a stated rule set with the size below and above it and the limit each one breaks. Use this for
   "what size pipe for 2 kg/s", "is DN50 enough for this duct run", "which duct for 3000 m3/h at
@@ -16,7 +16,7 @@ description: >-
 
 Four free tools, on both EnergyFlowX MCP servers: the free one (`/energy-flow-x/mcp/free`, no account)
 and the members one (`/energy-flow-x/mcp/members`, which carries every tool). They answer the
-single-conduit question properly, against a real product catalogue and real fluid properties. The
+single-conduit question properly, against the product catalogue and the fluid's own properties. The
 network tools (`hydronic_*`, members server only) are for the moment a flow is unknown.
 
 | Tool | For |
@@ -70,7 +70,7 @@ The catalogue holds two kinds of pipe product, and the default matters.
 
 - **Generic series are the default.** `search_conduit_catalog` with no `codes` and no `manufacturers`
   returns generic products only. Use them for a first sizing, where the question is "what kind of pipe
-  and roughly what bore". Their dimensions are compiled from several manufacturers' datasheets.
+  and roughly what bore". A size is in a generic series only when at least two independent makers print it with the same value.
 - **Manufacturer series follow one maker's catalogue exactly**: that maker's sizes, walls and class
   names. Use one when the user names a maker or must match a specific product. Reach them with
   `manufacturers`: a maker's code (`TENARIS`, `PIPELIFE_POLSKA`), `["GENERIC"]` for the generic
@@ -90,7 +90,10 @@ The catalogue holds two kinds of pipe product, and the default matters.
   is not a partial one. Within a class a size is its designation, because a maker may print several
   walls at one outside diameter. `select_conduit_size` with `window=ALL` lists at most 60 sizes.
 - **`size_conduit` and `select_conduit_size` take a series code** exactly like a generic one.
-- **Not every product exists in both kinds.** There is no generic PE-RT. The generic steel pressure
+- **Not every product exists in both kinds.** There is no generic PE-X, PE-RT, PVC-U or CPVC: those are
+  manufacturer series only.
+- **Ducts** carry their maker's documents under `product.source` (Promat, A-WENT circular, Chemowent).
+  There is no A-WENT rectangular and no thick-wall PVC series, so do not offer one. The generic steel pressure
   pipe has medium and heavy wall classes only (`WALL-M`, `WALL-H`), so asking for the light class
   (`WALL-L`, `EN-L`) answers that there is no such size class. Offer the classes that exist.
 
@@ -99,7 +102,7 @@ The catalogue holds two kinds of pipe product, and the default matters.
 A manufacturer's document may print a standard designation for its product. Report it only as the
 catalogue states it, in the form **"Listed as X by Y"**, where Y is the maker or document. Read it from
 `listedAs` (the designation) and `printedAs` (the class label) in `get_conduit_dimensions`. Never write
-that a pipe meets, complies with or is approved to a standard, and never present a standard as
+that a pipe satisfies or is approved to a standard, and never present a standard as
 the source of these numbers: the source is the maker's own document. A series with no `listedAs` is
 described without a standard. Tell the user to check the standard their project requires.
 
@@ -119,6 +122,8 @@ anything over time, such as how long a receiver holds the far tool after a compr
 `hydronic` questions.
 
 ## Report it so someone can check it
+
+Results are for review by a professional engineer, who remains responsible, and are not a design certification. Say so when you present numbers.
 
 Give the chosen size, the criterion it was judged against, the governing number (velocity or
 gradient), and the size below with the limit it breaks. That last part is what turns a number into a
