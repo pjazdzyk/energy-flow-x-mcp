@@ -1,16 +1,16 @@
 {
   "name": "energyflowx",
-  "description": "Engineering calculations for fluids, air and pipework from the EnergyFlowX engines: validated thermophysical properties, HVAC process chains, conduit sizing and hydraulic network design, over MCP.",
+  "description": "Engineering calculations for fluids, air and pipework from the EnergyFlowX engines: thermophysical properties checked against published reference data, HVAC process chains, conduit sizing and hydraulic network design, over MCP.",
   "owner": {
     "name": "Piotr Jazdzyk",
-    "email": "info@synerset.com",
+    "email": "info@energyflowx.com",
     "url": "https://energyflowx.com"
   },
   "plugins": [
     {
       "name": "energyflowx",
       "source": "./",
-      "description": "Validated thermophysical properties, HVAC process calculations, conduit sizing and hydraulic network design, from the EnergyFlowX engines over MCP.",
+      "description": "Thermophysical properties checked against published reference data, HVAC process calculations, conduit sizing and hydraulic network design, from the EnergyFlowX engines over MCP.",
       "version": "2.2.0",
       "author": {
         "name": "Piotr Jazdzyk",

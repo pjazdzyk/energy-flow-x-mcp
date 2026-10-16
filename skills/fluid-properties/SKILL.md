@@ -1,7 +1,7 @@
 ---
 name: fluid-properties
 description: >-
-  Look up validated thermophysical properties for 29 fluids and solids from reference equations of
+  Look up thermophysical properties for 29 fluids and solids from reference equations of
   state, using the free EnergyFlowX MCP tools. Use this whenever a calculation needs a real property
   rather than a remembered one: density, viscosity, specific heat, conductivity, enthalpy or entropy
   at a state, saturation and boiling points, humid air from six input pairs, steam from any two of p,

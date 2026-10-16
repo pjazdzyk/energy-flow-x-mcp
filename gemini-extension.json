@@ -1,7 +1,7 @@
 {
   "name": "energyflowx",
   "version": "2.2.0",
-  "description": "Engineering calculations for fluids, air and pipework from the EnergyFlowX engines: validated thermophysical properties for 29 fluids, HVAC process chains, pipe and duct sizing against real product catalogues, and hydraulic network solving with a report and a CAD drawing. One sign-in to the EnergyFlowX members MCP server, plus four skills.",
+  "description": "Engineering calculations for fluids, air and pipework from the EnergyFlowX engines: thermophysical properties for 29 fluids checked against published reference data, HVAC process chains, pipe and duct sizing against real product catalogues, and hydraulic network solving with a report and a CAD drawing. One sign-in to the EnergyFlowX members MCP server, plus four skills.",
   "mcpServers": {
     "energy-flow-x": {
       "httpUrl": "https://energyflowx.com/energy-flow-x/mcp/members"

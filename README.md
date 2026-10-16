@@ -3,7 +3,7 @@
 <h1 align="center">EnergyFlowX for Claude</h1>
 
 <p align="center">
-  <strong>Validated engineering physics inside your AI assistant.</strong><br>
+  <strong>Engineering physics inside your AI assistant, checked against published reference data.</strong><br>
   Fluid properties, psychrometrics, air handling, pipe and duct sizing and full hydraulic network solving,<br>
   computed from reference equations of state rather than guessed by a language model.
 </p>
@@ -494,5 +494,6 @@ operator's discretion.
 
 <p align="center">
   Built by <a href="https://energyflowx.com">Piotr Jazdzyk</a>, SYNERSET.<br>
+  <sub>Claude, ChatGPT, Gemini, Cursor, VS Code and Codex are names of their owners, used here only to describe compatibility. EnergyFlowX is not affiliated with or endorsed by them.</sub><br>
   <sub>Engineering results are not a substitute for the judgement of a qualified engineer. Verify every result before relying on it.</sub>
 </p>

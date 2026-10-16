@@ -2,10 +2,10 @@
   "name": "energyflowx",
   "displayName": "EnergyFlowX",
   "version": "2.2.0",
-  "description": "Engineering calculations for fluids, air and pipework: validated thermophysical properties for 29 fluids from reference equations of state, HVAC process chains, pipe and duct sizing against real product catalogues, and full hydraulic network solving for liquids, gases and steam, with pumps, compressors with heat recovery, heat exchangers, storage tanks and receivers, in steady state or over time. Connects the EnergyFlowX members MCP server, every tool behind one sign-in, and adds the method for using them well.",
+  "description": "Engineering calculations for fluids, air and pipework: thermophysical properties for 29 fluids from reference equations of state, checked against published reference data, HVAC process chains, pipe and duct sizing against real product catalogues, and full hydraulic network solving for liquids, gases and steam, with pumps, compressors with heat recovery, heat exchangers, storage tanks and receivers, in steady state or over time. Connects the EnergyFlowX members MCP server, every tool behind one sign-in, and adds the method for using them well.",
   "author": {
     "name": "Piotr Jazdzyk",
-    "email": "info@synerset.com",
+    "email": "info@energyflowx.com",
     "url": "https://energyflowx.com"
   },
   "homepage": "https://energyflowx.com/mcp-server",
@@ -38,7 +38,7 @@
     "mcp"
   ],
   "metadata": {
-    "vendor": "SYNERSET - Piotr Jazdzyk",
+    "vendor": "SYNERSET Piotr Jażdżyk",
     "website": "https://energyflowx.com",
     "documentation": "https://energyflowx.com/mcp-server",
     "knowledgeBase": "https://energyflowx.com/knowledge",
