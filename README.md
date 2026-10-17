@@ -456,6 +456,10 @@ Every reply of every tool carries a result stamp in `meta.stamp`: the service ve
 
 The stamp says which version produced a number. It does not make the number right for your case. You stay responsible for verifying every result before you rely on it.
 
+## Videos
+
+The how-to films and clips about EnergyFlowX use an AI-generated narration. The voice imitates no real person, and every film says so on screen, in the narration and in its description.
+
 ## Access terms
 
 The eleven tools on the free server are free today and need no account. **The Hydronic network
