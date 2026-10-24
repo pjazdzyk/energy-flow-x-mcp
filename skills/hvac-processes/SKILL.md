@@ -34,7 +34,7 @@ What each gives you beyond the outlet state:
   is real and it is routinely left out of hand calculations, which is why a supply temperature comes
   out a degree or two low.
 - **Dehumidification** splits its reheat into bought and recovered, which is the distinction that
-  decides what the process actually costs to run.
+  decides how much heat the process actually draws from outside.
 - **The desiccant wheel** gives its regeneration heater duty when a regeneration stream is named.
 - **The steam humidifier** gives the steam flow and the humidification duty. Describe the steam with
   `steamPressure` (2 bar absolute if omitted, so state it when the plant gives one) and, when it is

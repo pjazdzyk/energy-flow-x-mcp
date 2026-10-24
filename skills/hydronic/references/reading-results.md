@@ -39,7 +39,7 @@ A node settled at or below **zero absolute pressure**. The sentence reads "Node 
 a mathematical solution to a physical impossibility, and every number downstream of that node is
 arithmetic on it.
 
-Why it happens: a fixed demand is a promise the solver keeps whatever it costs. When the head available
+Why it happens: a fixed demand is a promise the solver keeps whatever pressure it takes. When the head available
 cannot drive that flow through the pipe sizes drawn, the pressure field is pushed through zero to
 satisfy it. The solve converges cleanly, because nothing about the linear algebra objects.
 

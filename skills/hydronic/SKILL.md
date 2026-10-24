@@ -24,7 +24,7 @@ study somebody can check. It is the decision layer. The references hold the deta
 
 **A converged solve is not a correct answer.** The solver will happily return a clean, ordinary-looking
 result for a network that is physically impossible, because a fixed demand is a promise it keeps
-whatever it costs. Always read the solve's `warnings` before you quote a number. The engine's run
+whatever pressure it takes. Always read the solve's `warnings` before you quote a number. The engine's run
 notices arrive there as complete sentences, beside the validation warnings and the assumptions it
 made. They say what computing the answer actually involved: a substituted fluid property, a value
 held at a physical limit, a node at a pressure no fluid can be at, a run over time that stopped early.

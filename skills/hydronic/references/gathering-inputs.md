@@ -118,7 +118,7 @@ than from memory. Two reasons it matters more than it looks:
 
 - **A glycol needs more flow for the same duty.** Its specific heat is meaningfully lower than water's,
   so the same kilowatts demand a larger ṁ, and it is also denser and more viscous, so that larger flow
-  costs more head again. Sizing a glycol circuit off the water figure under-sizes it twice over.
+  needs more head again. Sizing a glycol circuit off the water figure under-sizes it twice over.
 - **The temperature you evaluate at is not free either.** Water's viscosity at 70 °C is about a third
   of its value at 20 °C, so a heating circuit solved cold reports friction losses that are too high.
 

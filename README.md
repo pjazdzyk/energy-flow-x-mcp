@@ -259,7 +259,7 @@ Paste any of these into Claude Code after installing:
 **Hydronic** (members server)
 
 > A plant room at 3 bar feeds a heating riser in 35 mm copper at 70 °C, with three floors 3.5 m apart
-> each drawing 0.25 kg/s. Solve it: what pressure reaches the top floor, and which run costs the most?
+> each drawing 0.25 kg/s. Solve it: what pressure reaches the top floor, and which run has the largest pressure drop?
 
 > Produce an HTML report of that network with a diagram and schedules.
 
