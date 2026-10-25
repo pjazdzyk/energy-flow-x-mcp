@@ -46,7 +46,7 @@ things at once:
 
 Want the full picture of EnergyFlowX, beyond this plugin? The web platform, its physics, its
 evidence and every reference behind it are documented in
-**[github.com/pjazdzyk/energy-flow-x-docu](https://github.com/pjazdzyk/energy-flow-x-docu)**.
+**[github.com/pjazdzyk/energy-flow-x-info](https://github.com/pjazdzyk/energy-flow-x-info)**.
 
 ## Contents
 
@@ -474,7 +474,7 @@ notice. Build on it by all means, but do not plan around it staying free.
 | Website | [energyflowx.com](https://energyflowx.com) |
 | MCP server and client setup | [energyflowx.com/mcp-server](https://energyflowx.com/mcp-server) |
 | Knowledge base, the physics behind every tool | [energyflowx.com/knowledge](https://energyflowx.com/knowledge) |
-| Everything about EnergyFlowX: features, physics, evidence, references | [github.com/pjazdzyk/energy-flow-x-docu](https://github.com/pjazdzyk/energy-flow-x-docu) |
+| Everything about EnergyFlowX: features, physics, evidence, references | [github.com/pjazdzyk/energy-flow-x-info](https://github.com/pjazdzyk/energy-flow-x-info) |
 | Contact and community | [energyflowx.com/misc/social](https://energyflowx.com/misc/social) |
 
 ## For maintainers
