@@ -6,6 +6,14 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 Nothing here is released. No version number was changed, and the items marked breaking are recorded for the later major version.
 
+### Heat recovery frost protection
+
+- **Result-affecting (2026-10-25, `calculate_air_process` with `HEAT_RECOVERY`): frost risk follows the physics.** Frost risk is reported when the coldest exchanger wall is at or below 0 °C and the exhaust can deposit vapour on it, whatever trigger is set. Before, the verdict followed the trigger, so a wall between the trigger and 0 °C was reported free of frost. A wall held at 0 °C by freezing condensate now counts as frost. The trigger only sets where a protection strategy engages.
+- **Result-affecting (2026-10-25): the wall near 0 °C and in reversed flow.** The cold-corner wall no longer jumps across 0 °C. It holds at 0 °C while condensate freezes. With one air stream reversed, the wall is the colder end of the core and the bypass follows the parallel-flow relation. Before, the reversed-flow wall read several kelvin too cold.
+- **New field `frost.frostProtectionOutcome`.** Each heat recovery result states the outcome of frost protection as one value: `NO_FROST`, `NOT_PROTECTED`, `NOT_ENGAGED`, `PROTECTED`, `HELD_BELOW_FREEZING`, `FROST_FREE_AT_LIMIT`, `OUT_OF_RANGE`, `NOT_CONVERGED` or `FROST_BETWEEN_STOPS`, with one warning for each value that needs one. The `frostRisk` and `residualFrostRisk` flags stay.
+- **Faster Preheater solves.** A Preheater strategy that ran out of the 30 s limit now answers in a few seconds.
+- The reported wall is a mean estimate that runs warm, so a trigger above 0 °C adds margin. The tool description says so.
+
 ### Result evidence
 
 - **`meta.stamp` on every tool response.** Every reply of every tool, free and members, carries `meta.stamp` last in `meta`, with `software` (the service name and version), `engines` (the version of eos-engine, hvac-engine-pro, flow-symphony, solar-engine, numenor-math and unitility), `computedAt` (UTC), `notice` (the review sentence) and `terms` (the Terms of Use address). Nothing under `data` changed. An assistant should relay the version and any warnings when it reports a number a user may rely on. The four skills now say so.

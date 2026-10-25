@@ -29,7 +29,7 @@ What each gives you beyond the outlet state:
 
 - **Coils** give duty, condensate and water flow. A cooling coil below dew point is a wet coil, and
   the condensate is part of the answer, not a footnote.
-- **Heat recovery** gives its four ports (outdoor, supply, extract, exhaust), effectiveness as EN 308 defines it, leakage and frost protection.
+- **Heat recovery** gives its four ports (outdoor, supply, extract, exhaust), effectiveness as EN 308 defines it, leakage and frost protection. Frost risk means the coldest wall is at or below 0 °C with vapour able to deposit, whatever the trigger, and `frost.frostProtectionOutcome` says what the protection achieved. Relay its warning. The wall is a mean estimate that runs warm, so a trigger above 0 °C adds margin.
 - **The fan** gives air, shaft and electrical power, and **the heat it adds to the stream**. That heat
   is real and it is routinely left out of hand calculations, which is why a supply temperature comes
   out a degree or two low.

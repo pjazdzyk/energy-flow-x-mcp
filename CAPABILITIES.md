@@ -367,8 +367,9 @@ Tool: `calculate_air_process`.
   - Runs at a stated effectiveness, to a supply temperature or at a recovered power.
   - Leakage from 0 to 20 % in either direction.
   - Frost protection: none, bypass, preheater or stopping both fans, with the trigger surface
-    temperature. It reports the coldest surface, whether frost protection engaged and any residual
-    risk.
+    temperature. It reports the coldest surface, whether frost protection engaged, any residual
+    risk and the outcome of the protection (`frost.frostProtectionOutcome`). Frost risk means the
+    coldest wall is at or below 0 °C with vapour able to deposit on it, whatever the trigger.
   - Returns temperature and humidity effectiveness as EN 308 defines them, recovered power, preheater power and
     condensate on either side, and, in a target mode, the achievable range (the supply temperature
     and recovered power at 0 % and 100 % effectiveness), whether or not the target was reached.
