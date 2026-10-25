@@ -63,6 +63,7 @@ evidence and every reference behind it are documented in
 - [What the plugin sends, and where](#data-and-privacy)
 - [Access terms](#access-terms)
 - [Links](#links)
+- [Data sources and attribution](#data-sources-and-attribution)
 - [Licence](#licence)
 
 ## What it can do
@@ -493,6 +494,30 @@ Gemini CLI installs the source of the newest GitHub release, not `master`. So ev
 released, with the skill zips and the OpenAI zip attached: a release that lacks them or carries exactly one asset, or an asset
 named for a platform (`win32.`, `linux.`, `darwin.`), makes Gemini CLI install that asset instead of the
 extension.
+
+## Data sources and attribution
+
+The plugin holds no calculation code: every number comes from the EnergyFlowX engines on the server.
+
+This software is based, in part, on information obtained from the International Association for the Properties of Water and Steam ([iapws.org](https://iapws.org)). Specifically, information contained in the following documents is used:
+
+- International Association for the Properties of Water and Steam, IAPWS R7-97(2012), Revised Release on the IAPWS Industrial Formulation 1997 for the Thermodynamic Properties of Water and Steam
+- International Association for the Properties of Water and Steam, IAPWS SR2-01(2014), Revised Supplementary Release on Backward Equations for Pressure as a Function of Enthalpy and Entropy p(h,s) for Regions 1 and 2 of the IAPWS Industrial Formulation 1997 for the Thermodynamic Properties of Water and Steam
+- International Association for the Properties of Water and Steam, IAPWS SR3-03(2014), Revised Supplementary Release on Backward Equations for the Functions T(p,h), v(p,h) and T(p,s), v(p,s) for Region 3 of the IAPWS Industrial Formulation 1997 for the Thermodynamic Properties of Water and Steam
+- International Association for the Properties of Water and Steam, IAPWS SR4-04(2014), Revised Supplementary Release on Backward Equations p(h,s) for Region 3, Equations as a Function of h and s for the Region Boundaries, and an Equation Tsat(h,s) for Region 4 of the IAPWS Industrial Formulation 1997 for the Thermodynamic Properties of Water and Steam
+- International Association for the Properties of Water and Steam, IAPWS SR5-05(2016), Revised Supplementary Release on Backward Equations for Specific Volume as a Function of Pressure and Temperature v(p,T) for Region 3 of the IAPWS Industrial Formulation 1997 for the Thermodynamic Properties of Water and Steam
+- International Association for the Properties of Water and Steam, IAPWS R6-95(2018), Revised Release on the IAPWS Formulation 1995 for the Thermodynamic Properties of Ordinary Water Substance for General and Scientific Use
+- International Association for the Properties of Water and Steam, IAPWS G5-01(2026), Guideline on the Use of Fundamental Physical Constants and Basic Constants of Water
+- International Association for the Properties of Water and Steam, IAPWS R12-08, Release on the IAPWS Formulation 2008 for the Viscosity of Ordinary Water Substance
+- International Association for the Properties of Water and Steam, IAPWS R15-11, Release on the IAPWS Formulation 2011 for the Thermal Conductivity of Ordinary Water Substance
+- International Association for the Properties of Water and Steam, IAPWS R1-76(2014), Revised Release on Surface Tension of Ordinary Water Substance
+- International Association for the Properties of Water and Steam, IAPWS R10-06(2009), Revised Release on the Equation of State 2006 for H2O Ice Ih
+- International Association for the Properties of Water and Steam, IAPWS R14-08(2011), Revised Release on the Pressure along the Melting and Sublimation Curves of Ordinary Water Substance
+- International Association for the Properties of Water and Steam, IAPWS G9-12, Guideline on a Low-Temperature Extension of the IAPWS-95 Formulation for Water Vapor
+- International Association for the Properties of Water and Steam, IAPWS G8-10, Guideline on an Equation of State for Humid Air in Contact with Seawater and Ice, Consistent with the IAPWS Formulation 2008 for the Thermodynamic Properties of Seawater
+- International Association for the Properties of Water and Steam, IAPWS G11-15, Guideline on a Virial Equation for the Fugacity of H2O in Humid Air
+
+EnergyFlowX is not an IAPWS product and is not endorsed by IAPWS. The full list of data sources, their licences and the attributions they ask for is in the third-party notices at [energyflowx.com/third-party-notices.txt](https://energyflowx.com/third-party-notices.txt), and every reference behind the engines is listed in [energy-flow-x-info](https://github.com/pjazdzyk/energy-flow-x-info#15-reference-sources).
 
 ## Licence
 
