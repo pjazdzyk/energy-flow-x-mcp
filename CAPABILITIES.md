@@ -36,7 +36,7 @@ server contradicts is the page's error.
 | --- | --- | --- |
 | Address | `https://energyflowx.com/energy-flow-x/mcp/free` | `https://energyflowx.com/energy-flow-x/mcp/members` |
 | Name in the plugin | not connected | `energy-flow-x` |
-| Tools | 11 | 17, plus 13 resources |
+| Tools | 11 | 17, plus 23 resources |
 | Account | none, and none is accepted | required: sign in (OAuth), or an API key |
 | What it does | properties, sizing, air processes, without refrigerants, brines and the steam humidifier | everything: the 11 free tools with nothing held back, and the 6 tools that build, check, solve and report whole pipe networks |
 
@@ -626,9 +626,9 @@ real one, so none is assumed.
 
 ### Resources
 
-Thirteen entries: eleven MCP resources and two resource templates. Ten of the resources carry the vocabulary and the recipes, so they cost
-nothing on a turn that does not need them, one is the saving guide, and the templates are a report's files and a package
-export:
+Twenty-three entries: twenty-one MCP resources and two resource templates. Nineteen of the resources carry the vocabulary and the
+recipes, so they cost nothing on a turn that does not need them, two are guides (saving and digitising), and the templates are a
+report's files and a package export:
 
 - `hydronic://vocabulary/ops`: every op with its required and optional fields.
 - `hydronic://vocabulary/fittings`: every fitting type.
@@ -639,13 +639,32 @@ export:
   what a transient run returns.
 - `hydronic://vocabulary/components`: the families of valve, damper, regulator and emitter, their forms
   and settings.
+- `hydronic://vocabulary/sizing`: what is sized today, the products, the sizing criteria library's system
+  types and roles, the limit kinds and the duct rules.
+- `hydronic://vocabulary/sizing-steps`: the sizing steps read from the registry, what each needs and
+  provides, what it does when a need is not met, and how a cycle is iterated or refused.
+- `hydronic://vocabulary/sizing-replies`: the members of a sizing record and of a cycle, and `data.order`
+  of modes size and design.
 - `hydronic://recipes/riser`: a complete, solvable plant riser.
 - `hydronic://recipes/ring-main`: a complete campus ring main, and how to read its result.
 - `hydronic://recipes/compressed-air-ring`: a workshop compressed-air ring in free air delivery, with a
   filter as a Kv component.
 - `hydronic://recipes/compressor-heat-recovery`: a compressor on a pressure switch charging a receiver,
   its heat pumped into a hot-water store, run for twenty minutes.
+- `hydronic://recipes/two-radiator-circuit`: the smallest complete example, two radiators balanced and
+  judged, with a pressure-difference controller first withheld and then offered and applied.
+- `hydronic://recipes/balanced-heating`: two risers of radiators chosen by `mode="design"`, thermostatic
+  valves, a pressure-difference controller per riser, the pump duty and every output as dialled.
+- `hydronic://recipes/picv-chilled-water`: imperial units, four fan coils on pressure independent control
+  valves, the far end starved by a weak pump, the fix and a part-load case.
+- `hydronic://recipes/ventilation-supply`: a supply duct tree on air with dampers and a constant air
+  volume terminal, balanced, the fan duty read from the balance and the main sized for a void.
+- `hydronic://recipes/heat-pump-retrofit`: a radiator system designed at 75/65 degC, its lowest supply
+  temperature, the room that limits it, the cure that lowers it most and the heating curve.
+- `hydronic://recipes/primary-secondary`: a boiler circuit, a low-loss header and two secondaries,
+  solved at a primary flow above and below theirs.
 - `hydronic://guides/saving`: what `hydronic_session` export gives in each format, what open restores and what it drops, and how long a package link lasts.
+- `hydronic://guides/digitising`: reading a catalogue page, a schedule, a table or a spoken description into a spec or a pump curve: what to read, what never to invent, what to ask, when to refuse.
 - `hydronic://exports/{token}/design`: a template, the package export of a design, read by URI once `hydronic_session` has exported it.
 - `hydronic://reports/{token}/{file}`: a template, read by URI once `hydronic_report` has made a report:
   `study.html`, `network.dxf` and `figure-N.png`.
