@@ -4,3 +4,13 @@ __pycache__/
 
 # Claude Code per-user settings (personal permission rules and local paths)
 .claude/settings.local.json
+
+# Process records (stage and review notes, questions, evidence, audits) live in the workspace root,
+# spec/records/<repo>/, never in this repository. These patterns keep a stray one out.
+/NOTES-*.md
+/QUESTION-*.md
+/rv[0-9]*/
+/rvEos*/
+/evidence*/
+/*-evidence/
+/selfattack/
