@@ -17,7 +17,7 @@ at, in what order, and what each thing means when it goes wrong.
 ## The order to read in
 
 1. `warnings`
-2. `converged`
+2. `status` (and `converged`, true exactly when `status` is `CONVERGED`)
 3. `lowestPressureNodes` and `worstEdges`
 4. the signs on edge flows
 5. `fastestEdges`: velocities, and for a gas Mach numbers

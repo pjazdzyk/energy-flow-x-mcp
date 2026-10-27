@@ -158,11 +158,11 @@ hydronic_solve(handle="...", detail=<n>)
 applies the design's schedules and controllers. A transient returns each receiver's swing with when, the
 lowest pressures and when, each machine's starts, power, energy and recovered heat, how far each store
 charged, every command change, and a sampled table. A run takes at most 2,000 steps, fewer on a large
-network, and 30 s of computing (free-use defaults, which may be lower), and the whole server runs one
+network, and 75 s of computing (free-use defaults, which may be lower), and the whole server runs one
 transient at a time, shared by all users.
 `set_transient` refuses a run of more than 2,000 steps when you set it, and says the step that fits, so
 nothing is spent on it. A run that meets a limit while it solves (fewer steps on a large network, or the
-30 s) is not refused: it returns the steps it computed with `completed: false` and an INCOMPLETE warning
+75 s) is not refused: it returns the steps it computed with `completed: false` and an INCOMPLETE warning
 first. Tell the user it is unfinished, never present its last state as the answer,
 and suggest a longer `timeStep` or a shorter duration. Longer runs are quoted individually at
 info@energyflowx.com. While another run is in progress the call is refused with when to retry.

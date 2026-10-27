@@ -158,7 +158,12 @@ because each can invalidate the ones after it:
 1. **`warnings`.** A node that "settled at" a pressure at or below zero absolute, or a `PHASE` warning,
    withdraws the answer: do not quote numbers from that run. `NEAR CHOKING` says a gas run is badly
    undersized. In a design with several systems every warning starts with its system's name.
-2. **`converged`.** False means the numbers are a last iterate, worth reading only for where it got stuck.
+2. **`status`.** `CONVERGED` only when the solve converged, every target was met and the state is physical.
+   Otherwise it names the first fact that failed. `NOT_CONVERGED`: the numbers are a last iterate, worth reading
+   only for where it got stuck. `TARGETS_MISSED`: a balance or a flow-target solve did not reach its targets, and
+   the misses are listed. `NOT_PHYSICAL`: a node at or below zero absolute pressure, or a phase problem.
+   `converged` is true exactly when `status` is `CONVERGED`, and `solverStatus` keeps the solver's own result. A
+   run over time reads its final instant, and `everyInstantConverged` says whether every instant converged.
 3. **`lowestPressureNodes` and `worstEdges`.** The lowest node is where the design works or fails. The
    worst edges name the run to change, with friction, local and static parts apart.
 4. **Signs on edge flows.** In a loop, where the sign flips is the **flow divide**, and it is usually the

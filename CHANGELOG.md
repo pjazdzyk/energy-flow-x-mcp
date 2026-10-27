@@ -6,6 +6,12 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 Nothing here is released. No version number was changed, and the items marked breaking are recorded for the later major version.
 
+### Hydronic: one status, longer runs (2026-10-27)
+
+- **Result-affecting: `status` says whether the answer can be used.** A Hydronic solve, balance, design or run over time reads `CONVERGED` only when the solve converged, every target was met and the state is physical. Otherwise it reads `NOT_CONVERGED`, `TARGETS_MISSED` or `NOT_PHYSICAL`, and `converged` is true exactly when `status` is `CONVERGED`. The solver's own result moved to `solverStatus`. Before, a node at -831 kPa absolute, or a balance that missed its targets, could read `CONVERGED`. A run over time reads its final instant, and `everyInstantConverged` says whether every instant converged. The skill reads `status` first.
+- **Riser valves and closed loops.** A balancing valve in series with the radiators takes its design flow from them, and a flow stated on it is checked against them. An ordinary two-pipe circuit sizes, balances and reports in one `mode="design"` call with every run on `auto`. The inventory calls a system by the design's own name, a run that misses only a velocity floor is not reported infeasible, and a valve at a pump or boiler port solves.
+- **Longer computing time.** A run over time may compute for 75 s (was 30 s), a balance and a design run's sizing passes for 40 s, a size run and a forward solve for 45 s.
+
 ### Heat recovery frost protection
 
 - **Result-affecting (2026-10-25, `calculate_air_process` with `HEAT_RECOVERY`): frost risk follows the physics.** Frost risk is reported when the coldest exchanger wall is at or below 0 °C and the exhaust can deposit vapour on it, whatever trigger is set. Before, the verdict followed the trigger, so a wall between the trigger and 0 °C was reported free of frost. A wall held at 0 °C by freezing condensate now counts as frost. The trigger only sets where a protection strategy engages.

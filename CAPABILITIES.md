@@ -434,7 +434,7 @@ Server: the members server, `/energy-flow-x/mcp/members`, only. Tools: `hydronic
   pressure, ON_OFF pressure or flow switches and PI loops, over the duration `set_transient` states.
   Returned: each vessel's swing with when, the lowest pressures and when, each machine's starts,
   average power, energy and recovered heat, how far each store charged, every command change and a
-  sampled table of 24 rows. At most 2,000 steps (fewer on a large network) and 30 s of computing, and
+  sampled table of 24 rows. At most 2,000 steps (fewer on a large network) and 75 s of computing, and
   the whole server runs one transient at a time, shared by all users. More than 2,000 steps is refused
   when the run is set, with the step that fits. A run that meets a limit while it solves returns the
   steps it computed, marked incomplete. For free use these limits may be lowered to match server
