@@ -6,6 +6,11 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 Nothing here is released. No version number was changed, and the items marked breaking are recorded for the later major version.
 
+### Transport properties corrected (2026-10-30)
+
+- **Result-affecting: nitrous oxide gas below about -55 °C.** `get_fluid_properties`, `get_saturation_properties` and `get_property_table` gave a viscosity two to four times too high, and at some states far more (0.173 Pa·s at -59 °C and 4 bar, where the gas has about 1.1e-5). Now about 1e-5 Pa·s and smooth. Liquid and supercritical nitrous oxide unchanged.
+- **Result-affecting: R-1234yf and R-32 at their coldest states.** A saturation table gave R-1234yf vapour a negative viscosity and conductivity near its triple point, and R-32 a liquid conductivity that fell as the liquid cooled. Below the correlations' limits (R-1234yf 220 K, R-32 conductivity 250 K) a saturation row now leaves out those values and keeps the rest.
+
 ### Property tables over MCP (2026-10-30)
 
 - **New members tool `get_property_table`.** The web calculators' property tables in one call: a fluid over a range of one input, a grid over two inputs, up to 5000 states. Small tables answer inline (60 rows), larger ones with their shape and a CSV link kept for 24 hours.
