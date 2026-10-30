@@ -6,6 +6,10 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 Nothing here is released. No version number was changed, and the items marked breaking are recorded for the later major version.
 
+### Humid air in fog: the water vapour partial pressure (2026-10-31)
+
+- **Result-affecting.** In fog `get_fluid_properties` and `get_property_table` gave a water vapour partial pressure computed from all the water, droplets included, above the saturation pressure (1 atm, 20 °C, 20 g/kg: 3.156 kPa). It is now the saturated vapour's (2.349 kPa there), however much water is suspended. No other property changed.
+
 ### Hydronic: controllers on the control graph (2026-10-31)
 
 - **New:** `add_controller` drives the opening of a valve or damper element through a stated stroke time, besides a pump or a compressor, and reads a node's pressure, an edge's mass or volume flow, or a signal schedule. `add_schedule` with no target is a signal in one unit. A schedule of flows or pressures writes a regulating element's setpoint, checked at the edit against what the element holds.
