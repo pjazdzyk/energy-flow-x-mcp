@@ -37,7 +37,7 @@ server contradicts is the page's error.
 | --- | --- | --- |
 | Address | `https://energyflowx.com/energy-flow-x/mcp/free` | `https://energyflowx.com/energy-flow-x/mcp/members` |
 | Name in the plugin | not connected | `energy-flow-x` |
-| Tools | 11 | 18, plus 24 resources |
+| Tools | 11 | 18, plus 25 resources |
 | Account | none, and none is accepted | required: sign in (OAuth), or an API key |
 | What it does | properties, sizing, air processes, without refrigerants, brines and the steam humidifier | everything: the 11 free tools with nothing held back, and the 6 tools that build, check, solve and report whole pipe networks |
 
@@ -645,7 +645,7 @@ real one, so none is assumed.
 
 ### Resources
 
-Twenty-four entries: twenty-two MCP resources and two resource templates. Twenty of the resources carry the vocabulary and the
+Twenty-five entries: twenty-three MCP resources and two resource templates. Twenty-one of the resources carry the vocabulary and the
 recipes, so they cost nothing on a turn that does not need them, two are guides (saving and digitising), and the templates are a
 report's files and a package export:
 
@@ -658,6 +658,8 @@ report's files and a package export:
   what a transient run returns.
 - `hydronic://vocabulary/more-devices`: the safety relief, the compressed-air treatment devices and the
   plant devices, their ports and settings.
+- `hydronic://vocabulary/surge`: the events of `hydronic_solve` mode surge, a pump trip and a valve closure,
+  their settings, what the reply holds and assumes.
 - `hydronic://vocabulary/components`: the families of valve, damper, regulator and emitter, their forms
   and settings.
 - `hydronic://vocabulary/sizing`: what is sized today, the products, the sizing criteria library's system
