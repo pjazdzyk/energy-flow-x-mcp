@@ -10,6 +10,11 @@ Nothing here is released. No version number was changed, and the items marked br
 
 - **Result-affecting: a pure fluid just above its saturation pressure, or within about 2 % of it.** `get_fluid_properties`, `get_property_table` and Hydronic networks carrying a pure fluid could return the vapour density for a compressed liquid, or a density inside the two-phase region, with no warning. Nitrogen at 89.99 K and 3.96 bar read 16.8 kg/m³ (liquid 745.2), hydrogen at 15 K and 0.3 bar 0.514 kg/m³ (liquid 76.15), argon at 138.251 K and 29.38 bar 514.5 kg/m³ (vapour 161.6). Propane, methane and R-1234ze(E) showed the same at a few states. The stable phase is now returned at every state. Every other state is unchanged to the last digit, and refrigerant blends and natural gas did not change.
 
+### Hydronic: regulators held in a run over time (2026-10-30)
+
+- **New: a run over time holds the design's regulators** (PICV, DPCV, CAV, pressure regulators) at every step, where `hydronic_solve(mode="transient")` refused them by name. `set_transient` takes `regulationBand` (default 0.05, 0 regulates every step), stated in the reply: at 0.05 a held flow may lie up to 5 % off its setpoint and a starve is seen a few steps late. `data.regulators` gives each regulator's regimes over time, its held quantity against the setpoint, the instants not held and its first starve. The report's run part draws them as a table and a chart, with `run-regulators.csv`.
+- **Refused:** a pump that states a speed control, in a run over time.
+
 ### Hydronic: pump speed control, system curve and surge over MCP (2026-10-30)
 
 - **New: pump speed control.** A PUMP takes `control` (`CONSTANT_DP`, `PROPORTIONAL_DP`, `REMOTE_DP`, `DUCT_STATIC`) with its setpoint, a speed range at most rated speed, a design flow and `zeroFlowFraction` for the proportional mode, and the sensed nodes for the remote mode. A steady solve, every envelope case and every scenario report the held speed and regime. A scenario's `control.<pump>` replaces the pump's whole control. A control that did not settle says so (`PUMP_CONTROL_NOT_HELD`, `PUMP_CONTROL_NOT_SOLVED`).
