@@ -20,6 +20,7 @@ server contradicts is the page's error.
 - [How every free tool behaves](#how-every-free-tool-behaves)
 - [Fluid properties](#fluid-properties)
 - [Saturation](#saturation)
+- [Property tables](#property-tables)
 - [Natural gas](#natural-gas)
 - [Ice](#ice)
 - [Unit conversion](#unit-conversion)
@@ -146,6 +147,24 @@ Tool: `get_saturation_properties`.
   and have no single saturation line.
 - Water and steam are not served by this tool. Ask `get_fluid_properties` for `STEAM` at a pressure
   with vapour quality 0 or 1 instead, which returns the saturation temperature with the state.
+
+## Property tables
+
+Tool: `get_property_table`, on the members server.
+
+- **What**: the property tables of the web calculators, over MCP. A table varies one input over a range
+  with the others fixed, for every fluid the calculators tabulate.
+- **Saturation line**: for the 14 fluids with a vapour-liquid dome (the ten listed above under
+  Saturation, R134a, R1234ze, R1234yf, R32 and R125), by temperature or by pressure, from the triple
+  point to just below the critical point. Each row gives the saturation temperature and pressure, and for
+  the liquid and the vapour the density, enthalpy, entropy, specific heat, viscosity and thermal
+  conductivity, plus the latent heat.
+- **Grids**: a second range over one of the fixed inputs gives one table per value.
+- **Limits**: 500 rows a table, 5000 states in one call, 50 tables. A state outside the fluid's model is
+  a row with its reason, never extrapolated.
+- **Reply**: up to 60 rows inline. A larger answer gives the shape, the first and last rows of each
+  table and the range of every column, and a link to the full CSV (one row per state, units in the
+  header), kept for 24 hours.
 
 ## Natural gas
 

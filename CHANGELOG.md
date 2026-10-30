@@ -6,6 +6,12 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 Nothing here is released. No version number was changed, and the items marked breaking are recorded for the later major version.
 
+### Property tables over MCP (2026-10-30)
+
+- **New members tool `get_property_table`.** The web calculators' property tables in one call: a fluid over a range of one input, a grid over two inputs, up to 5000 states. Small tables answer inline (60 rows), larger ones with their shape and a CSV link kept for 24 hours.
+- **Saturation-line tables.** For the 14 fluids with a vapour-liquid dome, by temperature or by pressure, with both phases' properties and the latent heat on every row.
+- **`get_saturation_properties` with a pressure** now finds the saturation temperature by the same search the tables use. Answers move by about a millionth of a kelvin, below the printed precision.
+
 ### Hydronic: one status, longer runs (2026-10-27)
 
 - **Result-affecting: `status` says whether the answer can be used.** A Hydronic solve, balance, design or run over time reads `CONVERGED` only when the solve converged, every target was met and the state is physical. Otherwise it reads `NOT_CONVERGED`, `TARGETS_MISSED` or `NOT_PHYSICAL`, and `converged` is true exactly when `status` is `CONVERGED`. The solver's own result moved to `solverStatus`. Before, a node at -831 kPa absolute, or a balance that missed its targets, could read `CONVERGED`. A run over time reads its final instant, and `everyInstantConverged` says whether every instant converged. The skill reads `status` first.

@@ -36,6 +36,7 @@ Use the tools whenever the property feeds something a person will act on.
 | `get_fluid_properties` | properties at a state, for 28 of the 29 |
 | `get_saturation_properties` | saturation of the pure fluids with a dome, not water: boiling point at a pressure or the reverse, phase densities, latent heat, critical and triple points |
 | `get_natural_gas_properties` | GERG-2008 plus ISO 6976 calorific value and Wobbe index, from a preset or an explicit composition |
+| `get_property_table` | members only: property tables, a fluid over a range of one input, the saturation line by temperature or by pressure for the 14 fluids with a dome, or a grid over two inputs, up to 5000 states in one call |
 | `get_solid_properties` | ice |
 | `convert_units` | conversion, and `listUnitsFor` to discover which symbols a quantity accepts |
 
@@ -59,6 +60,21 @@ answer, not decoration.
 - **Water is not on `get_saturation_properties`.** Ask `get_fluid_properties` for `STEAM` at the
   pressure with `vapourQuality` 0 and then 1. Both return the saturation temperature, and the latent
   heat is the difference between the two enthalpies.
+
+## Tables: many states in one call
+
+When a user needs a fluid over a range (a column of densities from 0 to 100 °C, the whole saturation
+line of nitrous oxide, a temperature by pressure grid), use `get_property_table` on the members server
+rather than calling `get_fluid_properties` state by state. One call holds up to 5000 states, the
+numbers are the web calculator's own, and a state the fluid's model does not cover comes back as a row
+with its reason, never extrapolated.
+
+- `modes="NITROUS"` lists the table modes of a fluid with their inputs and bounds. The saturation line
+  is `<FLUID>_SAT_T` (vary the temperature) or `<FLUID>_SAT_P` (vary the pressure), and each row gives
+  both phases and the latent heat.
+- A `secondary` range over one of the fixed inputs makes a grid: one table per value.
+- Up to 60 rows answer inline. A larger table answers with its shape and the first and last rows, plus
+  a CSV link valid for 24 hours. Give the user the link; do not try to rebuild the rows.
 
 ## Humid air and steam take several input pairs
 
