@@ -18,7 +18,7 @@ Nothing here is released. No version number was changed, and the items marked br
 
 ### Property tables over MCP (2026-10-30)
 
-- **New members tool `get_property_table`.** The web calculators' property tables in one call: a fluid over a range of one input, a grid over two inputs, up to 5000 states. Small tables answer inline (60 rows), larger ones with their shape and a CSV link kept for 24 hours.
+- **New members tool `get_property_table`.** The web calculators' property tables in one call: a fluid over a range of one input, a grid over two inputs (at most 10 values and 500 states), up to 1000 states in one call. Small tables answer inline (60 rows), larger ones with their shape and a CSV link kept for 24 hours.
 - **Saturation-line tables.** For the 14 fluids with a vapour-liquid dome, by temperature or by pressure, with both phases' properties and the latent heat on every row.
 - **`get_saturation_properties` with a pressure** now finds the saturation temperature by the same search the tables use. Answers move by about a millionth of a kelvin, below the printed precision.
 

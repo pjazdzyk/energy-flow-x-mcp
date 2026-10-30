@@ -159,8 +159,8 @@ Tool: `get_property_table`, on the members server.
   point to just below the critical point. Each row gives the saturation temperature and pressure, and for
   the liquid and the vapour the density, enthalpy, entropy, specific heat, viscosity and thermal
   conductivity, plus the latent heat.
-- **Grids**: a second range over one of the fixed inputs gives one table per value.
-- **Limits**: 500 rows a table, 5000 states in one call, 50 tables. A state outside the fluid's model is
+- **Grids**: a second range over one of the fixed inputs gives one table per value, at most 10 values and 500 states.
+- **Limits**: 500 rows a table, a grid at most 10 second-axis values and 500 states, 1000 states in one call, 50 tables. A state outside the fluid's model is
   a row with its reason, never extrapolated.
 - **Reply**: up to 60 rows inline. A larger answer gives the shape, the first and last rows of each
   table and the range of every column, and a link to the full CSV (one row per state, units in the

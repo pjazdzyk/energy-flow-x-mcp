@@ -76,7 +76,7 @@ Eleven of them are also on the free server, which needs no account (see [Other c
 
 Any property at any valid state, from the reference equation of state for that fluid, with the
 method and its validity range stated in every answer. Sweeps over up to 20 states in one call through the
-plugin (5 on the free server). Property tables of up to 5000 states in one call, including the saturation
+plugin (5 on the free server). Property tables of up to 1000 states in one call (a grid up to 500), including the saturation
 line of the 14 fluids with a vapour-liquid dome and grids over two inputs (`get_property_table`, members
 server; a large table comes back as a CSV link kept for a day).
 
