@@ -6,6 +6,12 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 Nothing here is released. No version number was changed, and the items marked breaking are recorded for the later major version.
 
+### Hydronic: controllers on the control graph (2026-10-31)
+
+- **New:** `add_controller` drives the opening of a valve or damper element through a stated stroke time, besides a pump or a compressor, and reads a node's pressure, an edge's mass or volume flow, or a signal schedule. `add_schedule` with no target is a signal in one unit. A schedule of flows or pressures writes a regulating element's setpoint, checked at the edit against what the element holds.
+- **Refused:** a regulating element as a controller's opening target (it holds its own setpoint, which a schedule commands). A signal schedule no controller reads is a warning.
+- **Fixed:** a run over time closes every implicit step at a solve whose every vessel's balance is within its tolerance. Runs that had unclosed steps can return other numbers. Humid air's water vapour partial pressure in fog is the saturated vapour's.
+
 ### A value left out always says why (2026-10-30)
 
 - **Breaking (reply wording).** A property left out of a `get_fluid_properties`, `get_property_table` or `calculate_air_process` reply always carries its reason under `unavailable`, in one wording shared with the REST API and the property tables: "<property> is not defined at this state and is left out: <reason>". Properties that share a reason are named together in one sentence, and each of the others reads "left out for the same reason as <property>, stated there." A property that fails unexpectedly reads "could not be computed" with the failure's type. A client that matched the old "not defined for <fluid> at this state" text must match the new one. No number changed.

@@ -449,8 +449,11 @@ Server: the members server, `/energy-flow-x/mcp/members`, only. Tools: `hydronic
   effectiveness), and a storage tank, well mixed or stratified in layers. A `PRESSURE_TANK` node is a
   receiver on a gas, storing its real-gas mass, or an expansion vessel on a liquid. Each device's ports
   and settings are in `hydronic://vocabulary/devices`.
-- **Transient runs** (`mode="transient"`): schedules on a pump, a compressor, a demand or a boundary
-  pressure, ON_OFF pressure or flow switches and PI loops, over the duration `set_transient` states.
+- **Transient runs** (`mode="transient"`), over the duration `set_transient` states. Schedules act on
+  a pump, a compressor, a demand, a boundary pressure or a regulating element's setpoint. ON_OFF
+  switches and PI loops read a node's pressure, an edge's mass or volume flow or a signal schedule,
+  and drive a pump, a compressor or the opening of a valve or damper element through its stroke time.
+  Regulators are held at every step within the stated regulation band.
   Returned: each vessel's swing with when, the lowest pressures and when, each machine's starts,
   average power, energy and recovered heat, how far each store charged, every command change and a
   sampled table of 24 rows. At most 2,000 steps (fewer on a large network) and 75 s of computing, and
