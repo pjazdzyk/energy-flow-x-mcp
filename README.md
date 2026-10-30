@@ -68,7 +68,7 @@ evidence and every reference behind it are documented in
 
 ## What it can do
 
-Seventeen tools, all on the members server the plugin connects, grouped here by the question they answer.
+Eighteen tools, all on the members server the plugin connects, grouped here by the question they answer.
 Eleven of them are also on the free server, which needs no account (see [Other clients](#other-clients)).
 [CAPABILITIES.md](CAPABILITIES.md) lists every fluid, block, rule set, fitting and limit in detail.
 
@@ -76,7 +76,9 @@ Eleven of them are also on the free server, which needs no account (see [Other c
 
 Any property at any valid state, from the reference equation of state for that fluid, with the
 method and its validity range stated in every answer. Sweeps over up to 20 states in one call through the
-plugin (5 on the free server).
+plugin (5 on the free server). Property tables of up to 5000 states in one call, including the saturation
+line of the 14 fluids with a vapour-liquid dome and grids over two inputs (`get_property_table`, members
+server; a large table comes back as a CSV link kept for a day).
 
 | Family | Fluids | Method | On the free server too |
 | --- | --- | --- | --- |
@@ -320,7 +322,7 @@ connected each free tool appears twice.
 | Server | Address | Account | Tools |
 | --- | --- | --- | --- |
 | Free | `https://energyflowx.com/energy-flow-x/mcp/free` | none | the 11 property, sizing and air tools, without the members-only fluids and the steam humidifier |
-| Members | `https://energyflowx.com/energy-flow-x/mcp/members` | sign in, or an API key | all 17 tools |
+| Members | `https://energyflowx.com/energy-flow-x/mcp/members` | sign in, or an API key | all 18 tools |
 
 The exact, current snippets for each client are on
 [energyflowx.com/mcp-server](https://energyflowx.com/mcp-server). The short version:
