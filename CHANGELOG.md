@@ -6,6 +6,13 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 Nothing here is released. No version number was changed, and the items marked breaking are recorded for the later major version.
 
+### Hydronic: pump speed control, system curve and surge over MCP (2026-10-30)
+
+- **New: pump speed control.** A PUMP takes `control` (`CONSTANT_DP`, `PROPORTIONAL_DP`, `REMOTE_DP`, `DUCT_STATIC`) with its setpoint, a speed range at most rated speed, a design flow and `zeroFlowFraction` for the proportional mode, and the sensed nodes for the remote mode. A steady solve, every envelope case and every scenario report the held speed and regime. A scenario's `control.<pump>` replaces the pump's whole control. A control that did not settle says so (`PUMP_CONTROL_NOT_HELD`, `PUMP_CONTROL_NOT_SOLVED`).
+- **Breaking (value): `CONTROL_MODE` recommends `PROPORTIONAL_DP` or `CONSTANT_DP`** in place of `PROPORTIONAL_PRESSURE` and `CONSTANT_PRESSURE`, and its warning offers the recommended mode as fix ops only when the swept cases show it clears the warning.
+- **New: speed trim.** A balance with a pump surplus reports the speed that puts the index element at its minimum drop, verified by a solve, as a recommendation never written into the design.
+- **New: `hydronic_solve` modes `system_curve` and `surge`.** The same points and the same screen as the REST endpoints, through the same code. Surge screens a pump trip. A valve closure is refused until a valve device exists. Its events are in `hydronic://vocabulary/surge`.
+
 ### Steam from enthalpy and entropy (2026-10-30)
 
 - **`get_fluid_properties` for `STEAM` with `specificEnthalpy` and `specificEntropy`**, and `get_property_table` mode `STEAM_H_S`, always answer or refuse within a second. A pair outside the region the steam formulation covers could keep the call busy for minutes. It is now refused with the highest (or lowest) enthalpy the isentrope reaches. A cold liquid pair whose isentrope dips below 0 °C at some pressures, such as 49.18 kJ/kg and 0 kJ/(kg·K), now answers where it raised an error. Every state that answered before gives the same values.
