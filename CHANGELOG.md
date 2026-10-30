@@ -6,6 +6,11 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 Nothing here is released. No version number was changed, and the items marked breaking are recorded for the later major version.
 
+### Steam from enthalpy and entropy (2026-10-30)
+
+- **`get_fluid_properties` for `STEAM` with `specificEnthalpy` and `specificEntropy`**, and `get_property_table` mode `STEAM_H_S`, always answer or refuse within a second. A pair outside the region the steam formulation covers could keep the call busy for minutes. It is now refused with the highest (or lowest) enthalpy the isentrope reaches. A cold liquid pair whose isentrope dips below 0 °C at some pressures, such as 49.18 kJ/kg and 0 kJ/(kg·K), now answers where it raised an error. Every state that answered before gives the same values.
+- **`get_property_table` keeps only the `outputs` asked for.** The parameter was accepted but every column came back. An unknown output name is refused with the names that mode produces.
+
 ### Transport properties corrected (2026-10-30)
 
 - **Result-affecting: nitrous oxide gas below about -55 °C.** `get_fluid_properties`, `get_saturation_properties` and `get_property_table` gave a viscosity two to four times too high, and at some states far more (0.173 Pa·s at -59 °C and 4 bar, where the gas has about 1.1e-5). Now about 1e-5 Pa·s and smooth. Liquid and supercritical nitrous oxide unchanged.
