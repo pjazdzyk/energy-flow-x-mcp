@@ -6,6 +6,13 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 Nothing here is released. No version number was changed, and the items marked breaking are recorded for the later major version.
 
+### Humid air, R-32 and R-454B, helium and steam (2026-10-30)
+
+- **Result-affecting: humid air.** Its properties now come from one description of the mixture. At 1 atm the heat capacity at constant volume moves by 0.3 to 1 %, the heat capacity ratio and the speed of sound by 0.1 to 1 % (25 °C at 55 % RH: speed of sound up 0.30 %), the density by a few parts per million. Enthalpy, heat capacity at constant pressure, wet bulb and dew point did not change. In fog the heat capacity at constant pressure includes the evaporation of the suspended water (20 °C, 20 g/kg: 3.35 kJ/(kg·K), was 1.06).
+- **Breaking: values left out with a reason.** `get_fluid_properties`, `get_property_table` and `calculate_air_process` list under `unavailable`, with "not defined for <fluid> at this state: <reason>", the properties of fog that a single gas phase defines only (heat capacity at constant volume and its ratio, speed of sound, compressibility factor, compressibilities, expansion coefficient), the dew point of dry air, a dew point or wet bulb below -80 °C, and helium's thermal conductivity, thermal diffusivity and Prandtl number above 100 MPa. A table leaves the value out of that row and says why in `warnings`. Dry air now has a wet bulb (5.81 °C at 1 atm and 20 °C).
+- **Changed: R-32 and the blends.** R-32 answers from its triple point (-136.8 °C), where it was refused below -23.15 °C. R-454B vapour conductivity is up to 5.6 % lower at 200 K. R-454B below 220 K and R-410A and R-407C below 250 K carry a warning that their viscosity and conductivity are less certain.
+- **Changed: steam** below the triple-point pressure (611.2 Pa), and given by enthalpy and entropy near freezing, now answers.
+
 ### Pure-fluid density near saturation (2026-10-30)
 
 - **Result-affecting: a pure fluid just above its saturation pressure, or within about 2 % of it.** `get_fluid_properties`, `get_property_table` and Hydronic networks carrying a pure fluid could return the vapour density for a compressed liquid, or a density inside the two-phase region, with no warning. Nitrogen at 89.99 K and 3.96 bar read 16.8 kg/m³ (liquid 745.2), hydrogen at 15 K and 0.3 bar 0.514 kg/m³ (liquid 76.15), argon at 138.251 K and 29.38 bar 514.5 kg/m³ (vapour 161.6). Propane, methane and R-1234ze(E) showed the same at a few states. The stable phase is now returned at every state. Every other state is unchanged to the last digit, and refrigerant blends and natural gas did not change.
