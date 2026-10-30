@@ -6,6 +6,10 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 Nothing here is released. No version number was changed, and the items marked breaking are recorded for the later major version.
 
+### A value left out always says why (2026-10-30)
+
+- **Breaking (reply wording).** A property left out of a `get_fluid_properties`, `get_property_table` or `calculate_air_process` reply always carries its reason under `unavailable`, in one wording shared with the REST API and the property tables: "<property> is not defined at this state and is left out: <reason>". Properties that share a reason are named together in one sentence, and each of the others reads "left out for the same reason as <property>, stated there." A property that fails unexpectedly reads "could not be computed" with the failure's type. A client that matched the old "not defined for <fluid> at this state" text must match the new one. No number changed.
+
 ### Humid air, R-32 and R-454B, helium and steam (2026-10-30)
 
 - **Result-affecting: humid air.** Its properties now come from one description of the mixture. At 1 atm the heat capacity at constant volume moves by 0.3 to 1 %, the heat capacity ratio and the speed of sound by 0.1 to 1 % (25 °C at 55 % RH: speed of sound up 0.30 %), the density by a few parts per million. Enthalpy, heat capacity at constant pressure, wet bulb and dew point did not change. In fog the heat capacity at constant pressure includes the evaporation of the suspended water (20 °C, 20 g/kg: 3.35 kJ/(kg·K), was 1.06).
