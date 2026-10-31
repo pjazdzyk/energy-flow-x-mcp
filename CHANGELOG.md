@@ -6,6 +6,12 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 Nothing here is released. No version number was changed, and the items marked breaking are recorded for the later major version.
 
+### Hydronic: actuators and the motorised shut-off (2026-10-31)
+
+- A control valve, control damper, shut-off or fire damper may state an `actuator` in its component (`define_component`, or inline on `add_valve` and `add_damper`): signal range, direct or reverse action, a linear, equal-percentage or table map, travel limits, open and close run times, a fail position and a close-off. An element may be held at a `signal`. A shut-off with an actuator is a motorised shut-off.
+- `add_controller` on an actuated element spans its signal range. A `stroke` on an actuated element is refused, and the actuator's run times are used instead.
+- New design rules `CLOSE_OFF`, `SIGNAL_MAP` and `LOW_LIFT_GAIN`, with their `set_criteria` lines. Designs without an actuator answer as before.
+
 ### Hydronic: several pumps under speed control (2026-10-31)
 
 - Any number of pumps may hold a speed control in one design, steady and in runs over time. Before, a second controlled pump was refused, and a run over time refused every pump control. New pump settings `speedGroup` and `lead` put pumps in parallel on one header into one group at one speed. A scenario may set `control.<pump>` for several pumps.

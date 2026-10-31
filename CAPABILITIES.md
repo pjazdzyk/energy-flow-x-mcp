@@ -482,6 +482,7 @@ Server: the members server, `/energy-flow-x/mcp/members`, only. Tools: `hydronic
   and returns `data.balancing`. `mode="design"` first chooses each emitter's size from its series, then
   balances. A design with thermal emitters carries `data.thermal` in every reply. `hydronic_report` takes
   the same modes. The families, forms and settings are in `hydronic://vocabulary/components`.
+- **Actuators** (owner-facing names as in the vocabulary): a control valve, control damper, shut-off or fire damper may state an `actuator` in its component: modulating or two-position, a signal range (for example 2 to 10 V), direct or reverse action, a characterising map (linear, equal-percentage with its rangeability, or a table), travel limits, open and close run times, a fail position and a close-off. An element may be held at a `signal` instead of an `opening`. A shut-off with an actuator is a motorised shut-off. A controller's output spans the actuator's signal range, and a stroke on an actuated element is refused in favour of its run times. The design rules `CLOSE_OFF`, `SIGNAL_MAP` and `LOW_LIFT_GAIN` check the close-off against the drop a shut valve faces, a map or range that cannot reach full travel, and the loop gain at low lift.
 - **Not available**: fans (a pump curve is a liquid's) and fire-protection (sprinkler) hydraulics. Also
   not modelled: two-phase flow (wet steam, condensate with flash steam), heat exchange between a pipe and
   its surroundings, water hammer and surge, and devices that change the fluid, such as dryers and
