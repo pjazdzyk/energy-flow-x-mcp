@@ -6,6 +6,12 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 Nothing here is released. No version number was changed, and the items marked breaking are recorded for the later major version.
 
+### Hydronic: PICV opening, dynamic thermostatic valve, DPCV with a flow limit (2026-11-01)
+
+- A PICV's held flow and starting drop follow its presetting and its opening, at the design density of the system's own fluid. A scenario `opening.<element>`, a controller or an actuator signal moves the opening, where before a PICV's opening could not be moved.
+- New regulator families `DYNAMIC_THERMOSTATIC_VALVE` and `DPCV_FLOW_LIMITED`, and the regimes `HOLDING_DP` and `LIMITING_FLOW`. Generic dynamic thermostatic valves take an upper-bound envelope, stated as unverified, until a product's datasheet value is given.
+- Designs without these elements answer as before.
+
 ### Hydronic: actuators and the motorised shut-off (2026-10-31)
 
 - A control valve, control damper, shut-off or fire damper may state an `actuator` in its component (`define_component`, or inline on `add_valve` and `add_damper`): signal range, direct or reverse action, a linear, equal-percentage or table map, travel limits, open and close run times, a fail position and a close-off. An element may be held at a `signal`. A shut-off with an actuator is a motorised shut-off.
