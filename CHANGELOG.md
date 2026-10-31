@@ -10,6 +10,10 @@ Nothing here is released. No version number was changed, and the items marked br
 
 - **Result-affecting.** In fog `get_fluid_properties` and `get_property_table` gave a water vapour partial pressure computed from all the water, droplets included, above the saturation pressure (1 atm, 20 °C, 20 g/kg: 3.156 kPa). It is now the saturated vapour's (2.349 kPa there), however much water is suspended. No other property changed.
 
+### Hydronic: a three-way valve with a law per path (2026-10-31)
+
+- **New:** `add_device` THREE_WAY_VALVE takes a `component` with an inherent law per path. A scenario's `opening.<valve>` holds its stem for that case, its device row gives the stem position, both path flows and the mixed outlet temperature, and `scenarios.csv` gives each path a row.
+
 ### Hydronic: controllers on the control graph (2026-10-31)
 
 - **New:** `add_controller` drives the opening of a valve or damper element through a stated stroke time, besides a pump or a compressor, and reads a node's pressure, an edge's mass or volume flow, or a signal schedule. `add_schedule` with no target is a signal in one unit. A schedule of flows or pressures writes a regulating element's setpoint, checked at the edit against what the element holds.

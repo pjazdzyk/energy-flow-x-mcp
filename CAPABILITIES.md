@@ -660,7 +660,11 @@ report's files and a package export:
 - `hydronic://vocabulary/devices`: each device type's ports and settings, schedules, controllers, and
   what a transient run returns.
 - `hydronic://vocabulary/more-devices`: the safety relief, the compressed-air treatment devices and the
-  plant devices, their ports and settings.
+  plant devices, their ports and settings. A THREE_WAY_VALVE states its loss as a leg K, a Kvs, a duty, a
+  fixed drop when diverting, or a `component` (a `define_component` of family THREE_WAY_VALVE with an
+  inherent law per path, straight A to AB, bypass B to AB). A scenario holds its stem with
+  `opening.<valve>`, and its device row gives the stem position, each path's flow and, when mixing, the
+  outlet temperature.
 - `hydronic://vocabulary/surge`: the events of `hydronic_solve` mode surge, a pump trip and a valve closure,
   their settings, what the reply holds and assumes.
 - `hydronic://vocabulary/components`: the families of valve, damper, regulator and emitter, their forms
