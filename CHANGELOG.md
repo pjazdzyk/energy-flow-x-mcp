@@ -6,6 +6,12 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 Nothing here is released. No version number was changed, and the items marked breaking are recorded for the later major version.
 
+### Hydronic: several pumps under speed control (2026-10-31)
+
+- Any number of pumps may hold a speed control in one design, steady and in runs over time. Before, a second controlled pump was refused, and a run over time refused every pump control. New pump settings `speedGroup` and `lead` put pumps in parallel on one header into one group at one speed. A scenario may set `control.<pump>` for several pumps.
+- `hydronic_solve` gives one control row per pump. A run over time adds `data.machineControl` (the regulation band and the instants no speed held a pump), `data.machines` (each pump's speed, held quantity, regime spans and instants not held) and a `<pump>_speed` column in the sampled table. `hydronic_report` adds a "Controlled pumps" table to the run section.
+- A pump whose flow runs against its direction reads not held, with the reason, at every instant of a run, as in a steady solve. A design with one controlled pump answers as before.
+
 ### Natural gas next to saturation, humid air below 0 °C, steam transport (2026-10-31)
 
 - **Result-affecting.** `get_natural_gas_properties` and `get_property_table` could return a natural gas or LPG next to its saturation line as a gas where the liquid is stable (LPG at 114.11 K and 100 Pa: 0.0052 kg/m³, now 728.2; pure methane at 175.47 K and 3.10 MPa: 64.4, now 295.9). Every density is now the stable root. A composition and state that only the two-phase region can produce is refused with that reason.

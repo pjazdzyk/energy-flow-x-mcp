@@ -449,6 +449,14 @@ Server: the members server, `/energy-flow-x/mcp/members`, only. Tools: `hydronic
   effectiveness), and a storage tank, well mixed or stratified in layers. A `PRESSURE_TANK` node is a
   receiver on a gas, storing its real-gas mass, or an expansion vessel on a liquid. Each device's ports
   and settings are in `hydronic://vocabulary/devices`.
+- **Pump speed control**: any number of pumps in one design may hold a mode by their speed (a constant,
+  proportional or remote pressure difference) in a steady solve and at every
+  step of a run over time. Pumps in parallel on one header that hold one pressure difference form a speed
+  group (`speedGroup`, with one `lead` pump) and run at one speed. A scenario may set `control.<pump>` for
+  several pumps. Each pump reports its speed, the quantity it holds and, over time, its regime spans and
+  the instants it did not hold. A pump whose flow runs against its direction is never read as holding.
+  Two pumps that would hold the same quantity through connectors only, and malformed groups, are refused
+  by name with the fix.
 - **Stream losses**: a device's own loss is one setting per stream, named as the REST config names it:
   `streamLoss`, `heatStreamLoss`, `hotStreamLoss`, `coldStreamLoss` or `waterStreamLoss`. Each is a fixed
   drop (`"3kPa"`), a duty point (`"2m3/h at 15kPa"`) or a measured curve (`"0m3/h 0kPa, 2m3/h 3kPa"`), and
