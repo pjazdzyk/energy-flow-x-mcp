@@ -6,6 +6,12 @@ Notable changes, newest first. Breaking changes are marked as such.
 
 Nothing here is released. No version number was changed, and the items marked breaking are recorded for the later major version.
 
+### Natural gas next to saturation, humid air below 0 °C, steam transport (2026-10-31)
+
+- **Result-affecting.** `get_natural_gas_properties` and `get_property_table` could return a natural gas or LPG next to its saturation line as a gas where the liquid is stable (LPG at 114.11 K and 100 Pa: 0.0052 kg/m³, now 728.2; pure methane at 175.47 K and 3.10 MPa: 64.4, now 295.9). Every density is now the stable root. A composition and state that only the two-phase region can produce is refused with that reason.
+- **Result-affecting.** Below 0.01 °C humid-air viscosity and conductivity left out the water vapour (at 100 Pa and 200 g/kg about 14 % and 9 % too high; in ordinary winter air at most 0.016 %). The vapour is now included.
+- Dry humid air (humidity ratio 0) now reports its saturation pressure and maximum humidity ratio (1 atm, 20 °C: 2349 Pa, 14.76 g/kg) instead of 0. Steam viscosity now answers up to 1000 °C. Steam conductivity above 800 °C, and the thermal diffusivity and Prandtl number of wet steam, are left out under `unavailable` with the reason instead of being returned as no number.
+
 ### Humid air in fog: the water vapour partial pressure (2026-10-31)
 
 - **Result-affecting.** In fog `get_fluid_properties` and `get_property_table` gave a water vapour partial pressure computed from all the water, droplets included, above the saturation pressure (1 atm, 20 °C, 20 g/kg: 3.156 kPa). It is now the saturated vapour's (2.349 kPa there), however much water is suspended. No other property changed.
