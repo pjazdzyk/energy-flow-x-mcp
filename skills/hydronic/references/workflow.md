@@ -94,6 +94,7 @@ A sensible order inside the batch, which is also the order the recipes use:
 2. `add_node` for every node, boundaries first
 3. `add_pipe` for every run
 4. `add_fitting` / `add_resistance` for the local losses
+   - `add_leak` for a leak to a lower pressure: a `gap`, a `rate` with `at`, or a `coefficient`, one of them
 5. `set` / `remove` for later corrections
 
 **Quantities are strings with units**: `"150mm"`, `"2.5bar"`, `"70oC"`, `"1.2kg/s"`, `"12m3/h"`,

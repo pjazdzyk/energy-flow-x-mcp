@@ -10,6 +10,12 @@ Nothing here is released. No version number was changed, and the items marked br
 
 - **Result-affecting.** In fog `get_fluid_properties` and `get_property_table` gave a water vapour partial pressure computed from all the water, droplets included, above the saturation pressure (1 atm, 20 °C, 20 g/kg: 3.156 kPa). It is now the saturated vapour's (2.349 kPa there), however much water is suspended. No other property changed.
 
+### Hydronic: one loss vocabulary (2026-10-31)
+
+- **Breaking (settings):** a device's own loss is one stream loss setting per stream (`streamLoss`, `heatStreamLoss`, `hotStreamLoss`, `coldStreamLoss`, `waterStreamLoss`): a fixed drop, a duty point or a measured curve. The `pressureDrop` family is refused by name. Stored sessions that state it still open.
+- **New:** `add_leak`, a leak stated as a gap, a measured rate or a coefficient.
+- **Changed results:** a Kv or zeta stated with `add_resistance` is evaluated at the seed density, as over REST, so REST and MCP compute the same. The results of such designs move slightly.
+
 ### Hydronic: a three-way valve with a law per path (2026-10-31)
 
 - **New:** `add_device` THREE_WAY_VALVE takes a `component` with an inherent law per path. A scenario's `opening.<valve>` holds its stem for that case, its device row gives the stem position, both path flows and the mixed outlet temperature, and `scenarios.csv` gives each path a row.

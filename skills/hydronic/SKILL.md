@@ -88,7 +88,10 @@ together.
 **Equipment.** `add_device` adds a pump (liquids only), an air compressor with heat recovery, a heater
 or boiler, a heat exchanger between two systems, or a storage tank, and pipes reach its ports as
 `"device.port"`. A receiver or an expansion vessel is a `PRESSURE_TANK` node. Read
-`hydronic://vocabulary/devices` first: a setting the type does not take is refused by name.
+`hydronic://vocabulary/devices` first: a setting the type does not take is refused by name. A device
+states its own loss as `streamLoss` (and `heatStreamLoss`, `hotStreamLoss`, `coldStreamLoss`,
+`waterStreamLoss` on its other streams): `"3kPa"`, `"2m3/h at 15kPa"` or a measured curve
+`"0m3/h 0kPa, 2m3/h 3kPa"`. Never send `pressureDrop` and its siblings: they are refused.
 
 **Over time.** `add_schedule` drives a pump, a compressor, a demand or a boundary pressure through a
 profile, `add_controller` adds a pressure or flow switch or a PI loop, and `set_transient` states the

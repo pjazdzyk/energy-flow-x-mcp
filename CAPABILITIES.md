@@ -449,6 +449,12 @@ Server: the members server, `/energy-flow-x/mcp/members`, only. Tools: `hydronic
   effectiveness), and a storage tank, well mixed or stratified in layers. A `PRESSURE_TANK` node is a
   receiver on a gas, storing its real-gas mass, or an expansion vessel on a liquid. Each device's ports
   and settings are in `hydronic://vocabulary/devices`.
+- **Stream losses**: a device's own loss is one setting per stream, named as the REST config names it:
+  `streamLoss`, `heatStreamLoss`, `hotStreamLoss`, `coldStreamLoss` or `waterStreamLoss`. Each is a fixed
+  drop (`"3kPa"`), a duty point (`"2m3/h at 15kPa"`) or a measured curve (`"0m3/h 0kPa, 2m3/h 3kPa"`), and
+  a curve may state the resistance a reversed flow meets (`"; reverseK 1e6"`). A storage tank takes a fixed
+  drop only. The old `pressureDrop`, `heatPressureDrop`, `hotPressureDrop`, `coldPressureDrop` and
+  `waterPressureDrop` settings are refused by name. A stored session that states them still opens.
 - **Transient runs** (`mode="transient"`), over the duration `set_transient` states. Schedules act on
   a pump, a compressor, a demand, a boundary pressure or a regulating element's setpoint. ON_OFF
   switches and PI loops read a node's pressure, an edge's mass or volume flow or a signal schedule,
@@ -492,10 +498,14 @@ Server: the members server, `/energy-flow-x/mcp/members`, only. Tools: `hydronic
 - **Batches**: up to 500 ops in one call, applied all or nothing. A refusal names the op index and the
   field. `dryRun` validates a batch without applying it.
 - **Strict fields**: a field that does not belong to its op is refused by name, never ignored.
-- **Ops**: `set_fluid`, `set_conditions`, `add_node`, `add_pipe`, `add_fitting`, `add_resistance`,
+- **Ops**: `set_fluid`, `set_conditions`, `add_node`, `add_pipe`, `add_fitting`, `add_resistance`, `add_leak`,
   `add_device`, `add_schedule`, `add_controller`, `set_transient`, `set_criteria`, `name_system`,
   `name_level`, `define_component`, `add_valve`, `add_damper`, `add_emitter`, `set` and `remove`. The
   full fields are in `hydronic://vocabulary/ops`.
+- **Leaks** (`add_leak`): a leak between two nodes, stated one way as on REST. `settings` holds `gap` (an
+  equivalent hole, with an optional `dischargeCoefficient`), `rate` with `at` (a flow measured across a stated
+  pressure difference) or `coefficient` (C in kg/s per Pa^n), and `exponent` with a rate or a coefficient. A
+  leak stated two ways is refused.
 - **Systems**: `set_fluid` with a `system` name creates a further fluid system, and `add_pipe` or
   `add_resistance` with that name puts an edge in it. A node belongs to the system of its edges, and a
   node joining two systems is refused, because two fluids meet only inside a device. An edge naming a
