@@ -92,7 +92,8 @@ A sensible order inside the batch, which is also the order the recipes use:
 1. `set_fluid` for every system (with `system` for each one after the main), and `set_conditions` if a
    loop is sealed
 2. `add_node` for every node, boundaries first
-3. `add_pipe` for every run
+3. `add_zone`, `define_material` and `define_insulation` for any run that loses heat to a zone, then
+   `add_pipe` for every run
 4. `add_fitting` / `add_resistance` for the local losses
    - `add_leak` for a leak to a lower pressure: a `gap`, a `rate` with `at`, or a `coefficient`, one of them
 5. `set` / `remove` for later corrections

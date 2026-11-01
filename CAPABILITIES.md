@@ -497,8 +497,8 @@ A round run loses heat to an air zone it passes through. The loss is computed at
 temperature: inside film, wall and insulation layers with conductivity over temperature, natural or forced
 convection and radiation outside, and the surface temperature solved. The turbulent inside film is of the
 Gnielinski kind, natural convection outside of the Churchill and Chu kind, and forced crossflow of the Churchill
-and Bernstein kind. Layers touch perfectly. The Hydronic MCP and REST give the same figures for the same
-design.
+and Bernstein kind. Layers touch perfectly. The Hydronic MCP and REST read the loss from one
+function.
 
 - **Stating it** (`hydronic_edit`):
   - `add_zone` (`id`, `settings`, type `AIR`): `airTemperature` (required), `airSpeed` (still air when it is
@@ -520,8 +520,7 @@ design.
   no catalogue size, wall thickness or outer diameter), `INSULATION_WITHOUT_ZONE`, `NOT_CIRCULAR` (a duct or
   other bore that is not round), `INVALID_LAYER`, `INVALID_ZONE`, `ZONE_RADIANT_APART` (a mean radiant
   temperature apart from the air) and `NO_INFLOW_TEMPERATURE` (the inflow of the run, walked upstream along
-  the solved flow, meets no stated temperature: state the supply as an `AMBIENT` node, or put a device that
-  sets a temperature upstream). `hydronic_inspect` readiness names a run a solve will refuse, with its code.
+  the solved flow, meets no stated temperature: state the system's temperature with `set_fluid`). `hydronic_inspect` readiness names a run a solve will refuse, with its code.
 - **Returned**: `data.thermal.distribution` holds, per run, the loss in W and W/m, the conductance, air,
   inlet, delivered, mean stream and surface temperatures, the films, each layer's share, the emissivity and
   its source, the flow regimes, Reynolds and Prandtl numbers at the mean stream temperature, and flags. It

@@ -12,7 +12,7 @@ Nothing here is released. No version number was changed, and the items marked br
 - `hydronic_solve` answers each run's loss under `data.thermal.distribution`: the loss, W/m, conductance, end and surface temperatures, films, flags, and the energy balance with the lowest emitter inlet. Over time it adds `energy_Wh` and the columns `distribution_W` and `lowestEmitterInlet_C`. The design is refused by name when it is incomplete: `NO_WALL`, `INSULATION_WITHOUT_ZONE`, `NOT_CIRCULAR`, `INVALID_LAYER`, `INVALID_ZONE`, `ZONE_RADIANT_APART`, `NO_INFLOW_TEMPERATURE`.
 - `hydronic_report` adds a Distribution heat loss section, a Product data section and `distribution.csv` for a design with a run in a zone.
 - `hydronic://vocabulary/materials` lists the built-in thermal materials with their basis, each labelled generic. `get_conduit_dimensions` names each row's `wallMaterial`.
-- Limits: one ambient per run, so a mean radiant temperature apart from the air is refused. A vertical run taller than about 6 m is flagged `OUT_OF_RANGE`. Over time the schedule shows the final instant. A zone or insulation as a system default is not taken yet.
+- Limits: one ambient per run, so a mean radiant temperature apart from the air is refused. A vertical run taller than about 6 m is flagged `OUT_OF_RANGE`. Over time the Distribution heat loss schedule shows the final instant. A zone or insulation as a system default is not taken yet.
 - The hydronic skill and its references now say how to state a zone, insulation and a wall, and how to read and relay the loss. CAPABILITIES no longer lists pipe heat exchange as not modelled.
 - This lands with the server release that serves it. Designs with no run in a zone answer as before.
 

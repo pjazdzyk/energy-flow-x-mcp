@@ -56,10 +56,11 @@ server refuses the first group outright. The rest you ask for.
 nothing, and the answer does not say so. For a main that crosses cold or warm space, ask for the air
 temperature around it, whether the air is still or moving, the insulation (material, thickness, and a jacket
 if any) and the pipe wall (a thickness or an outer diameter, and its material). Never assume the insulation
-or the wall. A run in a zone with no wall is refused (`NO_WALL`). State them in the same batch as the pipes.
+or the wall. A run in a zone with no wall is refused (`NO_WALL`), and so is one whose supply states no temperature (`set_fluid` states it). State them in the same batch as the pipes.
 Here 40 m of a 50 mm bore with 3 mm of black steel wall and 40 mm of mineral wool crosses a 12 °C plant room:
 
 ```
+{"op":"set_fluid","fluid":"WATER","temperature":"70oC"},
 {"op":"add_zone","id":"plant_room","settings":{"airTemperature":"12oC"}},
 {"op":"define_insulation","id":"wool40","spec":{"layers":[{"material":"I_MWL","thickness":"40mm"}]}},
 {"op":"add_pipe","id":"main","from":"supply","to":"draw","length":"40m","size":"50mm",

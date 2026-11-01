@@ -88,7 +88,8 @@ Every network solve needs all of this, whatever the job:
 When the question includes heat lost from a pipe, it also needs, per run: the zone it passes through (its
 air temperature, still or moving air), the insulation (material, thickness, jacket), and the pipe wall (a
 thickness or an outer diameter, and its material). None of these has a safe default. The supply must state a
-temperature, an `AMBIENT` node or a device that sets one, or the run is refused (`NO_INFLOW_TEMPERATURE`).
+temperature, so state the system's temperature with `set_fluid` (or put a device that sets one upstream), or the
+run is refused (`NO_INFLOW_TEMPERATURE`).
 
 Then, per job:
 
@@ -167,7 +168,8 @@ it.** An assumption that is both consequential and invisible is the one to refus
 - *A fittings allowance*, if you must, expressed as a percentage of straight-run loss and labelled as
   an allowance. Counting the fittings is better and the vocabulary supports it.
 - *Ambient temperature*, where it only affects a thermal term nobody is asking about. A pipe exchanges
-  no heat with its surroundings here, so it takes none. A storage tank states its own standby loss.
+  heat with its surroundings only when its run states a zone, so with no zone it takes none. A storage tank
+  states its own standby loss.
 
 **Never assume. Ask, or refuse to answer:**
 
