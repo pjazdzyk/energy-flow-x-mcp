@@ -85,6 +85,11 @@ Every network solve needs all of this, whatever the job:
 5. **Lengths**, and **sizes** unless the job is to find them.
 6. **Elevations.**
 
+When the question includes heat lost from a pipe, it also needs, per run: the zone it passes through (its
+air temperature, still or moving air), the insulation (material, thickness, jacket), and the pipe wall (a
+thickness or an outer diameter, and its material). None of these has a safe default. The supply must state a
+temperature, an `AMBIENT` node or a device that sets one, or the run is refused (`NO_INFLOW_TEMPERATURE`).
+
 Then, per job:
 
 - **Sizing** also needs the criterion. "Around 1 m/s" and "no more than 200 Pa/m" give different

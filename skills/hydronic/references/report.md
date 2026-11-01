@@ -126,6 +126,14 @@ then: the verdict, the qualifications,
 the drawing, the critical path, the equipment and what each device did, a bill of materials, every run and every
 node, and the assumptions and warnings.
 
+For a design with a run in a zone the page adds a Distribution heat loss section and a Product data section.
+The first has a row per run (zone, length, insulation, loss, W/m, inlet, delivered and surface temperatures,
+flag), the energy balance and, over time, the energy lost. The second lists the generic materials with their
+basis, apart from the user's own, which are marked as theirs. The pack also holds `distribution.csv`, a row per
+run with its units in the header. The figures are the solve's `data.thermal.distribution`. A cautioned run is
+a qualification of its own, and the drawings carry no zone or insulation mark. Relay the loss with the words
+"generic material data" when the Product data section lists generic materials.
+
 A report with `mode="transient"` comes in two parts, so no table mixes two states of the plant. Part 1 is the
 design point: the plant solved steady, every machine at its stated command and every vessel at its stated pressure,
 and the drawing, the design checks, the critical path, the equipment and the schedules are all this state. Part 2 is

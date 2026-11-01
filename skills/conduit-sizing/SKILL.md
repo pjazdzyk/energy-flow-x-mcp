@@ -24,7 +24,7 @@ network tools (`hydronic_*`, members server only) are for the moment a flow is u
 | `size_conduit` | one pipe or duct at a known flow: velocity, pressure drop, Reynolds, friction factor, regime |
 | `select_conduit_size` | the catalogue size that passes your criteria, plus the ones either side |
 | `search_conduit_catalog` | catalogue products by code or manufacturer: shape, roughness, size classes, every size. Generic series unless `manufacturers` says otherwise |
-| `get_conduit_dimensions` | one product's size table: inner and outer size, wall thickness, SDR, size basis. At most 60 rows, narrowed with `size` |
+| `get_conduit_dimensions` | one product's size table: inner and outer size, wall thickness, SDR, size basis, and the `wallMaterial` of the wall (the material code a Hydronic run states for its heat loss). At most 60 rows, narrowed with `size` |
 
 ## The boundary that matters most
 

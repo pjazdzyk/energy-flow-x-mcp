@@ -110,6 +110,26 @@ Static head is not a loss and no bore will reduce it. Upsizing anything else is 
 The solve returns no critical path as such. Trace it from the edges along the route to the lowest
 node when a report needs one.
 
+## Heat lost from the runs
+
+A design with a run in a zone answers `data.thermal.distribution`. Read, for each run: `heatLoss_W` and
+`heatLoss_Wpm`, `inlet_C` against `delivered_C`, `surface_C` against `air_C`, and `flags`. Then read the
+balance: `heatLoss_W` and its share (`heatLossShare`), `residual_W` (near zero when the energy closes), and `lowestEmitterInlet_C`, the supply the coldest emitter actually gets. A loss that
+leaves an emitter below the temperature it was chosen for is the finding.
+
+- A run with `PIPE_HEAT_LOSS_CAUTION` is a qualified number. A riser taller than about 6 m always carries
+  `OUT_OF_RANGE`. Say so beside the figure.
+- The materials are generic unless the design defines its own, and readiness counts a run on generic data as
+  `ASSUMED`. Say that the loss is for the stated insulation and a generic conductivity, not for a product.
+- A bare run in still air loses far more per metre than an insulated one. If a figure looks high, check the
+  run has the insulation the user described before you doubt the model.
+- A refusal comes with a cause code: `NO_WALL` (state a wall), `INSULATION_WITHOUT_ZONE` (state the zone),
+  `NOT_CIRCULAR` (a duct is not covered), `ZONE_RADIANT_APART` (one ambient per run) and
+  `NO_INFLOW_TEMPERATURE` (the supply states no temperature). Fix the design with `hydronic_edit`. Do not
+  work round it.
+- Over time the block is the final instant, `energy_Wh` is the energy lost across the run, and the sampled
+  table gains `distribution_W` and `lowestEmitterInlet_C`.
+
 ## Signs, and the flow divide
 
 In a solved network the sign of an edge flow is its **direction** relative to the from/to the edge was

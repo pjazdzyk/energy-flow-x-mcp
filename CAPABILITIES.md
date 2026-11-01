@@ -264,7 +264,7 @@ Tools: `search_conduit_catalog`, `get_conduit_dimensions`.
   print a standard designation, says so as their attribution only ("Listed as X by Y"). A manufacturer series says
   whose document it is read from and is not affiliated with that maker.
 - **Dimensions**: for every size in every class, the inner and outer size, wall thickness, SDR, the
-  size basis and, for metal pipe, an informational working pressure. This `innerSize` is the bore that
+  size basis, the `wallMaterial` of the pipe wall and, for metal pipe, an informational working pressure. This `innerSize` is the bore that
   `size_conduit` needs. A nominal DN is not a bore.
 
 ## Sizing one pipe or duct
@@ -484,10 +484,66 @@ Server: the members server, `/energy-flow-x/mcp/members`, only. Tools: `hydronic
   the same modes. The families, forms and settings are in `hydronic://vocabulary/components`.
 - **Actuators**: a control valve, control damper, shut-off or fire damper may state an `actuator` in its component: modulating or two-position, a signal range (for example 2 to 10 V), direct or reverse action, a characterising map (linear, equal-percentage with its rangeability, or a table), travel limits, open and close run times, a fail position and a close-off. An element may be held at a `signal` instead of an `opening`. A shut-off with an actuator is a motorised shut-off. A controller's output spans the actuator's signal range, and a stroke on an actuated element is refused in favour of its run times. The design rules `CLOSE_OFF`, `SIGNAL_MAP` and `LOW_LIFT_GAIN` check the close-off against the drop a shut valve faces, a map or range that cannot reach full travel, and the loop gain at low lift.
 - **Pressure-independent valves**: a PICV is built from its presetting and its opening, so the flow it holds and the drop at which it starts to hold it follow both, at the system's design density. Its opening moves with an element `opening` or an actuator `signal`, a scenario `opening.<element>`, a controller or the run's control graph. A dynamic thermostatic valve (`DYNAMIC_THERMOSTATIC_VALVE`) is a PICV whose opening is its head's xp. A differential-pressure controller with a flow limit (`DPCV_FLOW_LIMITED`) holds its section's pressure difference and never passes more than its stated flow, the stricter of the two holding, and reports which one held (`HOLDING_DP` or `LIMITING_FLOW`).
+- **Pipe heat loss**: a round run loses heat to the air zone it passes through (see "Pipe heat loss" below).
+  What it does not model: the ground, the sky, condensation on a cold pipe, a duct or any bore that is not round,
+  heat stored in the pipe wall over time, and a zone or insulation set as a system default.
 - **Not available**: fans (a pump curve is a liquid's) and fire-protection (sprinkler) hydraulics. Also
-  not modelled: two-phase flow (wet steam, condensate with flash steam), heat exchange between a pipe and
-  its surroundings, water hammer and surge, and devices that change the fluid, such as dryers and
-  coils.
+  not modelled: two-phase flow (wet steam, condensate with flash steam), water hammer and surge, and
+  devices that change the fluid, such as dryers and coils.
+
+### Pipe heat loss
+
+A round run loses heat to an air zone it passes through. The loss is computed at the live flow and stream
+temperature: inside film, wall and insulation layers with conductivity over temperature, natural or forced
+convection and radiation outside, and the surface temperature solved. The turbulent inside film is of the
+Gnielinski kind, natural convection outside of the Churchill and Chu kind, and forced crossflow of the Churchill
+and Bernstein kind. Layers touch perfectly. The Hydronic MCP and REST give the same figures for the same
+design.
+
+- **Stating it** (`hydronic_edit`):
+  - `add_zone` (`id`, `settings`, type `AIR`): `airTemperature` (required), `airSpeed` (still air when it is
+    left out), `meanRadiantTemperature` (it must equal the air's), `airPressure`. Over a run over time a zone
+    takes a `schedule` of time=temperature pairs (`"0h=-10oC, 6h=-5oC"`), an `interpolation` (`STEP` or
+    `LINEAR`), a `repeat` period (a periodic schedule, else a table) and a `phase`.
+  - `define_material` (`id` in lower case, `spec`): `name`, `conductivity` (one value with `conductivityAt`,
+    or temperature and value points) and `emissivity`. Runs and stacks name it `own:<id>`.
+  - `define_insulation` (`id`, `spec`): `layers` (material and thickness, from the pipe outward), `jacket`,
+    `jacketThickness`, `emissivity`.
+  - A run (`add_pipe` `settings`, or `set`): `zone`, `insulation` (a stack id), `wallThickness` or
+    `outerDiameter`, `wallMaterial`, and its own `jacket`, `jacketThickness` and `emissivity` over its
+    stack's. `"none"` clears one. A run sized from a catalogue product reads its wall from that product at the
+    size applied or chosen, and a stated wall wins.
+- **Refused at the op**: a value without its unit or out of range, a schedule whose times do not rise, a
+  zone, stack or `own:` material that is not defined, and the removal or renaming of one that something
+  names.
+- **Refused at the solve**, with a cause code and the `hydronic_edit` fix: `NO_WALL` (a run in a zone with
+  no catalogue size, wall thickness or outer diameter), `INSULATION_WITHOUT_ZONE`, `NOT_CIRCULAR` (a duct or
+  other bore that is not round), `INVALID_LAYER`, `INVALID_ZONE`, `ZONE_RADIANT_APART` (a mean radiant
+  temperature apart from the air) and `NO_INFLOW_TEMPERATURE` (the inflow of the run, walked upstream along
+  the solved flow, meets no stated temperature: state the supply as an `AMBIENT` node, or put a device that
+  sets a temperature upstream). `hydronic_inspect` readiness names a run a solve will refuse, with its code.
+- **Returned**: `data.thermal.distribution` holds, per run, the loss in W and W/m, the conductance, air,
+  inlet, delivered, mean stream and surface temperatures, the films, each layer's share, the emissivity and
+  its source, the flow regimes, Reynolds and Prandtl numbers at the mean stream temperature, and flags. It
+  also holds the energy balance (loss, heat added and removed, boundary net, the loss as a share, the
+  residual, the `lowestEmitterInlet_C` and which emitter it is, the cautioned runs) and the `materials`
+  of the layers, each once, as `GENERIC` or `OWN` with its basis. An emitter check's inlets carry the losses.
+  Over time the block is the final instant, `energy_Wh` is the energy lost over the run, and each sampled
+  row gains `distribution_W` and `lowestEmitterInlet_C`.
+- **Limits**:
+  - One ambient per run: a zone's mean radiant temperature must equal its air temperature, and the ground,
+    the sky and condensation are not modelled.
+  - A vertical run taller than about 6 m carries the caution `OUT_OF_RANGE`, because its outside film
+    passes the stated range of its correlation. A cautioned run is a `PIPE_HEAT_LOSS_CAUTION` warning, and a
+    run over time states `PIPE_HEAT_LOSS_OVER_TIME`.
+  - Over time the fluid reaches the end of a run in the same step, and the wall stores no heat.
+  - A part with a run in a zone takes its `FIXED_PRESSURE` and `OUTLET` nodes as supplies at the system
+    temperature, so the stream carries heat to lose. A design with no run in a zone is solved and answered as
+    before.
+  - The size comes from velocity and pressure drop. The sizer does not choose a size for its heat loss, and
+    the loss reported is that of the size chosen.
+  - Readiness counts a run on built-in material data as `ASSUMED`: the figures are generic, not a maker's.
+  - A zone or insulation as a system default (`set_conditions`) is not yet taken. Each run states its own.
 
 ### Sessions
 
@@ -510,7 +566,8 @@ Server: the members server, `/energy-flow-x/mcp/members`, only. Tools: `hydronic
 - **Strict fields**: a field that does not belong to its op is refused by name, never ignored.
 - **Ops**: `set_fluid`, `set_conditions`, `add_node`, `add_pipe`, `add_fitting`, `add_resistance`, `add_leak`,
   `add_device`, `add_schedule`, `add_controller`, `set_transient`, `set_criteria`, `name_system`,
-  `name_level`, `define_component`, `add_valve`, `add_damper`, `add_emitter`, `set` and `remove`. The
+  `name_level`, `define_component`, `add_valve`, `add_damper`, `add_emitter`, `add_zone`, `define_material`,
+  `define_insulation`, `set` and `remove`. The
   full fields are in `hydronic://vocabulary/ops`.
 - **Leaks** (`add_leak`): a leak between two nodes, stated one way as on REST. `settings` holds `gap` (an
   equivalent hole, with an optional `dischargeCoefficient`), `rate` with `at` (a flow measured across a stated
@@ -597,6 +654,8 @@ real one, so none is assumed.
   glide, and humid air past its dew point are each reported as a `PHASE` warning and a `phaseProblems`
   row, because those numbers are not a state the system can reach. Glycols and brines have no
   saturation check.
+- **Pipe heat loss**: a design with a run in a zone carries `data.thermal.distribution` (see "Pipe heat
+  loss").
 - **Several systems** are reported one entry each under `systems`, with every warning named by its
   system.
 - `detail` sets the rows in each ranking: 5 by default, up to 50. A network of up to 50 edges and 50
@@ -628,6 +687,13 @@ real one, so none is assumed.
   one figure per group, and every figure carries its own legend. `labels="minimal"` keeps ids and sizes.
 - **The study page**: one self-contained HTML file with the verdict, the qualifications (always present),
   the drawing, the critical path, the equipment, a run over time with its charts, and every run and node.
+- **Distribution heat loss**: for a design with a run in a zone the page adds a Distribution heat loss
+  section (a row per run: zone, length, insulation, loss, W/m, inlet, delivered and surface temperatures,
+  flag, then the energy balance and, over time, the energy lost) and a Product data section (generic
+  materials with their basis, your own marked as your data). The pack gains `distribution.csv`, a row per
+  run with its units in the header. A cautioned run is a qualification of its own. The figures are those of
+  the solve's `data.thermal.distribution`, which over time is the final instant. The drawings carry no zone
+  or insulation mark.
 - **The DXF**: the same drawing as R12, in millimetres, every symbol a block and every kind of line on its
   own layer.
 - **Links** are kept at most 24 hours, then deleted, and anyone holding one can open the report until then, with
@@ -674,7 +740,8 @@ report's files and a package export:
 
 - `hydronic://vocabulary/ops`: every op with its required and optional fields.
 - `hydronic://vocabulary/fittings`: every fitting type.
-- `hydronic://vocabulary/materials`: every wall material.
+- `hydronic://vocabulary/materials`: every wall material, and the built-in thermal materials a run loses heat
+  through, each labelled generic, with its conductivity points, emissivity and basis, and how a run loses heat.
 - `hydronic://vocabulary/fluids`: the fluid codes, what each needs, how a gas is solved and the phase
   checks.
 - `hydronic://vocabulary/devices`: each device type's ports and settings, schedules, controllers, and

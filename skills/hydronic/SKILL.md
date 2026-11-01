@@ -52,6 +52,27 @@ volume was measured at (free air, normal or standard cubic metres, or line condi
 humid air, the composition of a natural gas, the demands themselves, and the acceptance criterion. The
 server refuses the first group outright. The rest you ask for.
 
+**Heat lost from the pipes** is modelled only for a run that states a `zone`. A run with no zone loses
+nothing, and the answer does not say so. For a main that crosses cold or warm space, ask for the air
+temperature around it, whether the air is still or moving, the insulation (material, thickness, and a jacket
+if any) and the pipe wall (a thickness or an outer diameter, and its material). Never assume the insulation
+or the wall. A run in a zone with no wall is refused (`NO_WALL`). State them in the same batch as the pipes.
+Here 40 m of a 50 mm bore with 3 mm of black steel wall and 40 mm of mineral wool crosses a 12 °C plant room:
+
+```
+{"op":"add_zone","id":"plant_room","settings":{"airTemperature":"12oC"}},
+{"op":"define_insulation","id":"wool40","spec":{"layers":[{"material":"I_MWL","thickness":"40mm"}]}},
+{"op":"add_pipe","id":"main","from":"supply","to":"draw","length":"40m","size":"50mm",
+ "settings":{"zone":"plant_room","insulation":"wool40","wallThickness":"3mm","wallMaterial":"M_STB"}}
+```
+
+`hydronic://vocabulary/materials` lists the built-in material codes. They are generic figures, not a maker's,
+and the reply says so. For a maker's product, `define_material` states its conductivity and emissivity as
+your own. The loss, the delivered temperature and the surface temperature are under
+`data.thermal.distribution`. A run with a caution (a riser taller than about 6 m always carries one) is a
+qualified number, so quote the warning with it. One air temperature serves a run, so a room whose radiant
+temperature differs from its air is refused, and the answer says it is out of scope.
+
 **Gauge or absolute.** The server takes absolute pressure and users almost always mean gauge. Unless
 they say otherwise, add 101.325 kPa (1.013 bar) yourself and say so in the same sentence as the answer:
 "I have taken your 4 bar as gauge, so 5.01 bar absolute". `convert_units` has no gauge unit, so this one
