@@ -37,7 +37,7 @@ server contradicts is the page's error.
 | --- | --- | --- |
 | Address | `https://energyflowx.com/energy-flow-x/mcp/free` | `https://energyflowx.com/energy-flow-x/mcp/members` |
 | Name in the plugin | not connected | `energy-flow-x` |
-| Tools | 11 | 18, plus 25 resources |
+| Tools | 11 | 18, plus 26 resources |
 | Account | none, and none is accepted | required: sign in (OAuth), or an API key |
 | What it does | properties, sizing, air processes, without refrigerants, brines and the steam humidifier | everything: the 11 free tools with nothing held back, and the 6 tools that build, check, solve and report whole pipe networks |
 
@@ -779,6 +779,9 @@ report's files and a package export:
   temperature, the room that limits it, the cure that lowers it most and the heating curve.
 - `hydronic://recipes/primary-secondary`: a boiler circuit, a low-loss header and two secondaries,
   solved at a primary flow above and below theirs.
+- `hydronic://recipes/insulated-main`: a boiler and three radiators with an insulated main in a cellar
+  zone and a bare run outdoors, solved steady and over time, and where the pipe heat loss shows in the
+  result and the report.
 - `hydronic://guides/saving`: what `hydronic_session` export gives in each format, what open restores and what it drops, and how long a package link lasts.
 - `hydronic://guides/digitising`: reading a catalogue page, a schedule, a table or a spoken description into a spec or a pump curve: what to read, what never to invent, what to ask, when to refuse.
 - `hydronic://exports/{token}/design`: a template, the package export of a design, read by URI once `hydronic_session` has exported it.
