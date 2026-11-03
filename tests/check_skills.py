@@ -416,7 +416,7 @@ RETIRED = {
     "over a minute": "same: the 60 s refusal is gone",
     "Retry-After` and the code": "the throttled call carries retryAfterSeconds in its JSON-RPC error data",
     "render_study": "the study is made on the server by hydronic_report, and the plugin ships no renderer",
-    "study JSON": "same: nothing is transcribed by hand any more",
+    "study JSON": "same: nothing is copied by hand any more",
     "bundled renderer": "same: the plugin ships no renderer",
     "all four hydronic tools": "there are six: hydronic_report and hydronic_preview joined them",
     "paid plan in 2027": "no date or price is set for a paid plan",
@@ -439,7 +439,7 @@ def test_no_retired_claim_is_repeated() -> None:
 def test_the_report_is_made_on_the_server() -> None:
     print("the study is the server's, and the plugin runs no code")
     # The study page, its diagram and its DXF were once rendered by Python scripts the assistant ran on the
-    # user's machine, from a study JSON it transcribed by hand. hydronic_report makes all of it on the server
+    # user's machine, from a study JSON it copied by hand. hydronic_report makes all of it on the server
     # from the engine's own numbers, so a plugin that still shipped a renderer would offer the user a second,
     # worse path and a Python installation to manage.
     code = [str(path.relative_to(REPO)) for path in REPO.rglob("*.py")

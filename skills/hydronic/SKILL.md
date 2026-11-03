@@ -283,7 +283,7 @@ hydronic_report(handle, mode?, labels?, title?)
 ```
 
 It solves the design the way `hydronic_solve` does, refusing an invalid one the same way, and builds the
-report on the server from the engine's own numbers, every node and every run. Nothing is transcribed and
+report on the server from the engine's own numbers, every node and every run. Nothing is copied by hand and
 nothing runs on the user's machine. The reply carries:
 
 - **The verdict** as JSON: the headline the page opens with, the critical path and what its runs lose,

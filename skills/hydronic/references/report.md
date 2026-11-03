@@ -34,7 +34,7 @@ report is made.
 | `data.qualifications` | each as `element: finding`. The engine's own sentences are in `warnings` |
 | `data.files` | each file's `name`, what it is, its `url` (HTTPS), its `resource` (`hydronic://reports/...`) and size |
 | `data.expiresAt` | when the links stop working |
-| `warnings` | every sentence the solve said, verbatim: the qualifications first, then assumptions and validation warnings, then anything about the files |
+| `warnings` | every sentence the solve said, unchanged: the qualifications first, then assumptions and validation warnings, then anything about the files |
 
 **Then an image of each figure** (up to three), `image/png`, at most 1,600 px on its long side. Show it: it is
 the network the user asked about, in the symbols the EnergyFlowX Hydronic builder draws. A large plant arrives
@@ -66,7 +66,7 @@ no criteria were stated, so nothing was judged a pass: say so rather than imply 
 
 ## Qualifications
 
-The engine's run notices, each with its code, the element it names, and its sentence, verbatim. The page shows
+The engine's run notices, each with its code, the element it names, and its sentence, unchanged. The page shows
 them in a section that is always there and says so when there are none.
 
 | Code | Finding |
