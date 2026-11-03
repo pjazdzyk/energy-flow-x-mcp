@@ -8,7 +8,7 @@ endpoints, whether a key is needed and what the access terms are. Every one of t
 software that moves, and nothing at the other end knows this repository exists. That is exactly the
 shape of thing that drifts for a release and is found by a user.
 
-The oracle is `energy-flow-x/MCP.md`, which a Java test holds the server to. Checking against it makes
+The oracle is `energy-flow-x-svc/MCP.md`, which a Java test holds the server to. Checking against it makes
 a tool name here transitively checked against the running service, which is the only thing that
 matters to whoever installed this.
 
@@ -31,9 +31,9 @@ PLUGIN = REPO
 SKILLS = PLUGIN / "skills"
 
 # The sibling checkout that documents the server. Absent outside the development workspace, which is
-# the one case where skipping is right: a user who cloned this repo has no energy-flow-x beside it,
+# the one case where skipping is right: a user who cloned this repo has no energy-flow-x-svc beside it,
 # and failing would make the checks unrunnable for exactly the people we want running them.
-MCP_MD = REPO.parent / "energy-flow-x" / "MCP.md"
+MCP_MD = REPO.parent / "energy-flow-x-svc" / "MCP.md"
 
 FAILURES: list[str] = []
 
@@ -212,9 +212,9 @@ def test_frontmatter_is_portable() -> None:
 
 
 def test_tool_names_match_the_server() -> None:
-    print("tool names against energy-flow-x/MCP.md")
+    print("tool names against energy-flow-x-svc/MCP.md")
     if not MCP_MD.is_file():
-        print(f"  skip  no energy-flow-x beside this repository ({MCP_MD})")
+        print(f"  skip  no energy-flow-x-svc beside this repository ({MCP_MD})")
         return
 
     documented = set(re.findall(r"^\| `([a-z_]+)`", MCP_MD.read_text(encoding="utf-8"), re.M))
@@ -334,7 +334,7 @@ def test_directory_listing_fields() -> None:
 def test_every_documented_tool_is_covered() -> None:
     print("tool coverage")
     if not MCP_MD.is_file():
-        print("  skip  no energy-flow-x beside this repository")
+        print("  skip  no energy-flow-x-svc beside this repository")
         return
     documented = re.findall(r"^\| `([a-z_]+)`", MCP_MD.read_text(encoding="utf-8"), re.M)
     text = "\n".join(p.read_text(encoding="utf-8") for p in SKILLS.rglob("*.md"))
@@ -374,12 +374,12 @@ def test_skill_references_resolve() -> None:
 
 
 def test_capabilities_page_matches_the_server() -> None:
-    print("CAPABILITIES.md against energy-flow-x/MCP.md")
+    print("CAPABILITIES.md against energy-flow-x-svc/MCP.md")
     page = (REPO / "CAPABILITIES.md").read_text(encoding="utf-8")
     readme = (REPO / "README.md").read_text(encoding="utf-8")
     check("the README links the capabilities page", "CAPABILITIES.md" in readme)
     if not MCP_MD.is_file():
-        print("  skip  no energy-flow-x beside this repository")
+        print("  skip  no energy-flow-x-svc beside this repository")
         return
     documented = set(re.findall(r"^\| `([a-z_]+)`", MCP_MD.read_text(encoding="utf-8"), re.M))
     named = set(re.findall(r"\b(?:get|list|size|select|search|convert|calculate|hydronic)_[a-z_]+\b", page))
