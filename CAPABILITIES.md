@@ -37,7 +37,7 @@ server contradicts is the page's error.
 | --- | --- | --- |
 | Address | `https://energyflowx.com/energy-flow-x/mcp/free` | `https://energyflowx.com/energy-flow-x/mcp/members` |
 | Name in the plugin | not connected | `energy-flow-x` |
-| Tools | 11 | 18, plus 29 resources |
+| Tools | 11 | 18, plus 30 resources |
 | Account | none, and none is accepted | required: sign in (OAuth), or an API key |
 | What it does | properties, sizing, air processes, without refrigerants, brines and the steam humidifier | everything: the 11 free tools with nothing held back, and the 6 tools that build, check, solve and report whole pipe networks |
 
@@ -733,7 +733,7 @@ real one, so none is assumed.
 
 ### Resources
 
-Twenty-eight entries: twenty-six MCP resources and two resource templates. Twenty-four of the resources carry the vocabulary and the
+Twenty-nine entries: twenty-seven MCP resources and two resource templates. Twenty-five of the resources carry the vocabulary and the
 recipes, so they cost nothing on a turn that does not need them, two are guides (saving and digitising), and the templates are a
 report's files and a package export:
 
@@ -766,6 +766,8 @@ report's files and a package export:
 - `hydronic://vocabulary/kinds/devices`: each device kind generated from its class, with its fields, ports,
   the figures of its reply row, its notice codes with their hints and its kill-switch id.
 - `hydronic://vocabulary/kinds/edges`: each edge kind (a run between two ends), with the same parts.
+- `hydronic://vocabulary/kinds/elements`: each element kind placed on a run or between two nodes (valves,
+  dampers, emitters as they join), with the same parts. Empty until the first element kind joins.
 - `hydronic://recipes/riser`: a complete, solvable plant riser.
 - `hydronic://recipes/ring-main`: a complete campus ring main, and how to read its result.
 - `hydronic://recipes/compressed-air-ring`: a workshop compressed-air ring in free air delivery, with a
