@@ -37,7 +37,7 @@ server contradicts is the page's error.
 | --- | --- | --- |
 | Address | `https://energyflowx.com/energy-flow-x/mcp/free` | `https://energyflowx.com/energy-flow-x/mcp/members` |
 | Name in the plugin | not connected | `energy-flow-x` |
-| Tools | 11 | 18, plus 32 resources |
+| Tools | 11 | 18, plus 33 resources |
 | Account | none, and none is accepted | required: sign in (OAuth), or an API key |
 | What it does | properties, sizing, air processes, without refrigerants, brines and the steam humidifier | everything: the 11 free tools with nothing held back, and the 6 tools that build, check, solve and report whole pipe networks |
 
@@ -475,6 +475,9 @@ Server: the members server, `/energy-flow-x/mcp/members`, only. Tools: `hydronic
   when the run is set, with the step that fits. A run that meets a limit while it solves returns the
   steps it computed, marked incomplete. For free use these limits may be lowered to match server
   capacity, and longer runs are quoted individually.
+- **Control logic** (`add_controller`, `add_block`, `add_cable`): a switch or a loop controller on a reading, or a
+  free signal graph of the engine's own blocks (selectors, gains, limiters, latches, delays, actuators) wired by
+  cables; a mistake is refused at the edit, in one sentence naming the field and the fix.
 - **Elements** (`define_component`, `add_valve`, `add_damper`, `add_emitter`): a valve, damper,
   regulator or emitter is described once as a component and placed as an element, on its own edge or
   inline on a pipe. A steady solve takes each held element at its setting and lets a regulator
@@ -564,7 +567,7 @@ function.
   field. `dryRun` validates a batch without applying it.
 - **Strict fields**: a field that does not belong to its op is refused by name, never ignored.
 - **Ops**: `set_fluid`, `set_conditions`, `add_node`, `add_pipe`, `add_fitting`, `add_resistance`, `add_leak`,
-  `add_device`, `add_schedule`, `add_controller`, `set_transient`, `set_criteria`, `name_system`,
+  `add_device`, `add_schedule`, `add_controller`, `add_block`, `add_cable`, `set_transient`, `set_criteria`, `name_system`,
   `name_level`, `define_component`, `add_valve`, `add_damper`, `add_emitter`, `add_zone`, `define_material`,
   `define_insulation`, `set` and `remove`. The
   full fields are in `hydronic://vocabulary/ops`.
@@ -733,7 +736,7 @@ real one, so none is assumed.
 
 ### Resources
 
-Thirty-one entries: twenty-nine MCP resources and two resource templates. Twenty-seven of the resources carry the vocabulary and the
+Thirty-two entries: thirty MCP resources and two resource templates. Twenty-eight of the resources carry the vocabulary and the
 recipes, so they cost nothing on a turn that does not need them, two are guides (saving and digitising), and the templates are a
 report's files and a package export:
 
@@ -772,6 +775,8 @@ report's files and a package export:
   they join), with its rows and the facts the engine reads of it.
 - `hydronic://vocabulary/kinds/controllers`: each controller kind (a switch on a reading, and the others as they
   join), with its target, its sensor and its settings, and what each kind of target takes.
+- `hydronic://vocabulary/signal-blocks`: the blocks of the free signal graph (`add_block`, `add_cable`), generated from
+  the engine's own block records: each type's settings, its inputs and outputs, and the words of its choices.
 - `hydronic://recipes/riser`: a complete, solvable plant riser.
 - `hydronic://recipes/ring-main`: a complete campus ring main, and how to read its result.
 - `hydronic://recipes/compressed-air-ring`: a workshop compressed-air ring in free air delivery, with a
