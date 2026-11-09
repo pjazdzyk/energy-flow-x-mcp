@@ -483,7 +483,6 @@ notice. Build on it by all means, but do not plan around it staying free.
 ## For maintainers
 
 ```bash
-python tests/check_skills.py                                             # the skills against the server's own docs
 python ../energy-flow-x-iac/scripts/package-plugin-skills.py            # the skill zips, attach them to every release
 claude plugin validate . --strict                                        # the marketplace manifest
 claude plugin validate .claude-plugin/plugin.json --strict               # the plugin manifest and its .mcp.json

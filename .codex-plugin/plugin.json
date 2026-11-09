@@ -50,8 +50,8 @@
       "Compressed-air ring: 7 barg receiver, 160 m DN50 steel loop, four 2 Nm3/min drops. Worst pressure, and with one section shut?"
     ],
     "brandColor": "#1DBFFA",
-    "logo": "./assets/icon.svg",
-    "composerIcon": "./assets/icon.svg"
+    "logo": "./assets/icon.png",
+    "composerIcon": "./assets/icon.png"
   },
   "extensions": {
     "com.openai": {

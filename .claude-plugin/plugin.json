@@ -10,7 +10,7 @@
   },
   "homepage": "https://energyflowx.com/mcp-server",
   "repository": "https://github.com/pjazdzyk/energy-flow-x-mcp",
-  "icon": "./assets/icon.svg",
+  "icon": "./assets/icon.png",
   "documentationUrl": "https://energyflowx.com/mcp-server",
   "supportUrl": "https://energyflowx.com/misc/social",
   "privacyPolicyUrl": "https://energyflowx.com/legal/privacy-policy",
